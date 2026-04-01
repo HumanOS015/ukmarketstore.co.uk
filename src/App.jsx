@@ -12,6 +12,7 @@ import ProductDetail from './pages/ProductDetail';
 import Orders from './pages/Orders';
 import Profile from './pages/Profile';
 import BuyerProtection from './pages/BuyerProtection';
+import TermsAndConditions from './pages/TermsAndConditions';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -46,6 +47,7 @@ const AuthenticatedApp = () => {
         <Route path="/orders" element={<Orders />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/buyer-protection" element={<BuyerProtection />} />
+        <Route path="/terms" element={<TermsAndConditions />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>
     </Routes>
