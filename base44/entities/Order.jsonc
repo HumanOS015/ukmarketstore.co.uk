@@ -1,0 +1,68 @@
+{
+  "name": "Order",
+  "type": "object",
+  "properties": {
+    "product_id": {
+      "type": "string",
+      "description": "Reference to the product"
+    },
+    "product_title": {
+      "type": "string",
+      "description": "Product title snapshot"
+    },
+    "product_image": {
+      "type": "string",
+      "description": "Product image snapshot"
+    },
+    "price": {
+      "type": "number",
+      "description": "Price paid in GBP"
+    },
+    "commission": {
+      "type": "number",
+      "description": "10% commission amount"
+    },
+    "seller_payout": {
+      "type": "number",
+      "description": "Amount seller receives (90%)"
+    },
+    "buyer_email": {
+      "type": "string",
+      "description": "Buyer email"
+    },
+    "seller_email": {
+      "type": "string",
+      "description": "Seller email"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending_payment",
+        "paid",
+        "shipped",
+        "delivered",
+        "completed",
+        "refunded",
+        "disputed"
+      ],
+      "default": "pending_payment",
+      "description": "Order status"
+    },
+    "shipping_address": {
+      "type": "string",
+      "description": "Buyer shipping address"
+    },
+    "tracking_number": {
+      "type": "string",
+      "description": "Shipping tracking number"
+    }
+  },
+  "required": [
+    "product_id",
+    "product_title",
+    "price",
+    "buyer_email",
+    "seller_email",
+    "status"
+  ]
+}

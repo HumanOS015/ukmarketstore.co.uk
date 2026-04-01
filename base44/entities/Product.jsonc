@@ -1,0 +1,82 @@
+{
+  "name": "Product",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Product title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Product description"
+    },
+    "price": {
+      "type": "number",
+      "description": "Price in GBP"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Electronics",
+        "Fashion",
+        "Home & Garden",
+        "Sports",
+        "Toys",
+        "Motors",
+        "Books",
+        "Music",
+        "Collectibles",
+        "Health & Beauty",
+        "Pet Supplies",
+        "Other"
+      ],
+      "description": "Product category"
+    },
+    "postcode": {
+      "type": "string",
+      "description": "UK postcode for item location"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Product image URL"
+    },
+    "seller_email": {
+      "type": "string",
+      "description": "Seller email"
+    },
+    "seller_name": {
+      "type": "string",
+      "description": "Seller display name"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "sold",
+        "removed"
+      ],
+      "default": "active",
+      "description": "Listing status"
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "New",
+        "Like New",
+        "Good",
+        "Fair",
+        "Poor"
+      ],
+      "description": "Item condition"
+    }
+  },
+  "required": [
+    "title",
+    "price",
+    "category",
+    "postcode",
+    "image_url",
+    "seller_email",
+    "status"
+  ]
+}
