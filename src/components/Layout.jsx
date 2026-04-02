@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Home, PlusCircle, ShoppingBag, User, Shield } from "lucide-react";
+import { Home, PlusCircle, ShoppingBag, User, Shield, FileText } from "lucide-react";
 
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
@@ -22,13 +22,22 @@ export default function Layout() {
             </div>
             <span className="font-bold text-lg tracking-tight">UKMarket</span>
           </Link>
-          <Link
-            to="/buyer-protection"
-            className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
-          >
-            <Shield className="w-3.5 h-3.5" />
-            Buyer Protection
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/buyer-protection"
+              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
+            >
+              <Shield className="w-3.5 h-3.5" />
+              Buyer Protection
+            </Link>
+            <Link
+              to="/terms"
+              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              Terms
+            </Link>
+          </div>
         </div>
       </header>
 
