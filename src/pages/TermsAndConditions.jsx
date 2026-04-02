@@ -19,12 +19,12 @@ const sections = [
     content: `UKMarket charges a 10% commission on every completed sale. This fee is automatically deducted from the seller's payout. The seller's net payout (90% of the sale price) will be transferred after the buyer confirms delivery. There are no fees for listing items or browsing the platform.`,
   },
   {
-    title: "5. Buyer Protection",
-    content: `All purchases are covered by UKMarket Buyer Protection. Funds are held in escrow and released to the seller only after the buyer confirms receipt of the item. Disputes must be raised within 48 hours of delivery. UKMarket reserves the right to make final decisions on all disputes.`,
+    title: "5. Buyer Protection & Escrow",
+    content: `All payments are held in escrow via Stripe until the buyer confirms receipt of their item. Funds are only released to the seller after delivery is confirmed. Sellers must provide a valid UK tracking number within 48 hours of a sale. If a tracking number is not provided within this window, the buyer will receive a full automatic refund. Disputes must be raised within 48 hours of delivery. UKMarket reserves the right to make final decisions on all disputes.`,
   },
   {
     title: "6. Prohibited Items",
-    content: `You must not list or sell: illegal items, counterfeit goods, hazardous materials, weapons, controlled substances, or any items prohibited under UK law. UKMarket reserves the right to remove any listing and suspend any account found in violation of this policy.`,
+    content: `You must not list or sell: illegal items, counterfeit goods, hazardous materials, weapons, controlled substances, or any items prohibited under UK law. Any listings containing prohibited or dangerous items will be automatically removed from the platform. UKMarket reserves the right to suspend any account found in violation of this policy.`,
   },
   {
     title: "7. User Conduct",
@@ -36,7 +36,7 @@ const sections = [
   },
   {
     title: "9. Limitation of Liability",
-    content: `UKMarket is not liable for any loss or damage arising from transactions between buyers and sellers, the accuracy of listings, or any disruption to the platform. Our total liability is limited to the commission amount collected on the relevant transaction.`,
+    content: `UKMarket is a platform provider and is not liable for item conditions, accuracy of listings, or disputes arising from the quality of goods. However, we will issue a full refund to the buyer if the seller fails to provide a valid UK tracking number within 48 hours of sale. Our total liability is otherwise limited to the commission amount collected on the relevant transaction.`,
   },
   {
     title: "10. Privacy",
