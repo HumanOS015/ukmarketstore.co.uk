@@ -1,10 +1,11 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Home, PlusCircle, ShoppingBag, User, Shield, FileText } from "lucide-react";
+import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard } from "lucide-react";
 
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
   { to: "/sell", icon: PlusCircle, label: "Sell" },
   { to: "/orders", icon: ShoppingBag, label: "Orders" },
+  { to: "/seller-dashboard", icon: LayoutDashboard, label: "Selling" },
   { to: "/profile", icon: User, label: "Profile" },
 ];
 
