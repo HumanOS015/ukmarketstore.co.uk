@@ -20,7 +20,9 @@ const CATEGORIES = [
   "Motors", "Books", "Music", "Collectibles", "Health & Beauty", "Pet Supplies", "Other",
 ];
 
-const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
+const CONDITIONS = ["New", "Used - Like New", "Used - Fair"];
+const FULFILMENT_OPTIONS = ["Collection Only", "Postage", "Collection or Postage"];
+const DELIVERY_TIMES = ["1-2 days", "3-5 days", "5-7 days", "1-2 weeks", "2+ weeks"];
 
 const UK_POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
 
@@ -37,6 +39,8 @@ export default function Sell() {
     category: "",
     condition: "",
     postcode: "",
+    fulfilment_method: "",
+    estimated_delivery: "",
   });
 
   const handleImageUpload = async (e) => {
@@ -63,6 +67,18 @@ export default function Sell() {
       toast.error("Please select a category");
       return;
     }
+    if (!form.condition) {
+      toast.error("Please select a condition");
+      return;
+    }
+    if (!form.fulfilment_method) {
+      toast.error("Please select collection or postage");
+      return;
+    }
+    if ((form.fulfilment_method === "Postage" || form.fulfilment_method === "Collection or Postage") && !form.estimated_delivery) {
+      toast.error("Please select an estimated delivery time");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -72,7 +88,9 @@ export default function Sell() {
         description: form.description.trim(),
         price: parseFloat(form.price),
         category: form.category,
-        condition: form.condition || "Good",
+        condition: form.condition,
+        fulfilment_method: form.fulfilment_method,
+        estimated_delivery: form.estimated_delivery || null,
         postcode: form.postcode.trim().toUpperCase(),
         image_url: imageUrl,
         seller_email: user.email,
@@ -96,7 +114,7 @@ export default function Sell() {
         <h2 className="text-2xl font-bold mb-2">Ad Posted!</h2>
         <p className="text-muted-foreground mb-6">Your listing is now live and visible to buyers across the UK.</p>
         <div className="flex gap-3">
-          <Button variant="outline" className="rounded-xl" onClick={() => { setSuccess(false); setForm({ title: "", description: "", price: "", category: "", condition: "", postcode: "" }); setImageUrl(""); }}>
+          <Button variant="outline" className="rounded-xl" onClick={() => { setSuccess(false); setForm({ title: "", description: "", price: "", category: "", condition: "", postcode: "", fulfilment_method: "", estimated_delivery: "" }); setImageUrl(""); }}>
             Post Another
           </Button>
           <Button className="rounded-xl" onClick={() => navigate("/")}>
@@ -220,6 +238,38 @@ export default function Sell() {
             </Select>
           </div>
         </div>
+
+        {/* Fulfilment */}
+        <div>
+          <Label className="text-sm font-medium">Collection or Postage? <span className="text-destructive">*</span></Label>
+          <Select value={form.fulfilment_method} onValueChange={(v) => update("fulfilment_method", v)}>
+            <SelectTrigger className="mt-1.5 h-11 rounded-xl">
+              <SelectValue placeholder="Select an option" />
+            </SelectTrigger>
+            <SelectContent>
+              {FULFILMENT_OPTIONS.map((o) => (
+                <SelectItem key={o} value={o}>{o}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Estimated Delivery - shown when postage is selected */}
+        {(form.fulfilment_method === "Postage" || form.fulfilment_method === "Collection or Postage") && (
+          <div>
+            <Label className="text-sm font-medium">Estimated Delivery Time <span className="text-destructive">*</span></Label>
+            <Select value={form.estimated_delivery} onValueChange={(v) => update("estimated_delivery", v)}>
+              <SelectTrigger className="mt-1.5 h-11 rounded-xl">
+                <SelectValue placeholder="Select delivery time" />
+              </SelectTrigger>
+              <SelectContent>
+                {DELIVERY_TIMES.map((t) => (
+                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {/* Postcode */}
         <div>

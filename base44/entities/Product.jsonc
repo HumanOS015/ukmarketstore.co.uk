@@ -62,12 +62,23 @@
       "type": "string",
       "enum": [
         "New",
-        "Like New",
-        "Good",
-        "Fair",
-        "Poor"
+        "Used - Like New",
+        "Used - Fair"
       ],
       "description": "Item condition"
+    },
+    "fulfilment_method": {
+      "type": "string",
+      "enum": [
+        "Collection Only",
+        "Postage",
+        "Collection or Postage"
+      ],
+      "description": "How the item will be delivered"
+    },
+    "estimated_delivery": {
+      "type": "string",
+      "description": "Estimated delivery time if postage is offered"
     }
   },
   "required": [
@@ -78,5 +89,49 @@
     "image_url",
     "seller_email",
     "status"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "data.seller_email": "{{user.email}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.status": "active"
+        },
+        {
+          "data.seller_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.seller_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.seller_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
 }
