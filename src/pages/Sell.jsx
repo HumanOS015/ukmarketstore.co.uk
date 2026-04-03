@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Camera, Loader2, PoundSterling } from "lucide-react";
+import { Camera, Loader2, PoundSterling, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 const CATEGORIES = [
@@ -27,6 +27,7 @@ const UK_POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
 export default function Sell() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
   const [form, setForm] = useState({
@@ -64,27 +65,47 @@ export default function Sell() {
     }
 
     setLoading(true);
-    const user = await base44.auth.me();
-    
-    await base44.entities.Product.create({
-      title: form.title.trim(),
-      description: form.description.trim(),
-      price: parseFloat(form.price),
-      category: form.category,
-      condition: form.condition || "Good",
-      postcode: form.postcode.trim().toUpperCase(),
-      image_url: imageUrl,
-      seller_email: user.email,
-      seller_name: user.full_name || user.email,
-      status: "active",
-    });
-
-    toast.success("Listing created successfully!");
-    navigate("/");
-    setLoading(false);
+    try {
+      const user = await base44.auth.me();
+      await base44.entities.Product.create({
+        title: form.title.trim(),
+        description: form.description.trim(),
+        price: parseFloat(form.price),
+        category: form.category,
+        condition: form.condition || "Good",
+        postcode: form.postcode.trim().toUpperCase(),
+        image_url: imageUrl,
+        seller_email: user.email,
+        seller_name: user.full_name || user.email,
+        status: "active",
+      });
+      setSuccess(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const update = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
+
+  if (success) {
+    return (
+      <div className="max-w-lg mx-auto px-4 md:pl-20 py-6 flex flex-col items-center justify-center min-h-[60vh] text-center">
+        <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-4">
+          <CheckCircle2 className="w-10 h-10 text-green-600" />
+        </div>
+        <h2 className="text-2xl font-bold mb-2">Ad Posted!</h2>
+        <p className="text-muted-foreground mb-6">Your listing is now live and visible to buyers across the UK.</p>
+        <div className="flex gap-3">
+          <Button variant="outline" className="rounded-xl" onClick={() => { setSuccess(false); setForm({ title: "", description: "", price: "", category: "", condition: "", postcode: "" }); setImageUrl(""); }}>
+            Post Another
+          </Button>
+          <Button className="rounded-xl" onClick={() => navigate("/")}>
+            Browse Listings
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-lg mx-auto px-4 md:pl-20 py-6">
