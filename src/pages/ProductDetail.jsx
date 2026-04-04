@@ -177,15 +177,17 @@ export default function ProductDetail() {
           </div>
         )}
 
-        {/* Buyer Protection Banner */}
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
-          <Shield className="w-5 h-5 text-primary shrink-0" />
-          <div>
-            <p className="text-sm font-medium">Buyer Protection</p>
-            <p className="text-xs text-muted-foreground">
-              Funds held securely until delivery confirmed
-            </p>
+        {/* Verified Buyer Protection Badge */}
+        <div className="rounded-2xl border border-green-200 bg-green-50 p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+              <Shield className="w-3.5 h-3.5 text-white" />
+            </div>
+            <span className="text-sm font-semibold text-green-800">Verified Buyer Protection</span>
           </div>
+          <p className="text-xs text-green-700 leading-relaxed">
+            Your payment is held securely in escrow. The seller only receives their money once you confirm you've received the item — so you're fully protected if something goes wrong.
+          </p>
         </div>
 
         {/* Buy Button */}
