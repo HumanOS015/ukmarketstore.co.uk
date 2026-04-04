@@ -70,15 +70,13 @@
     "fulfilment_method": {
       "type": "string",
       "enum": [
-        "Collection Only",
-        "Postage",
-        "Collection or Postage"
+        "Tracked UK Delivery"
       ],
       "description": "How the item will be delivered"
     },
     "estimated_delivery": {
       "type": "string",
-      "description": "Estimated delivery time if postage is offered"
+      "description": "Estimated delivery time"
     }
   },
   "required": [
