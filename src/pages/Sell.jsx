@@ -242,6 +242,18 @@ export default function Sell() {
 
         {/* Estimated Delivery */}
         <div>
+          <Label className="text-sm font-medium">Estimated Delivery Time <span className="text-destructive">*</span></Label>
+          <Select value={form.estimated_delivery} onValueChange={(v) => update("estimated_delivery", v)}>
+            <SelectTrigger className="mt-1.5 h-11 rounded-xl">
+              <SelectValue placeholder="Select delivery time" />
+            </SelectTrigger>
+            <SelectContent>
+              {DELIVERY_TIMES.map((t) => (
+                <SelectItem key={t} value={t}>{t}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Postcode */}
         <div>
