@@ -13,6 +13,8 @@ export default function ProductCard({ product }) {
           src={product.image_url}
           alt={product.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          loading="lazy"
+          decoding="async"
         />
         {product.condition && (
           <Badge variant="secondary" className="absolute top-2 left-2 text-[10px] backdrop-blur-md bg-card/80">

@@ -112,6 +112,8 @@ export default function ProductDetail() {
           src={product.image_url}
           alt={product.title}
           className="w-full h-full object-cover"
+          fetchpriority="high"
+          loading="eager"
         />
         <button
           onClick={() => navigate(-1)}
@@ -224,6 +226,7 @@ export default function ProductDetail() {
                 src={product.image_url}
                 alt={product.title}
                 className="w-16 h-16 rounded-lg object-cover"
+                loading="lazy"
               />
               <div>
                 <p className="font-medium text-sm">{product.title}</p>
