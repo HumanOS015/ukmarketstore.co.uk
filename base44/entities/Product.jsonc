@@ -92,21 +92,6 @@
     "create": {
       "data.seller_email": "{{user.email}}"
     },
-    "read": {
-      "$or": [
-        {
-          "data.status": "active"
-        },
-        {
-          "data.seller_email": "{{user.email}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
-    },
     "update": {
       "$or": [
         {
