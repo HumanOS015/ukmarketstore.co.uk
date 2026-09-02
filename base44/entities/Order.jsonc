@@ -55,6 +55,11 @@
     "tracking_number": {
       "type": "string",
       "description": "Shipping tracking number"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional notes about this order",
+      "maxLength": 1000
     }
   },
   "required": [
