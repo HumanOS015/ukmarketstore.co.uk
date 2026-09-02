@@ -22,9 +22,12 @@ import {
   User,
   Clock,
   Tag,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
 import moment from "moment";
+import { withTimeout } from "@/lib/withTimeout";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -35,6 +38,7 @@ export default function ProductDetail() {
   const [purchasing, setPurchasing] = useState(false);
   const [address, setAddress] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -42,16 +46,17 @@ export default function ProductDetail() {
 
   const loadData = async () => {
     setLoading(true);
+    setError(false);
     try {
       const [productData, user] = await Promise.all([
-        base44.entities.Product.filter({ id }, "-created_date", 1),
-        base44.auth.me(),
+        withTimeout(base44.entities.Product.filter({ id }, "-created_date", 1), 15000, "Loading listing"),
+        base44.auth.me().catch(() => null),
       ]);
       setProduct(productData[0]);
       setCurrentUser(user);
     } catch (err) {
       console.error("Failed to load product", err);
-      toast.error("Couldn't load this listing. Please try again.");
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -67,31 +72,68 @@ export default function ProductDetail() {
     const commission = parseFloat((price * 0.1).toFixed(2));
     const sellerPayout = parseFloat((price - commission).toFixed(2));
 
-    await base44.entities.Order.create({
-      product_id: product.id,
-      product_title: product.title,
-      product_image: product.image_url,
-      price,
-      commission,
-      seller_payout: sellerPayout,
-      buyer_email: currentUser.email,
-      seller_email: product.seller_email,
-      status: "paid",
-      shipping_address: address.trim(),
-    });
+    try {
+      await withTimeout(
+        base44.entities.Order.create({
+          product_id: product.id,
+          product_title: product.title,
+          product_image: product.image_url,
+          price,
+          commission,
+          seller_payout: sellerPayout,
+          buyer_email: currentUser.email,
+          seller_email: product.seller_email,
+          status: "paid",
+          shipping_address: address.trim(),
+        }),
+        15000,
+        "Processing payment"
+      );
 
-    await base44.entities.Product.update(product.id, { status: "sold" });
+      await withTimeout(
+        base44.entities.Product.update(product.id, { status: "sold" }),
+        15000,
+        "Updating listing"
+      );
 
-    toast.success("Purchase successful! The seller has been notified.");
-    setBuyDialogOpen(false);
-    navigate("/orders");
-    setPurchasing(false);
+      toast.success("Purchase successful! The seller has been notified.");
+      setBuyDialogOpen(false);
+      navigate("/orders");
+    } catch (err) {
+      console.error("Purchase failed", err);
+      if (err?.status === 401 || err?.status === 403) {
+        toast.error("Your session expired. Please sign in again.");
+      } else {
+        toast.error("Payment couldn't be completed. Please try again.");
+      }
+    } finally {
+      setPurchasing(false);
+    }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-center">
+        <AlertCircle className="w-10 h-10 text-destructive/60 mx-auto mb-3" />
+        <p className="font-medium text-muted-foreground">Couldn't load this listing</p>
+        <p className="text-sm text-muted-foreground/70 mt-1 mb-4">
+          Your connection may have dropped. Try again.
+        </p>
+        <button
+          onClick={loadData}
+          className="inline-flex items-center gap-2 px-4 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Retry
+        </button>
       </div>
     );
   }

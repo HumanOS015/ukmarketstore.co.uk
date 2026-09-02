@@ -4,8 +4,9 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Package, Truck, ArrowLeft, PlusCircle, CheckCircle2 } from "lucide-react";
+import { Package, Truck, ArrowLeft, PlusCircle, CheckCircle2, AlertCircle, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { withTimeout } from "@/lib/withTimeout";
 
 const CARRIERS = ["Royal Mail", "Evri"];
 
@@ -28,14 +29,31 @@ export default function SellerDashboard() {
   const [trackingNumber, setTrackingNumber] = useState("");
   const [carrier, setCarrier] = useState("Royal Mail");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const load = async () => {
-      const me = await base44.auth.me();
-      setUser(me);
-      const data = await base44.entities.Order.filter({ seller_email: me.email }, "-created_date", 50);
-      setOrders(data);
-      setLoading(false);
+      setLoading(true);
+      setError(false);
+      try {
+        const me = await withTimeout(base44.auth.me(), 15000, "Loading account");
+        setUser(me);
+        const data = await withTimeout(
+          base44.entities.Order.filter({ seller_email: me.email }, "-created_date", 50),
+          15000,
+          "Loading orders"
+        );
+        setOrders(data);
+      } catch (err) {
+        console.error("Failed to load seller dashboard", err);
+        if (err?.status === 401 || err?.status === 403) {
+          base44.auth.redirectToLogin(window.location.href);
+          return;
+        }
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, []);
@@ -52,27 +70,56 @@ export default function SellerDashboard() {
       return;
     }
     setSaving(true);
-    await base44.entities.Order.update(trackingModal.orderId, {
-      tracking_number: `${carrier}: ${trackingNumber.trim()}`,
-      status: "shipped",
-    });
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.id === trackingModal.orderId
-          ? { ...o, tracking_number: `${carrier}: ${trackingNumber.trim()}`, status: "shipped" }
-          : o
-      )
-    );
-    toast.success("Tracking number saved!");
-    setTrackingModal(null);
-    setTrackingNumber("");
-    setSaving(false);
+    try {
+      await withTimeout(
+        base44.entities.Order.update(trackingModal.orderId, {
+          tracking_number: `${carrier}: ${trackingNumber.trim()}`,
+          status: "shipped",
+        }),
+        15000,
+        "Saving tracking"
+      );
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === trackingModal.orderId
+            ? { ...o, tracking_number: `${carrier}: ${trackingNumber.trim()}`, status: "shipped" }
+            : o
+        )
+      );
+      toast.success("Tracking number saved!");
+      setTrackingModal(null);
+      setTrackingNumber("");
+    } catch (err) {
+      console.error("Failed to save tracking", err);
+      toast.error("Couldn't save the tracking number. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="w-7 h-7 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-center">
+        <AlertCircle className="w-10 h-10 text-destructive/60 mx-auto mb-3" />
+        <p className="font-medium text-muted-foreground">Couldn't load your orders</p>
+        <p className="text-sm text-muted-foreground/70 mt-1 mb-4">
+          Your connection may have dropped. Try again.
+        </p>
+        <button
+          onClick={() => navigate(0)}
+          className="inline-flex items-center gap-2 px-4 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Retry
+        </button>
       </div>
     );
   }

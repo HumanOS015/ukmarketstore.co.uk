@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { withTimeout } from "@/lib/withTimeout";
 
 export default function Contact() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
@@ -22,11 +23,15 @@ export default function Contact() {
     }
     setSending(true);
     try {
-      await base44.integrations.Core.SendEmail({
-        to: "support@ukmarket.base44.app",
-        subject: `Contact form message from ${form.name}`,
-        body: `From: ${form.name} <${form.email}>\n\n${form.message}`,
-      });
+      await withTimeout(
+        base44.integrations.Core.SendEmail({
+          to: "support@ukmarket.base44.app",
+          subject: `Contact form message from ${form.name}`,
+          body: `From: ${form.name} <${form.email}>\n\n${form.message}`,
+        }),
+        30000,
+        "Sending message"
+      );
       toast.success("Message sent — we'll be in touch soon.");
       setForm({ name: "", email: "", message: "" });
     } catch {

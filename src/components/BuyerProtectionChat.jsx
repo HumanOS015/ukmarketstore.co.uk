@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Shield, Send, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { withTimeout } from "@/lib/withTimeout";
+import { toast } from "sonner";
 
 export default function BuyerProtectionChat() {
   const [conversationId, setConversationId] = useState(null);
@@ -32,12 +34,19 @@ export default function BuyerProtectionChat() {
 
   const startConversation = async () => {
     try {
-      const conversation = await base44.agents.createConversation({
-        agent_name: "buyer_protection",
-        metadata: { name: "Buyer Protection" },
-      });
+      const conversation = await withTimeout(
+        base44.agents.createConversation({
+          agent_name: "buyer_protection",
+          metadata: { name: "Buyer Protection" },
+        }),
+        15000,
+        "Starting assistant"
+      );
       setConversationId(conversation.id);
       setMessages(conversation.messages || []);
+    } catch (err) {
+      console.error("Failed to start conversation", err);
+      toast.error("Couldn't start the assistant. Please try again.");
     } finally {
       setInitializing(false);
     }
@@ -48,8 +57,14 @@ export default function BuyerProtectionChat() {
     if (!text || !conversationId || busy) return;
     setInput("");
     setBusy(true);
-    const conversation = base44.agents.getConversation(conversationId);
-    await base44.agents.addMessage(conversation, { role: "user", content: text });
+    try {
+      const conversation = base44.agents.getConversation(conversationId);
+      await base44.agents.addMessage(conversation, { role: "user", content: text });
+    } catch (err) {
+      console.error("Failed to send message", err);
+      toast.error("Couldn't send your message. Please try again.");
+      setBusy(false);
+    }
   };
 
   const toolCallStatus = (tc) => {

@@ -3,9 +3,9 @@ import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Loader2, Package, ShoppingBag, ArrowRight, LifeBuoy } from "lucide-react";
+import { Loader2, Package, ShoppingBag, ArrowRight, LifeBuoy, AlertCircle, RefreshCw } from "lucide-react";
 import moment from "moment";
-import { toast } from "sonner";
+import { withTimeout } from "@/lib/withTimeout";
 
 const STATUS_COLORS = {
   pending_payment: "bg-yellow-100 text-yellow-800",
@@ -50,6 +50,7 @@ function OrderCard({ order }) {
 export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -58,14 +59,23 @@ export default function Orders() {
 
   const loadOrders = async () => {
     setLoading(true);
+    setError(false);
     try {
-      const me = await base44.auth.me();
+      const me = await withTimeout(base44.auth.me(), 15000, "Loading account");
       setUser(me);
-      const allOrders = await base44.entities.Order.list("-created_date", 100);
+      const allOrders = await withTimeout(
+        base44.entities.Order.list("-created_date", 100),
+        15000,
+        "Loading orders"
+      );
       setOrders(allOrders);
     } catch (err) {
       console.error("Failed to load orders", err);
-      toast.error("Couldn't load your orders. Please try again.");
+      if (err?.status === 401 || err?.status === 403) {
+        base44.auth.redirectToLogin(window.location.href);
+        return;
+      }
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -78,6 +88,25 @@ export default function Orders() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-center">
+        <AlertCircle className="w-10 h-10 text-destructive/60 mx-auto mb-3" />
+        <p className="font-medium text-muted-foreground">Couldn't load your orders</p>
+        <p className="text-sm text-muted-foreground/70 mt-1 mb-4">
+          Your connection may have dropped. Try again.
+        </p>
+        <button
+          onClick={loadOrders}
+          className="inline-flex items-center gap-2 px-4 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Retry
+        </button>
       </div>
     );
   }
