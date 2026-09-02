@@ -3,8 +3,9 @@ import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Loader2, Package, ShoppingBag, ArrowRight } from "lucide-react";
+import { Loader2, Package, ShoppingBag, ArrowRight, LifeBuoy } from "lucide-react";
 import moment from "moment";
+import { toast } from "sonner";
 
 const STATUS_COLORS = {
   pending_payment: "bg-yellow-100 text-yellow-800",
@@ -57,11 +58,17 @@ export default function Orders() {
 
   const loadOrders = async () => {
     setLoading(true);
-    const me = await base44.auth.me();
-    setUser(me);
-    const allOrders = await base44.entities.Order.list("-created_date", 100);
-    setOrders(allOrders);
-    setLoading(false);
+    try {
+      const me = await base44.auth.me();
+      setUser(me);
+      const allOrders = await base44.entities.Order.list("-created_date", 100);
+      setOrders(allOrders);
+    } catch (err) {
+      console.error("Failed to load orders", err);
+      toast.error("Couldn't load your orders. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const purchases = orders.filter((o) => o.buyer_email === user?.email);
@@ -79,6 +86,17 @@ export default function Orders() {
     <div className="max-w-2xl mx-auto px-4 md:pl-20 py-6">
       <h1 className="text-2xl font-bold tracking-tight mb-1">My Orders</h1>
       <p className="text-sm text-muted-foreground mb-6">Track your purchases and sales</p>
+
+      <Link
+        to="/buyer-protection-assistant"
+        className="flex items-center justify-between gap-2 mb-6 px-4 py-3 rounded-2xl bg-green-50 border border-green-200 hover:bg-green-100 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <LifeBuoy className="w-4 h-4 text-green-700" />
+          <span className="text-sm font-medium text-green-800">Issue with a completed order?</span>
+        </div>
+        <ArrowRight className="w-4 h-4 text-green-700" />
+      </Link>
 
       <Tabs defaultValue="purchases">
         <TabsList className="w-full rounded-xl h-11 mb-4">

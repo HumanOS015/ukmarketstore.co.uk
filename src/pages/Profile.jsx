@@ -18,15 +18,21 @@ export default function Profile() {
 
   const loadProfile = async () => {
     setLoading(true);
-    const me = await base44.auth.me();
-    setUser(me);
-    const listings = await base44.entities.Product.filter(
-      { seller_email: me.email },
-      "-created_date",
-      50
-    );
-    setMyListings(listings);
-    setLoading(false);
+    try {
+      const me = await base44.auth.me();
+      setUser(me);
+      const listings = await base44.entities.Product.filter(
+        { seller_email: me.email },
+        "-created_date",
+        50
+      );
+      setMyListings(listings);
+    } catch (err) {
+      console.error("Failed to load profile", err);
+      toast.error("Couldn't load your profile. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = async (productId) => {

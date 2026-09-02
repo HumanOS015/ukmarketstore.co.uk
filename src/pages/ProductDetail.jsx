@@ -42,13 +42,19 @@ export default function ProductDetail() {
 
   const loadData = async () => {
     setLoading(true);
-    const [productData, user] = await Promise.all([
-      base44.entities.Product.filter({ id }, "-created_date", 1),
-      base44.auth.me(),
-    ]);
-    setProduct(productData[0]);
-    setCurrentUser(user);
-    setLoading(false);
+    try {
+      const [productData, user] = await Promise.all([
+        base44.entities.Product.filter({ id }, "-created_date", 1),
+        base44.auth.me(),
+      ]);
+      setProduct(productData[0]);
+      setCurrentUser(user);
+    } catch (err) {
+      console.error("Failed to load product", err);
+      toast.error("Couldn't load this listing. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleBuyNow = async () => {

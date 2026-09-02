@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import ProductCard from "../components/ProductCard";
 import SearchBar from "../components/SearchBar";
 import { Loader2, PackageOpen } from "lucide-react";
+import { toast } from "sonner";
 
 export default function Home() {
   const [products, setProducts] = useState([]);
@@ -16,13 +17,19 @@ export default function Home() {
 
   const loadProducts = async () => {
     setLoading(true);
-    const data = await base44.entities.Product.filter(
-      { status: "active" },
-      "-created_date",
-      100
-    );
-    setProducts(data);
-    setLoading(false);
+    try {
+      const data = await base44.entities.Product.filter(
+        { status: "active" },
+        "-created_date",
+        100
+      );
+      setProducts(data);
+    } catch (err) {
+      console.error("Failed to load products", err);
+      toast.error("Couldn't load listings. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filtered = products.filter((p) => {
