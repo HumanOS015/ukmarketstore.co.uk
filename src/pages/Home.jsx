@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import ProductCard from "../components/ProductCard";
 import SearchBar from "../components/SearchBar";
-import { Loader2, PackageOpen } from "lucide-react";
+import { Loader2, PackageOpen, AlertCircle, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { withTimeout } from "@/lib/withTimeout";
 
 export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All Categories");
 
@@ -17,16 +19,17 @@ export default function Home() {
 
   const loadProducts = async () => {
     setLoading(true);
+    setError(false);
     try {
-      const data = await base44.entities.Product.filter(
-        { status: "active" },
-        "-created_date",
-        100
+      const data = await withTimeout(
+        base44.entities.Product.filter({ status: "active" }, "-created_date", 100),
+        15000,
+        "Loading listings"
       );
       setProducts(data);
     } catch (err) {
       console.error("Failed to load products", err);
-      toast.error("Couldn't load listings. Please try again.");
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -74,6 +77,21 @@ export default function Home() {
       {loading ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        </div>
+      ) : error ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <AlertCircle className="w-10 h-10 text-destructive/60 mb-3" />
+          <p className="font-medium text-muted-foreground">Couldn't load listings</p>
+          <p className="text-sm text-muted-foreground/70 mt-1 mb-4">
+            Your connection may have dropped. Try again.
+          </p>
+          <button
+            onClick={loadProducts}
+            className="inline-flex items-center gap-2 px-4 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Retry
+          </button>
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">

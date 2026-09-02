@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Camera, Loader2, PoundSterling, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import { withTimeout } from "@/lib/withTimeout";
 
 const CATEGORIES = [
   "Electronics", "Fashion", "Home & Garden", "Sports", "Toys",
@@ -46,9 +47,19 @@ export default function Sell() {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setImageUrl(file_url);
-    setUploading(false);
+    try {
+      const { file_url } = await withTimeout(
+        base44.integrations.Core.UploadFile({ file }),
+        30000,
+        "Uploading image"
+      );
+      setImageUrl(file_url);
+    } catch (err) {
+      console.error("Image upload failed", err);
+      toast.error("Image upload failed. Please try again.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -77,22 +88,33 @@ export default function Sell() {
 
     setLoading(true);
     try {
-      const user = await base44.auth.me();
-      await base44.entities.Product.create({
-        title: form.title.trim(),
-        description: form.description.trim(),
-        price: parseFloat(form.price),
-        category: form.category,
-        condition: form.condition,
-        fulfilment_method: "Tracked UK Delivery",
-        estimated_delivery: form.estimated_delivery || null,
-        postcode: form.postcode.trim().toUpperCase(),
-        image_url: imageUrl,
-        seller_email: user.email,
-        seller_name: user.full_name || user.email,
-        status: "active",
-      });
+      const user = await withTimeout(base44.auth.me(), 15000, "Verifying account");
+      await withTimeout(
+        base44.entities.Product.create({
+          title: form.title.trim(),
+          description: form.description.trim(),
+          price: parseFloat(form.price),
+          category: form.category,
+          condition: form.condition,
+          fulfilment_method: "Tracked UK Delivery",
+          estimated_delivery: form.estimated_delivery || null,
+          postcode: form.postcode.trim().toUpperCase(),
+          image_url: imageUrl,
+          seller_email: user.email,
+          seller_name: user.full_name || user.email,
+          status: "active",
+        }),
+        15000,
+        "Publishing listing"
+      );
       setSuccess(true);
+    } catch (err) {
+      console.error("Failed to create listing", err);
+      if (err?.status === 401 || err?.status === 403) {
+        toast.error("Your session expired. Please sign in again.");
+      } else {
+        toast.error("Couldn't post your listing. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

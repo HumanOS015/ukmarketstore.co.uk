@@ -3,14 +3,18 @@ import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, User, Mail, LogOut, Plus, Edit, Trash2 } from "lucide-react";
+import { Loader2, User, Mail, LogOut, Plus, Trash2, AlertCircle, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/lib/AuthContext";
+import { withTimeout } from "@/lib/withTimeout";
 import ProductCard from "../components/ProductCard";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
   const [myListings, setMyListings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const { navigateToLogin } = useAuth();
 
   useEffect(() => {
     loadProfile();
@@ -18,18 +22,24 @@ export default function Profile() {
 
   const loadProfile = async () => {
     setLoading(true);
+    setError(false);
     try {
-      const me = await base44.auth.me();
+      const me = await withTimeout(base44.auth.me(), 15000, "Loading profile");
       setUser(me);
-      const listings = await base44.entities.Product.filter(
-        { seller_email: me.email },
-        "-created_date",
-        50
+      const listings = await withTimeout(
+        base44.entities.Product.filter({ seller_email: me.email }, "-created_date", 50),
+        15000,
+        "Loading listings"
       );
       setMyListings(listings);
     } catch (err) {
       console.error("Failed to load profile", err);
-      toast.error("Couldn't load your profile. Please try again.");
+      if (err?.status === 401 || err?.status === 403) {
+        // Session expired — send the user back to sign in.
+        navigateToLogin();
+        return;
+      }
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -45,6 +55,25 @@ export default function Profile() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-center">
+        <AlertCircle className="w-10 h-10 text-destructive/60 mx-auto mb-3" />
+        <p className="font-medium text-muted-foreground">Couldn't load your profile</p>
+        <p className="text-sm text-muted-foreground/70 mt-1 mb-4">
+          Your connection may have dropped. Try again.
+        </p>
+        <button
+          onClick={loadProfile}
+          className="inline-flex items-center gap-2 px-4 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Retry
+        </button>
       </div>
     );
   }
