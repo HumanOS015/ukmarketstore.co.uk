@@ -14,6 +14,8 @@ import Profile from './pages/Profile';
 import BuyerProtection from './pages/BuyerProtection';
 import TermsAndConditions from './pages/TermsAndConditions';
 import SellerDashboard from './pages/SellerDashboard';
+import About from './pages/About';
+import Contact from './pages/Contact';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -50,6 +52,8 @@ const AuthenticatedApp = () => {
         <Route path="/buyer-protection" element={<BuyerProtection />} />
         <Route path="/terms" element={<TermsAndConditions />} />
         <Route path="/seller-dashboard" element={<SellerDashboard />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>
     </Routes>

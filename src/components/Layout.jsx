@@ -46,6 +46,19 @@ export default function Layout() {
         <Outlet />
       </main>
 
+      {/* Footer */}
+      <footer className="border-t border-border bg-card/50">
+        <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} UKMarket. All rights reserved.</p>
+          <div className="flex items-center gap-5">
+            <Link to="/about" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">About</Link>
+            <Link to="/contact" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Contact</Link>
+            <Link to="/buyer-protection" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Buyer Protection</Link>
+            <Link to="/terms" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Terms</Link>
+          </div>
+        </div>
+      </footer>
+
       {/* Bottom Nav — always fixed */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-t border-border">
         <div className="flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
