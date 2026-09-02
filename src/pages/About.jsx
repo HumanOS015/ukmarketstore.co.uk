@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, Shield, Truck, Users, Store } from "lucide-react";
+import { ArrowLeft, Shield, Truck, Store } from "lucide-react";
 
 export default function About() {
   return (
