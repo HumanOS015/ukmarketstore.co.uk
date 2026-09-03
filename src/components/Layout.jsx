@@ -20,7 +20,7 @@ export default function Layout() {
             <img
               src="https://media.base44.com/images/public/69cdac0e3dd4898d79118860/c6474a8ff_no_change.jpg"
               alt="UK logo"
-              className="w-8 h-8 rounded-lg object-cover"
+              className="w-10 h-10 rounded-lg object-contain bg-white p-0.5"
             />
             <span className="font-bold text-lg tracking-tight">UKMarketStore</span>
           </Link>
