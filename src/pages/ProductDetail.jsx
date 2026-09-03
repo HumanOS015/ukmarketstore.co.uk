@@ -94,12 +94,6 @@ export default function ProductDetail() {
         "Processing payment"
       );
 
-      await withTimeout(
-        base44.entities.Product.update(product.id, { status: "sold" }),
-        15000,
-        "Updating listing"
-      );
-
       toast.success("Purchase successful! The seller has been notified.");
       setBuyDialogOpen(false);
       navigate("/orders");

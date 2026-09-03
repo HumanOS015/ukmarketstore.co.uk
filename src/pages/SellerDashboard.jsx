@@ -61,7 +61,7 @@ export default function SellerDashboard() {
   const openTracking = (order) => {
     setTrackingNumber(order.tracking_number || "");
     setCarrier("Royal Mail");
-    setTrackingModal({ orderId: order.id, productTitle: order.product_title });
+    setTrackingModal({ orderId: order.id, productTitle: order.product_title, productId: order.product_id });
   };
 
   const saveTracking = async () => {
@@ -79,6 +79,14 @@ export default function SellerDashboard() {
         15000,
         "Saving tracking"
       );
+      // Mark the listing as sold — the seller owns the product, so RLS allows this
+      if (trackingModal.productId) {
+        try {
+          await base44.entities.Product.update(trackingModal.productId, { status: "sold" });
+        } catch (e) {
+          console.error("Failed to mark product sold", e);
+        }
+      }
       setOrders((prev) =>
         prev.map((o) =>
           o.id === trackingModal.orderId
