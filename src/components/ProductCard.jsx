@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default function ProductCard({ product }) {
@@ -32,10 +31,6 @@ export default function ProductCard({ product }) {
         <p className="text-primary font-bold text-lg mt-0.5">
           £{product.price?.toFixed(2)}
         </p>
-        <div className="flex items-center gap-1 mt-1.5 text-muted-foreground">
-          <MapPin className="w-3 h-3" />
-          <span className="text-xs">{product.postcode}</span>
-        </div>
       </div>
     </Link>
   );

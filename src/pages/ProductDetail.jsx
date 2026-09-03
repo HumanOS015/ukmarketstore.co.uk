@@ -201,10 +201,6 @@ export default function ProductDetail() {
                 {product.condition}
               </Badge>
             )}
-            <Badge variant="outline" className="gap-1">
-              <MapPin className="w-3 h-3" />
-              {product.postcode}
-            </Badge>
           </div>
         </div>
 
