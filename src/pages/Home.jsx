@@ -3,7 +3,6 @@ import { base44 } from "@/api/base44Client";
 import ProductCard from "../components/ProductCard";
 import SearchBar from "../components/SearchBar";
 import { Loader2, PackageOpen, AlertCircle, RefreshCw } from "lucide-react";
-import { toast } from "sonner";
 import { withTimeout } from "@/lib/withTimeout";
 
 export default function Home() {

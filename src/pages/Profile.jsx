@@ -46,9 +46,14 @@ export default function Profile() {
   };
 
   const handleDelete = async (productId) => {
-    await base44.entities.Product.update(productId, { status: "removed" });
-    setMyListings((prev) => prev.filter((p) => p.id !== productId));
-    toast.success("Listing removed");
+    try {
+      await base44.entities.Product.update(productId, { status: "removed" });
+      setMyListings((prev) => prev.filter((p) => p.id !== productId));
+      toast.success("Listing removed");
+    } catch (err) {
+      console.error("Failed to remove listing", err);
+      toast.error("Couldn't remove the listing. Please try again.");
+    }
   };
 
   if (loading) {

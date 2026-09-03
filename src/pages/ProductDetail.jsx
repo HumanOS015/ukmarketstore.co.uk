@@ -63,6 +63,11 @@ export default function ProductDetail() {
   };
 
   const handleBuyNow = async () => {
+    if (!currentUser) {
+      toast.error("Please sign in to complete your purchase");
+      base44.auth.redirectToLogin(window.location.pathname);
+      return;
+    }
     if (!address.trim()) {
       toast.error("Please enter a delivery address");
       return;
