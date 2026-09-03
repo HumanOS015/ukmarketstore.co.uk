@@ -20,7 +20,7 @@ export default function Layout() {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-sm">UK</span>
             </div>
-            <span className="font-bold text-lg tracking-tight">UKMarket</span>
+            <span className="font-bold text-lg tracking-tight">UKMarketStore</span>
           </Link>
           <div className="flex items-center gap-4">
             <Link
