@@ -17,9 +17,11 @@ export default function Layout() {
       <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border">
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">UK</span>
-            </div>
+            <img
+              src="https://media.base44.com/images/public/69cdac0e3dd4898d79118860/c6474a8ff_no_change.jpg"
+              alt="UK logo"
+              className="w-8 h-8 rounded-lg object-cover"
+            />
             <span className="font-bold text-lg tracking-tight">UKMarketStore</span>
           </Link>
           <div className="flex items-center gap-4">
