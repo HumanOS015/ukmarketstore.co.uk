@@ -25,7 +25,7 @@ export default function Contact() {
     try {
       await withTimeout(
         base44.integrations.Core.SendEmail({
-          to: "support@ukmarket.base44.app",
+          to: "ukmarketstore@hotmail.com",
           subject: `Contact form message from ${form.name}`,
           body: `From: ${form.name} <${form.email}>\n\n${form.message}`,
         }),
@@ -63,7 +63,7 @@ export default function Contact() {
           </div>
           <div>
             <p className="text-sm font-medium">Email us directly</p>
-            <p className="text-xs text-muted-foreground">support@ukmarket.base44.app</p>
+            <p className="text-xs text-muted-foreground">ukmarketstore@hotmail.com</p>
           </div>
         </div>
       </div>
