@@ -23,6 +23,7 @@ import {
   Tag,
   AlertCircle,
   RefreshCw,
+  Mail,
 } from "lucide-react";
 import { toast } from "sonner";
 import moment from "moment";
@@ -231,18 +232,31 @@ export default function ProductDetail() {
           </div>
         </div>
 
-        {/* Seller info */}
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-            <User className="w-5 h-5 text-primary" />
+        {/* Listing info */}
+        <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-muted/50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Clock className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-medium">Marketplace Seller</p>
+              <p className="text-xs text-muted-foreground">
+                Listed {moment(product.created_date).fromNow()}
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-medium">{product.seller_name || "Seller"}</p>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              Listed {moment(product.created_date).fromNow()}
-            </p>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-xl gap-1.5"
+            onClick={() => {
+              const subject = encodeURIComponent(`Question about: ${product.title}`);
+              window.location.href = `mailto:${product.seller_email}?subject=${subject}`;
+            }}
+          >
+            <Mail className="w-4 h-4" />
+            Contact
+          </Button>
         </div>
 
         {/* Description */}
