@@ -40,6 +40,10 @@ export default function ProductDetail() {
   const [currentUser, setCurrentUser] = useState(null);
   const [error, setError] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactMsg, setContactMsg] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -109,6 +113,39 @@ export default function ProductDetail() {
       }
     } finally {
       setPurchasing(false);
+    }
+  };
+
+  const handleContactSeller = async () => {
+    const fromEmail = currentUser?.email || contactEmail.trim();
+    if (!fromEmail) {
+      toast.error("Please enter your email so the seller can reply");
+      return;
+    }
+    if (!contactMsg.trim()) {
+      toast.error("Please enter a message");
+      return;
+    }
+    setSending(true);
+    try {
+      await withTimeout(
+        base44.integrations.Core.SendEmail({
+          to: product.seller_email,
+          subject: `Question about: ${product.title}`,
+          body: `A buyer is asking about your listing "${product.title}" (£${product.price?.toFixed(2)}).\n\nFrom: ${fromEmail}\n\nMessage:\n${contactMsg.trim()}\n\n— Sent via UKMarketStore`,
+        }),
+        15000,
+        "Sending message"
+      );
+      toast.success("Message sent! The seller will reply to your email.");
+      setContactOpen(false);
+      setContactMsg("");
+      setContactEmail("");
+    } catch (err) {
+      console.error("Contact seller failed", err);
+      toast.error("Couldn't send your message. Please try again.");
+    } finally {
+      setSending(false);
     }
   };
 
@@ -245,13 +282,15 @@ export default function ProductDetail() {
               </p>
             </div>
           </div>
-          <a
-            href={`mailto:${product.seller_email}?subject=${encodeURIComponent(`Question about: ${product.title}`)}`}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground h-8 px-3 text-xs font-medium transition-colors"
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-xl gap-1.5"
+            onClick={() => setContactOpen(true)}
           >
             <Mail className="w-4 h-4" />
             Contact
-          </a>
+          </Button>
         </div>
 
         {/* Description */}
@@ -295,6 +334,48 @@ export default function ProductDetail() {
           </p>
         )}
       </div>
+
+      {/* Contact Seller Dialog */}
+      <Dialog open={contactOpen} onOpenChange={setContactOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Contact seller</DialogTitle>
+            <DialogDescription>
+              Ask a question about "{product.title}". Your message is sent to the seller by email.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            {!currentUser?.email && (
+              <div>
+                <Label className="text-sm font-medium">Your email</Label>
+                <Input
+                  type="email"
+                  placeholder="your@email.com"
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                  className="mt-1.5 rounded-xl"
+                />
+              </div>
+            )}
+            <div>
+              <Label className="text-sm font-medium">Message</Label>
+              <Textarea
+                placeholder="Hi, I'm interested in this item..."
+                value={contactMsg}
+                onChange={(e) => setContactMsg(e.target.value)}
+                className="mt-1.5 rounded-xl min-h-[120px]"
+              />
+            </div>
+            <Button
+              onClick={handleContactSeller}
+              disabled={sending}
+              className="w-full h-12 rounded-xl font-semibold"
+            >
+              {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : "Send message"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Buy Dialog */}
       <Dialog open={buyDialogOpen} onOpenChange={setBuyDialogOpen}>
