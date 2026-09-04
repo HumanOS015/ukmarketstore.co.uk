@@ -2,11 +2,11 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard } from "lucide-react";
 
 const navItems = [
-  { to: "/", icon: Home, label: "Home" },
-  { to: "/orders", icon: ShoppingBag, label: "Orders" },
-  { to: "/seller-dashboard", icon: LayoutDashboard, label: "Selling" },
-  { to: "/profile", icon: User, label: "Profile" },
-];
+{ to: "/", icon: Home, label: "Home" },
+{ to: "/orders", icon: ShoppingBag, label: "Orders" },
+{ to: "/seller-dashboard", icon: LayoutDashboard, label: "Selling" },
+{ to: "/profile", icon: User, label: "Profile" }];
+
 
 export default function Layout() {
   const location = useLocation();
@@ -21,22 +21,22 @@ export default function Layout() {
               src="https://media.base44.com/images/public/69cdac0e3dd4898d79118860/066b2295d_Copilot_20260902_211200.png"
               alt="UKMarketStore logo"
               className="w-10 h-10 rounded-lg object-contain"
-              fetchpriority="high"
-            />
+              fetchpriority="high" />
+            
             <span className="font-bold text-lg tracking-tight">UKMarketStore</span>
           </Link>
           <div className="flex items-center gap-4">
             <Link
               to="/buyer-protection"
-              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
-            >
+              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors mx-1">
+              
               <Shield className="w-3.5 h-3.5" />
               Buyer Protection
             </Link>
             <Link
               to="/terms"
-              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
-            >
+              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors">
+              
               <FileText className="w-3.5 h-3.5" />
               Terms
             </Link>
@@ -73,20 +73,20 @@ export default function Layout() {
                 key={to}
                 to={to}
                 className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all ${
-                  active ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
+                active ? "text-primary" : "text-muted-foreground hover:text-foreground"}`
+                }>
+                
                 <Icon className={`w-5 h-5 ${active ? "stroke-[2.5]" : ""}`} />
                 <span className="text-[10px] font-medium">{label}</span>
-              </Link>
-            );
+              </Link>);
+
           })}
 
           {/* Centre Sell Button */}
           <Link to="/sell" className="flex flex-col items-center gap-1 -mt-5">
             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-transform active:scale-95 ${
-              location.pathname === "/sell" ? "bg-primary/90" : "bg-primary"
-            }`}>
+            location.pathname === "/sell" ? "bg-primary/90" : "bg-primary"}`
+            }>
               <PlusCircle className="w-7 h-7 text-white stroke-[2]" />
             </div>
             <span className="text-[10px] font-medium text-primary">Sell</span>
@@ -100,17 +100,17 @@ export default function Layout() {
                 key={to}
                 to={to}
                 className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all ${
-                  active ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
+                active ? "text-primary" : "text-muted-foreground hover:text-foreground"}`
+                }>
+                
                 <Icon className={`w-5 h-5 ${active ? "stroke-[2.5]" : ""}`} />
                 <span className="text-[10px] font-medium">{label}</span>
-              </Link>
-            );
+              </Link>);
+
           })}
         </div>
       </nav>
 
-    </div>
-  );
+    </div>);
+
 }
