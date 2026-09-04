@@ -245,18 +245,13 @@ export default function ProductDetail() {
               </p>
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="rounded-xl gap-1.5"
-            onClick={() => {
-              const subject = encodeURIComponent(`Question about: ${product.title}`);
-              window.location.href = `mailto:${product.seller_email}?subject=${subject}`;
-            }}
+          <a
+            href={`mailto:${product.seller_email}?subject=${encodeURIComponent(`Question about: ${product.title}`)}`}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground h-8 px-3 text-xs font-medium transition-colors"
           >
             <Mail className="w-4 h-4" />
             Contact
-          </Button>
+          </a>
         </div>
 
         {/* Description */}
