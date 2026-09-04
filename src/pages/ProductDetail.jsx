@@ -38,6 +38,7 @@ export default function ProductDetail() {
   const [address, setAddress] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
   const [error, setError] = useState(false);
+  const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
     loadData();
@@ -46,6 +47,7 @@ export default function ProductDetail() {
   const loadData = async () => {
     setLoading(true);
     setError(false);
+    setActiveImage(0);
     try {
       const [productData, user] = await Promise.all([
         withTimeout(base44.entities.Product.filter({ id }, "-created_date", 1), 15000, "Loading listing"),
@@ -149,17 +151,19 @@ export default function ProductDetail() {
 
   const isOwner = currentUser?.email === product.seller_email;
   const isSold = product.status === "sold";
+  const allImages = [product.image_url, ...(product.additional_images || [])].filter(Boolean);
 
   return (
     <div className="max-w-3xl mx-auto md:pl-20">
-      {/* Image */}
+      {/* Image Gallery */}
       <div className="relative aspect-square md:aspect-video md:rounded-2xl overflow-hidden bg-muted">
         <img
-          src={product.image_url}
+          src={allImages[activeImage]}
           alt={product.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-opacity duration-200"
           fetchpriority="high"
           loading="eager"
+          key={activeImage}
         />
         <button
           onClick={() => navigate(-1)}
@@ -167,12 +171,42 @@ export default function ProductDetail() {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
+        {allImages.length > 1 && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+            {allImages.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveImage(i)}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === activeImage ? "w-6 bg-white" : "w-1.5 bg-white/50"
+                }`}
+              />
+            ))}
+          </div>
+        )}
         {isSold && (
           <div className="absolute inset-0 bg-foreground/50 flex items-center justify-center">
             <span className="text-white font-bold text-3xl tracking-wider">SOLD</span>
           </div>
         )}
       </div>
+
+      {/* Thumbnail strip */}
+      {allImages.length > 1 && (
+        <div className="flex gap-2 px-4 pt-3 overflow-x-auto">
+          {allImages.map((url, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveImage(i)}
+              className={`w-16 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-colors ${
+                i === activeImage ? "border-primary" : "border-border"
+              }`}
+            >
+              <img src={url} alt={`View ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Details */}
       <div className="px-4 py-5 space-y-5">

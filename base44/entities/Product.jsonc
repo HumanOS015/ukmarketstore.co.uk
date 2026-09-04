@@ -38,7 +38,14 @@
     },
     "image_url": {
       "type": "string",
-      "description": "Product image URL"
+      "description": "Main product image URL"
+    },
+    "additional_images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Extra product image URLs (max 4)"
     },
     "seller_email": {
       "type": "string",

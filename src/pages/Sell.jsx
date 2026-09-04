@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Camera, Loader2, PoundSterling, CheckCircle2 } from "lucide-react";
+import { Camera, Loader2, PoundSterling, CheckCircle2, X } from "lucide-react";
 import { toast } from "sonner";
 import { withTimeout } from "@/lib/withTimeout";
 
@@ -32,6 +32,7 @@ export default function Sell() {
   const [success, setSuccess] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
+  const [additionalImages, setAdditionalImages] = useState([]);
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -46,19 +47,52 @@ export default function Sell() {
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploading(true);
-    try {
-      const { file_url } = await withTimeout(
-        base44.integrations.Core.UploadFile({ file }),
-        30000,
-        "Uploading image"
-      );
-      setImageUrl(file_url);
-    } catch (err) {
-      console.error("Image upload failed", err);
-      toast.error("Image upload failed. Please try again.");
-    } finally {
-      setUploading(false);
+    if (!imageUrl) {
+      setUploading(true);
+      try {
+        const { file_url } = await withTimeout(
+          base44.integrations.Core.UploadFile({ file }),
+          30000,
+          "Uploading image"
+        );
+        setImageUrl(file_url);
+      } catch (err) {
+        console.error("Image upload failed", err);
+        toast.error("Image upload failed. Please try again.");
+      } finally {
+        setUploading(false);
+      }
+    } else if (additionalImages.length < 4) {
+      setUploading(true);
+      try {
+        const { file_url } = await withTimeout(
+          base44.integrations.Core.UploadFile({ file }),
+          30000,
+          "Uploading image"
+        );
+        setAdditionalImages((prev) => [...prev, file_url]);
+      } catch (err) {
+        console.error("Image upload failed", err);
+        toast.error("Image upload failed. Please try again.");
+      } finally {
+        setUploading(false);
+      }
+    } else {
+      toast.error("You can upload up to 5 images");
+    }
+    e.target.value = "";
+  };
+
+  const removeAdditionalImage = (index) => {
+    setAdditionalImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeMainImage = () => {
+    if (additionalImages.length > 0) {
+      setImageUrl(additionalImages[0]);
+      setAdditionalImages((prev) => prev.slice(1));
+    } else {
+      setImageUrl("");
     }
   };
 
@@ -67,6 +101,10 @@ export default function Sell() {
     
     if (!imageUrl) {
       toast.error("Please upload a product image");
+      return;
+    }
+    if (additionalImages.length > 4) {
+      toast.error("You can upload up to 5 images total");
       return;
     }
     if (!UK_POSTCODE_REGEX.test(form.postcode.trim())) {
@@ -100,6 +138,7 @@ export default function Sell() {
           estimated_delivery: form.estimated_delivery || null,
           postcode: form.postcode.trim().toUpperCase(),
           image_url: imageUrl,
+          additional_images: additionalImages,
           seller_email: user.email,
           seller_name: user.full_name || user.email,
           status: "active",
@@ -131,7 +170,7 @@ export default function Sell() {
         <h2 className="text-2xl font-bold mb-2">Ad Posted!</h2>
         <p className="text-muted-foreground mb-6">Your listing is now live and visible to buyers across the UK.</p>
         <div className="flex gap-3">
-          <Button variant="outline" className="rounded-xl" onClick={() => { setSuccess(false); setForm({ title: "", description: "", price: "", category: "", condition: "", postcode: "", fulfilment_method: "Tracked UK Delivery", estimated_delivery: "" }); setImageUrl(""); }}>
+          <Button variant="outline" className="rounded-xl" onClick={() => { setSuccess(false); setForm({ title: "", description: "", price: "", category: "", condition: "", postcode: "", fulfilment_method: "Tracked UK Delivery", estimated_delivery: "" }); setImageUrl(""); setAdditionalImages([]); }}>
             Post Another
           </Button>
           <Button className="rounded-xl" onClick={() => navigate("/")}>
@@ -152,31 +191,66 @@ export default function Sell() {
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Image Upload */}
         <div>
-          <Label className="text-sm font-medium mb-2 block">Product Image</Label>
-          <label className="cursor-pointer block">
-            {imageUrl ? (
-              <div className="relative aspect-square rounded-2xl overflow-hidden bg-muted border-2 border-dashed border-border hover:border-primary/50 transition-colors">
-                <img src={imageUrl} alt="Preview" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-foreground/0 hover:bg-foreground/10 transition-colors flex items-center justify-center">
-                  <span className="text-white text-sm font-medium opacity-0 hover:opacity-100 transition-opacity">
-                    Change Image
-                  </span>
+          <Label className="text-sm font-medium mb-2 block">
+            Product Images <span className="text-muted-foreground font-normal">(up to 5)</span>
+          </Label>
+
+          {/* Main image */}
+          {imageUrl ? (
+            <div className="relative aspect-square rounded-2xl overflow-hidden bg-muted border border-border mb-3">
+              <img src={imageUrl} alt="Main image" className="w-full h-full object-cover" />
+              <div className="absolute top-2 left-2">
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary text-primary-foreground">Main</span>
+              </div>
+              <button
+                type="button"
+                onClick={removeMainImage}
+                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-foreground/70 text-white flex items-center justify-center hover:bg-foreground transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <label className="cursor-pointer block aspect-square rounded-2xl border-2 border-dashed border-border hover:border-primary/50 transition-colors flex flex-col items-center justify-center bg-muted/50">
+              {uploading ? (
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              ) : (
+                <>
+                  <Camera className="w-10 h-10 text-muted-foreground/50 mb-2" />
+                  <span className="text-sm text-muted-foreground">Tap to upload main image</span>
+                </>
+              )}
+              <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+            </label>
+          )}
+
+          {/* Additional image thumbnails */}
+          {imageUrl && (
+            <div className="flex gap-2 flex-wrap">
+              {additionalImages.map((url, i) => (
+                <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden bg-muted border border-border shrink-0">
+                  <img src={url} alt={`Extra ${i + 1}`} className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeAdditionalImage(i)}
+                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-foreground/70 text-white flex items-center justify-center hover:bg-foreground transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
                 </div>
-              </div>
-            ) : (
-              <div className="aspect-square rounded-2xl border-2 border-dashed border-border hover:border-primary/50 transition-colors flex flex-col items-center justify-center bg-muted/50">
-                {uploading ? (
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                ) : (
-                  <>
-                    <Camera className="w-10 h-10 text-muted-foreground/50 mb-2" />
-                    <span className="text-sm text-muted-foreground">Tap to upload</span>
-                  </>
-                )}
-              </div>
-            )}
-            <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-          </label>
+              ))}
+              {additionalImages.length < 4 && (
+                <label className="w-20 h-20 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors flex items-center justify-center bg-muted/50 shrink-0 cursor-pointer">
+                  {uploading ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                  ) : (
+                    <Camera className="w-5 h-5 text-muted-foreground/50" />
+                  )}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                </label>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Title */}
