@@ -23,7 +23,7 @@ export default function Layout() {
               className="w-10 h-10 rounded-lg object-contain"
               fetchpriority="high" />
             
-            <span className="font-bold text-lg tracking-tight">UKMarketStore</span>
+            <span className="font-bold tracking-tight text-base">UKMarketStore</span>
           </Link>
           <div className="flex items-center gap-4">
             <Link
