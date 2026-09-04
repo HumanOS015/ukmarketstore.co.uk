@@ -37,7 +37,7 @@ export default function Layout() {
               to="/terms"
               className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors">
               
-              <FileText className="w-3.5 h-3.5" />
+              <FileText className="w-3.5 h-3.5 text-[hsl(var(--primary))]" />
               Terms
             </Link>
           </div>
