@@ -18,9 +18,10 @@ export default function Layout() {
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <img
-              src="https://media.base44.com/images/public/69cdac0e3dd4898d79118860/c6474a8ff_no_change.jpg"
-              alt="UK logo"
-              className="w-10 h-10 rounded-lg object-contain bg-white p-0.5"
+              src="https://media.base44.com/images/public/69cdac0e3dd4898d79118860/066b2295d_Copilot_20260902_211200.png"
+              alt="UKMarketStore logo"
+              className="w-10 h-10 rounded-lg object-contain"
+              fetchpriority="high"
             />
             <span className="font-bold text-lg tracking-tight">UKMarketStore</span>
           </Link>
