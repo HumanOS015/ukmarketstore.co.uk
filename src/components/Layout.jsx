@@ -57,6 +57,7 @@ export default function Layout() {
             <Link to="/about" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">About</Link>
             <Link to="/contact" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Contact</Link>
             <Link to="/buyer-protection" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Buyer Protection</Link>
+            <Link to="/connect" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Connect AI</Link>
             <Link to="/terms" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Terms</Link>
           </div>
         </div>
