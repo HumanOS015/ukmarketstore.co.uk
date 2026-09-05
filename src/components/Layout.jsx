@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard, Sparkles } from "lucide-react";
+import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard } from "lucide-react";
 
 const navItems = [
 { to: "/", icon: Home, label: "Home" },
@@ -32,13 +32,6 @@ export default function Layout() {
               
               <Shield className="w-3.5 h-3.5 text-[hsl(var(--chart-3))]" />
               Buyer Protection
-            </Link>
-            <Link
-              to="/connect"
-              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors">
-
-              <Sparkles className="w-3.5 h-3.5 text-[hsl(var(--primary))]" />
-              Connect AI
             </Link>
             <Link
               to="/terms"

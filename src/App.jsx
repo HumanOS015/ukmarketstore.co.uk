@@ -18,7 +18,6 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import BuyerProtectionAssistant from './pages/BuyerProtectionAssistant';
 import OAuthConsent from './pages/OAuthConsent';
-import Connect from './pages/Connect';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -69,7 +68,6 @@ const AuthenticatedApp = () => {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/buyer-protection-assistant" element={<BuyerProtectionAssistant />} />
-        <Route path="/connect" element={<Connect />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>
     </Routes>
