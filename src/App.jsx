@@ -17,9 +17,21 @@ import SellerDashboard from './pages/SellerDashboard';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import BuyerProtectionAssistant from './pages/BuyerProtectionAssistant';
+import OAuthConsent from './pages/OAuthConsent';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+
+  // The OAuth consent page handles its own signed-out redirect (preserving the
+  // MCP ctx handle), so it must render outside the auth gate below — a guard
+  // would strip the ctx context before the page can carry it into returnTo.
+  if (window.location.pathname === "/oauth/consent") {
+    return (
+      <Routes>
+        <Route path="/oauth/consent" element={<OAuthConsent />} />
+      </Routes>
+    );
+  }
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
