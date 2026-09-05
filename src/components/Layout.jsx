@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard } from "lucide-react";
+import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard, Sparkles } from "lucide-react";
 
 const navItems = [
 { to: "/", icon: Home, label: "Home" },
@@ -34,9 +34,16 @@ export default function Layout() {
               Buyer Protection
             </Link>
             <Link
+              to="/connect"
+              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors">
+
+              <Sparkles className="w-3.5 h-3.5 text-[hsl(var(--primary))]" />
+              Connect AI
+            </Link>
+            <Link
               to="/terms"
               className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors">
-              
+
               <FileText className="w-3.5 h-3.5 text-[hsl(var(--primary))]" />
               Terms
             </Link>
@@ -57,7 +64,6 @@ export default function Layout() {
             <Link to="/about" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">About</Link>
             <Link to="/contact" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Contact</Link>
             <Link to="/buyer-protection" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Buyer Protection</Link>
-            <Link to="/connect" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Connect AI</Link>
             <Link to="/terms" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Terms</Link>
           </div>
         </div>
