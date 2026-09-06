@@ -17,7 +17,7 @@ export default function Layout() {
       <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border">
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <img src="https://media.base44.com/images/public/69cdac0e3dd4898d79118860/defa6aaa3_no_change__2_.jpg"
+            <img src="https://media.base44.com/images/public/69cdac0e3dd4898d79118860/ad38efa69_no_change__2_.png"
 
             alt="UKMarketStore logo"
             className="w-10 h-10 rounded-lg object-contain"
