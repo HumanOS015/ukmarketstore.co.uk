@@ -28,7 +28,7 @@ export default function Layout() {
           <div className="flex items-center gap-4">
             <Link
               to="/buyer-protection"
-              className="flex items-center gap-1.5 text-xs font-medium hover:text-primary transition-colors mx-1 text-[hsl(var(--muted-foreground))] pl-32">
+              className="flex items-center gap-1.5 text-xs font-medium hover:text-primary transition-colors mx-1 text-[hsl(var(--muted-foreground))] pl-20">
               
               <Shield className="w-3.5 h-3.5 text-[hsl(var(--chart-3))]" />
               Buyer Protection
