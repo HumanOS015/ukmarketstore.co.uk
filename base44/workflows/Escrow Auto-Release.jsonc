@@ -17,13 +17,13 @@
           "then": "end",
           "x-base44": {
             "title": "Release eligible escrows",
-            "description": "Shipped 14+ days, or delivered pending payout"
+            "description": "Shipped 7+ days, or delivered pending payout"
           }
         }
       }
     ]
   },
-  "description": "Releases escrow funds to sellers 14 days after an order ships (if the buyer hasn't confirmed delivery), and retries payouts for delivered orders where the earlier transfer failed",
+  "description": "Releases escrow funds to sellers 7 days after an order ships (if the buyer hasn't confirmed delivery), and retries payouts for delivered orders where the earlier transfer failed",
   "trigger": {
     "condition": null,
     "config": {

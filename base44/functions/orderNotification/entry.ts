@@ -77,7 +77,7 @@ export default async function(req) {
       await send(
         order.seller_email,
         `New order received — ${title}`,
-        `Hi,\n\nYou have a new order on ${BRAND}.\n\nItem: ${title}\nSale price: ${price}\n\nPlease log in to your Seller Dashboard to add a tracking number and dispatch the item within 3 business days.\n\nYour payment is held safely in escrow and will be released once the buyer confirms delivery (or automatically after 14 days).\n\n${BRAND}`
+        `Hi,\n\nYou have a new order on ${BRAND}.\n\nItem: ${title}\nSale price: ${price}\n\nPlease log in to your Seller Dashboard to add a tracking number and dispatch the item within 3 business days.\n\nYour payment is held safely in escrow and will be released once the buyer confirms delivery (or automatically after 7 days).\n\n${BRAND}`
       );
       await send(
         order.buyer_email,

@@ -4,7 +4,7 @@ import { transferToSeller } from "../../shared/escrow.ts";
 
 // Runs daily via the "Escrow Auto-Release" workflow.
 // Releases funds for:
-//   1. Orders still "shipped" after 14 days (buyer never confirmed delivery)
+//   1. Orders still "shipped" after 7 days (buyer never confirmed delivery)
 //   2. Orders "delivered" where the buyer confirmed but the earlier transfer failed
 //      (e.g. platform balance hadn't settled) — retries the payout.
 // Security: this is an admin-only scheduled task. Accepted callers:
@@ -28,12 +28,12 @@ export default async function(req) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const fourteenDaysAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
+    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
     const shippedOrders = await base44.asServiceRole.entities.Order.filter({ status: "shipped" }, "-created_date", 100);
     const deliveredOrders = await base44.asServiceRole.entities.Order.filter({ status: "delivered" }, "-created_date", 100);
 
-    const eligibleShipped = shippedOrders.filter((o) => new Date(o.created_date).getTime() < fourteenDaysAgo);
+    const eligibleShipped = shippedOrders.filter((o) => new Date(o.created_date).getTime() < sevenDaysAgo);
     const toRelease = [...eligibleShipped, ...deliveredOrders];
 
     let released = 0;
