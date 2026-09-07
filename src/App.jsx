@@ -18,6 +18,9 @@ import SellerDashboard from './pages/SellerDashboard';
 import About from './pages/About';
 import BuyerProtectionAssistant from './pages/BuyerProtectionAssistant';
 import Admin from './pages/Admin';
+import Wishlist from './pages/Wishlist';
+import SellerStorefront from './pages/SellerStorefront';
+import { WishlistProvider } from '@/lib/WishlistContext';
 import OAuthConsent from './pages/OAuthConsent';
 
 const AuthenticatedApp = () => {
@@ -56,6 +59,7 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
+    <WishlistProvider>
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
@@ -70,9 +74,12 @@ const AuthenticatedApp = () => {
         <Route path="/about" element={<About />} />
         <Route path="/buyer-protection-assistant" element={<BuyerProtectionAssistant />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/seller/:email" element={<SellerStorefront />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>
     </Routes>
+    </WishlistProvider>
   );
 };
 

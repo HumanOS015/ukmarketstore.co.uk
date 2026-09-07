@@ -3,7 +3,15 @@ import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Loader2, Package, ShoppingBag, ArrowRight, LifeBuoy, AlertCircle, RefreshCw, CheckCircle } from "lucide-react";
+import { Loader2, Package, ShoppingBag, ArrowRight, LifeBuoy, AlertCircle, RefreshCw, CheckCircle, Star } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import moment from "moment";
 import { withTimeout } from "@/lib/withTimeout";
 import { toast } from "sonner";
@@ -18,7 +26,7 @@ const STATUS_COLORS = {
   disputed: "bg-red-100 text-red-800",
 };
 
-function OrderCard({ order, onConfirm, confirming }) {
+function OrderCard({ order, onConfirm, confirming, onReview, reviewed }) {
   return (
     <div>
       <Link
@@ -56,6 +64,21 @@ function OrderCard({ order, onConfirm, confirming }) {
           Confirm Delivery
         </button>
       )}
+      {["delivered", "completed"].includes(order.status) && onReview && !reviewed && (
+        <button
+          onClick={onReview}
+          className="w-full mt-2 h-10 rounded-xl border border-border text-sm font-medium flex items-center justify-center gap-2 hover:bg-muted transition-colors"
+        >
+          <Star className="w-4 h-4" />
+          Leave a Review
+        </button>
+      )}
+      {["delivered", "completed"].includes(order.status) && reviewed && (
+        <div className="w-full mt-2 h-10 rounded-xl bg-muted text-sm font-medium flex items-center justify-center gap-2 text-muted-foreground">
+          <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+          Reviewed
+        </div>
+      )}
     </div>
   );
 }
@@ -66,6 +89,11 @@ export default function Orders() {
   const [error, setError] = useState(false);
   const [user, setUser] = useState(null);
   const [confirmingId, setConfirmingId] = useState(null);
+  const [reviewOrder, setReviewOrder] = useState(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewedOrderIds, setReviewedOrderIds] = useState(new Set());
 
   useEffect(() => {
     loadOrders();
@@ -83,6 +111,8 @@ export default function Orders() {
         "Loading orders"
       );
       setOrders(allOrders);
+      const reviews = await base44.entities.Review.filter({ buyer_email: me.email }, "-created_date", 100).catch(() => []);
+      setReviewedOrderIds(new Set(reviews.map((r) => r.order_id)));
     } catch (err) {
       console.error("Failed to load orders", err);
       if (err?.status === 401 || err?.status === 403) {
@@ -109,6 +139,31 @@ export default function Orders() {
       toast.error("Couldn't confirm delivery. Please try again.");
     } finally {
       setConfirmingId(null);
+    }
+  };
+
+  const handleReview = async () => {
+    if (!reviewOrder) return;
+    setSubmittingReview(true);
+    try {
+      await base44.entities.Review.create({
+        order_id: reviewOrder.id,
+        product_id: reviewOrder.product_id,
+        seller_email: reviewOrder.seller_email,
+        buyer_email: user.email,
+        rating: reviewRating,
+        comment: reviewComment.trim(),
+      });
+      setReviewedOrderIds((prev) => new Set([...prev, reviewOrder.id]));
+      toast.success("Review submitted!");
+      setReviewOrder(null);
+      setReviewComment("");
+      setReviewRating(5);
+    } catch (err) {
+      console.error("Review failed", err);
+      toast.error("Couldn't submit review. Please try again.");
+    } finally {
+      setSubmittingReview(false);
     }
   };
 
@@ -180,6 +235,8 @@ export default function Orders() {
                 order={o}
                 onConfirm={() => handleConfirmDelivery(o.id)}
                 confirming={confirmingId === o.id}
+                onReview={() => { setReviewOrder(o); setReviewRating(5); setReviewComment(""); }}
+                reviewed={reviewedOrderIds.has(o.id)}
               />
             ))
           )}
@@ -193,6 +250,45 @@ export default function Orders() {
           )}
         </TabsContent>
       </Tabs>
+
+      <Dialog open={!!reviewOrder} onOpenChange={(open) => !open && setReviewOrder(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Leave a Review</DialogTitle>
+            <DialogDescription>
+              How was your experience with "{reviewOrder?.product_title}"?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center justify-center gap-2">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <button
+                  key={n}
+                  onClick={() => setReviewRating(n)}
+                  className="p-1"
+                >
+                  <Star
+                    className={`w-8 h-8 ${n <= reviewRating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`}
+                  />
+                </button>
+              ))}
+            </div>
+            <Textarea
+              placeholder="Share your experience (optional)..."
+              value={reviewComment}
+              onChange={(e) => setReviewComment(e.target.value)}
+              className="rounded-xl min-h-[100px]"
+            />
+            <button
+              onClick={handleReview}
+              disabled={submittingReview}
+              className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
+            >
+              {submittingReview ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit Review"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

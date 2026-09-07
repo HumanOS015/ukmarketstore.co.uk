@@ -12,6 +12,7 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All Categories");
   const [sortBy, setSortBy] = useState("newest");
+  const [visibleCount, setVisibleCount] = useState(20);
 
   useEffect(() => {
     loadProducts();
@@ -51,6 +52,12 @@ export default function Home() {
     if (sortBy === "price-high") return b.price - a.price;
     return new Date(b.created_date) - new Date(a.created_date);
   });
+
+  const visible = sorted.slice(0, visibleCount);
+
+  useEffect(() => {
+    setVisibleCount(20);
+  }, [search, category, sortBy]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:pl-20 py-4">
@@ -118,7 +125,7 @@ export default function Home() {
             Retry
           </button>
         </div>
-      ) : filtered.length === 0 ? (
+      ) : sorted.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <PackageOpen className="w-12 h-12 text-muted-foreground/40 mb-3" />
           <p className="font-medium text-muted-foreground">No listings found</p>
@@ -128,9 +135,19 @@ export default function Home() {
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
-          {sorted.map((product) => (
+          {visible.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
+          {visibleCount < sorted.length && (
+            <div className="col-span-full flex justify-center mt-4">
+              <button
+                onClick={() => setVisibleCount((c) => c + 20)}
+                className="px-6 py-2.5 rounded-xl bg-muted text-sm font-medium hover:bg-muted/80 transition-colors"
+              >
+                Load More
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

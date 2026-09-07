@@ -1,0 +1,29 @@
+{
+  "name": "Wishlist",
+  "type": "object",
+  "properties": {
+    "product_id": {
+      "type": "string",
+      "description": "Reference to the saved product"
+    },
+    "buyer_email": {
+      "type": "string",
+      "description": "Buyer email"
+    }
+  },
+  "required": [
+    "product_id",
+    "buyer_email"
+  ],
+  "rls": {
+    "create": {
+      "data.buyer_email": "{{user.email}}"
+    },
+    "read": {
+      "data.buyer_email": "{{user.email}}"
+    },
+    "delete": {
+      "data.buyer_email": "{{user.email}}"
+    }
+  }
+}

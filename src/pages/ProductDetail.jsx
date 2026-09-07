@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,8 +24,10 @@ import {
   RefreshCw,
   Truck,
   Share2,
+  Heart,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useWishlist } from "@/lib/WishlistContext";
 import moment from "moment";
 import { withTimeout } from "@/lib/withTimeout";
 import { formatDeliveryDate } from "@/lib/deliveryDate";
@@ -41,6 +43,7 @@ export default function ProductDetail() {
   const [currentUser, setCurrentUser] = useState(null);
   const [error, setError] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
+  const { isSaved, toggle } = useWishlist();
 
   useEffect(() => {
     loadData();
@@ -76,36 +79,28 @@ export default function ProductDetail() {
       return;
     }
     setPurchasing(true);
-    const price = product.price;
-    const commission = parseFloat((price * 0.1).toFixed(2));
-    const sellerPayout = parseFloat((price - commission).toFixed(2));
 
     try {
-      const newOrder = await withTimeout(
-        base44.entities.Order.create({
-          product_id: product.id,
-          product_title: product.title,
-          product_image: product.image_url,
-          price,
-          commission,
-          seller_payout: sellerPayout,
-          buyer_email: currentUser.email,
-          seller_email: product.seller_email,
-          status: "paid",
-          shipping_address: address.trim(),
+      await withTimeout(
+        base44.functions.invoke("completePurchase", {
+          productId: product.id,
+          shippingAddress: address.trim(),
         }),
         15000,
         "Processing payment"
       );
-
-      base44.functions.invoke("orderNotification", { orderId: newOrder.id, event: "placed" }).catch(() => {});
 
       toast.success("Purchase successful! The seller has been notified.");
       setBuyDialogOpen(false);
       navigate("/orders");
     } catch (err) {
       console.error("Purchase failed", err);
-      if (err?.status === 401 || err?.status === 403) {
+      const msg = err?.response?.data?.error || err?.data?.error;
+      if (msg === "This item is no longer available") {
+        toast.error("Sorry, this item was just sold by another buyer.");
+        setBuyDialogOpen(false);
+        loadData();
+      } else if (err?.status === 401 || err?.status === 403 || err?.response?.status === 401) {
         toast.error("Your session expired. Please sign in again.");
       } else {
         toast.error("Payment couldn't be completed. Please try again.");
@@ -257,6 +252,13 @@ export default function ProductDetail() {
                 {product.condition}
               </Badge>
             )}
+            <button
+              onClick={() => toggle(product.id)}
+              className="ml-auto flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-red-500 transition-colors"
+            >
+              <Heart className={`w-4 h-4 ${isSaved(product.id) ? "fill-red-500 text-red-500" : ""}`} />
+              {isSaved(product.id) ? "Saved" : "Save"}
+            </button>
           </div>
         </div>
 
@@ -294,6 +296,12 @@ export default function ProductDetail() {
               </div>
             </div>
           </div>
+          <Link
+            to={`/seller/${product.seller_email}`}
+            className="text-xs font-medium text-primary hover:underline shrink-0"
+          >
+            See other items →
+          </Link>
         </div>
 
         {/* Description */}

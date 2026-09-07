@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard, Ban } from "lucide-react";
+import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard, Ban, Heart } from "lucide-react";
 import CookieConsent from "./CookieConsent";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -41,6 +41,12 @@ export default function Layout() {
             <span className="font-bold tracking-tight text-sm">UKMarketStore</span>
           </Link>
           <div className="flex items-center gap-4">
+            <Link
+              to="/wishlist"
+              className="flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
+            >
+              <Heart className="w-4 h-4" />
+            </Link>
             <Link
               to="/buyer-protection"
               className="flex items-center gap-1.5 text-xs font-medium hover:text-primary transition-colors mx-1 text-[hsl(var(--muted-foreground))] pl-20">
