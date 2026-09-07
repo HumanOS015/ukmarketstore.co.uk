@@ -37,7 +37,8 @@ export default async function(req) {
     });
 
     // Create Stripe Checkout session
-    const baseUrl = new URL(req.url).origin;
+    // Hardcode the published app URL — req.url is the internal dispatcher host, not the public app
+    const baseUrl = "https://ukmarketstore.base44.app";
     const params = new URLSearchParams();
     params.append("mode", "payment");
     params.append("line_items[0][quantity]", "1");
