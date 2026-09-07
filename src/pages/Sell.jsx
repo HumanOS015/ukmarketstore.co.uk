@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
@@ -12,9 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Camera, Loader2, PoundSterling, CheckCircle2, X } from "lucide-react";
+import { Camera, Loader2, PoundSterling, CheckCircle2, X, ArrowLeft, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { withTimeout } from "@/lib/withTimeout";
+import PayoutConnect from "@/components/PayoutConnect";
 
 const CATEGORIES = [
   "Electronics", "Fashion", "Home & Garden", "Sports", "Toys",
@@ -43,6 +44,27 @@ export default function Sell() {
     fulfilment_method: "Tracked UK Delivery",
     estimated_delivery: "",
   });
+  const [payoutReady, setPayoutReady] = useState(null); // null = checking, false = not connected, true = connected
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const checkPayout = async () => {
+      try {
+        const me = await base44.auth.me();
+        if (!me?.email) {
+          base44.auth.redirectToLogin(window.location.href);
+          return;
+        }
+        setCurrentUser(me);
+        const accounts = await base44.entities.PayoutAccount.filter({ seller_email: me.email });
+        setPayoutReady(accounts[0]?.charges_enabled === true);
+      } catch (err) {
+        console.error("Payout check failed", err);
+        setPayoutReady(false);
+      }
+    };
+    checkPayout();
+  }, []);
 
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -160,6 +182,37 @@ export default function Sell() {
   };
 
   const update = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
+
+  if (payoutReady === null) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (payoutReady === false) {
+    return (
+      <div className="max-w-lg mx-auto px-4 md:pl-20 py-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back
+        </button>
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center mb-4">
+          <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
+            <CreditCard className="w-7 h-7 text-amber-600" />
+          </div>
+          <h2 className="text-xl font-bold mb-2">Connect payouts to sell</h2>
+          <p className="text-sm text-muted-foreground">
+            Before you can list items, you need to connect a Stripe account so buyers can pay you and you receive your earnings automatically.
+          </p>
+        </div>
+        <PayoutConnect user={currentUser} />
+      </div>
+    );
+  }
 
   if (success) {
     return (

@@ -106,6 +106,22 @@ export default async function(req) {
         }
         break;
       }
+      case "account.updated": {
+        // Sync the seller's Connect account status from Stripe
+        const acct = event.data.object;
+        const email = acct.metadata?.seller_email;
+        if (email) {
+          const accounts = await base44.asServiceRole.entities.PayoutAccount.filter({ seller_email: email });
+          if (accounts[0]) {
+            await base44.asServiceRole.entities.PayoutAccount.update(accounts[0].id, {
+              charges_enabled: acct.charges_enabled || false,
+              payouts_enabled: acct.payouts_enabled || false,
+              details_submitted: acct.details_submitted || false,
+            });
+          }
+        }
+        break;
+      }
     }
 
     return Response.json({ received: true });

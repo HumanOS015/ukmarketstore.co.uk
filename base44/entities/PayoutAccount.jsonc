@@ -1,0 +1,53 @@
+{
+  "name": "PayoutAccount",
+  "type": "object",
+  "properties": {
+    "seller_email": {
+      "type": "string",
+      "description": "Seller email"
+    },
+    "stripe_account_id": {
+      "type": "string",
+      "description": "Stripe Connect Express account ID"
+    },
+    "charges_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether Stripe charges are enabled for this account"
+    },
+    "payouts_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether Stripe payouts are enabled for this account"
+    },
+    "details_submitted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether onboarding details have been submitted"
+    }
+  },
+  "required": [
+    "seller_email",
+    "stripe_account_id"
+  ],
+  "rls": {
+    "read": {
+      "data.seller_email": "{{user.email}}"
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

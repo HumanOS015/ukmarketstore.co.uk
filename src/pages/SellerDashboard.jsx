@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Package, Truck, ArrowLeft, PlusCircle, CheckCircle2, AlertCircle, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { withTimeout } from "@/lib/withTimeout";
+import PayoutConnect from "@/components/PayoutConnect";
 
 const CARRIERS = ["Royal Mail", "Evri"];
 
@@ -154,6 +155,8 @@ export default function SellerDashboard() {
           <PlusCircle className="w-4 h-4" /> New Ad
         </Button>
       </div>
+
+      <PayoutConnect user={user} />
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 mb-8">
