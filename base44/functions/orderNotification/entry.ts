@@ -3,7 +3,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 const BRAND = 'UKMarketStore';
 
 // Internal notification function — called from other backend functions (webhook, escrow
-// release) which run server-side without a user session, so it does not require auth.
+// release, refund) which run server-side without a user session, and from the frontend
+// (seller "shipped" notification). Security: each event is cross-checked against the
+// order's current status, which only trusted backend flows can change — so an anonymous
+// caller cannot trigger a fake "refunded"/"released" email for an order that never
+// underwent that transition. The frontend-only "shipped" event additionally requires the
+// authenticated seller.
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -13,9 +18,37 @@ export default async function(req) {
       return Response.json({ error: 'Missing orderId or event' }, { status: 400 });
     }
 
+    // Each event maps to an order status that only a trusted backend flow sets.
+    const REQUIRED_STATUS = {
+      placed: 'paid',
+      shipped: 'shipped',
+      delivered: 'delivered',
+      released: 'completed',
+      refunded: 'refunded',
+    };
+    const requiredStatus = REQUIRED_STATUS[event];
+    if (!requiredStatus) {
+      return Response.json({ error: 'Unknown event' }, { status: 400 });
+    }
+
     const orders = await base44.asServiceRole.entities.Order.filter({ id: orderId }, '-created_date', 1);
     const order = orders[0];
     if (!order) return Response.json({ error: 'Order not found' }, { status: 404 });
+
+    if (order.status !== requiredStatus) {
+      return Response.json({ error: 'Order status does not match event' }, { status: 409 });
+    }
+
+    // "shipped" is the only event triggered from the frontend (by the seller). Require an
+    // authenticated seller; all other events come from internal service-role callers.
+    if (event === 'shipped') {
+      const authenticated = await base44.auth.isAuthenticated().catch(() => false);
+      if (!authenticated) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      const me = await base44.auth.me();
+      if (!me || me.email !== order.seller_email) {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
 
     const title = order.product_title || 'your item';
     const price = typeof order.price === 'number' ? `£${order.price.toFixed(2)}` : '';
@@ -70,8 +103,6 @@ export default async function(req) {
         `Order refunded — ${title}`,
         `Hi,\n\nThe order below has been refunded and the listing re-activated.\n\nItem: ${title}\n\nIf you already dispatched the item, please contact the courier to attempt recovery.\n\n${BRAND}`
       );
-    } else {
-      return Response.json({ error: 'Unknown event' }, { status: 400 });
     }
 
     return Response.json({ ok: true });

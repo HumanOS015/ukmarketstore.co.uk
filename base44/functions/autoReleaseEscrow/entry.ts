@@ -18,21 +18,20 @@ export default async function(req) {
     const eligibleShipped = shippedOrders.filter((o) => new Date(o.created_date).getTime() < fourteenDaysAgo);
     const toRelease = [...eligibleShipped, ...deliveredOrders];
 
-    const results = [];
     let released = 0;
     for (const order of toRelease) {
       const result = await transferToSeller(base44, order);
-      results.push({ orderId: order.id, ok: result.ok, reason: result.reason || null });
       if (result.ok) {
         released++;
         base44.asServiceRole.functions.invoke("orderNotification", { orderId: order.id, event: "released" }).catch(() => {});
       }
     }
 
+    // Return only aggregate counts — never per-order ids or transfer failure reasons,
+    // which would expose sensitive information to anonymous callers.
     return Response.json({
       processed: toRelease.length,
       released,
-      results,
     });
   } catch (error) {
     console.error("autoReleaseEscrow error", error);
