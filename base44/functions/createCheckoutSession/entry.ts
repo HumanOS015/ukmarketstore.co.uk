@@ -12,6 +12,16 @@ export default async function(req) {
       return Response.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    // Public, no-login checkout — the endpoint is reachable by anyone, so strictly
+    // validate the inputs to prevent junk orders / abuse (email format, reasonable
+    // length caps, sane product id). This guards the database and Stripe account.
+    const emailOk = typeof buyerEmail === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(buyerEmail) && buyerEmail.length <= 254;
+    const addressOk = typeof shippingAddress === "string" && shippingAddress.trim().length >= 6 && shippingAddress.length <= 500;
+    const productIdOk = typeof productId === "string" && /^[A-Za-z0-9_-]{1,64}$/.test(productId);
+    if (!emailOk || !addressOk || !productIdOk) {
+      return Response.json({ error: "Invalid request" }, { status: 400 });
+    }
+
     // Fetch the product (service role — public checkout, buyer may not be logged in)
     const products = await base44.asServiceRole.entities.Product.filter({ id: productId, status: "active" });
     if (!products.length) {
