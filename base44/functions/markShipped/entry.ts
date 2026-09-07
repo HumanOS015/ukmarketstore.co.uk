@@ -37,12 +37,19 @@ export default async function(req) {
       return Response.json({ error: `Cannot ship an order that is ${order.status}` }, { status: 400 });
     }
 
+    // Only notify the buyer on the first ship (paid -> shipped). Re-calling this to
+    // update a tracking number must not re-send the shipping email, which prevents a
+    // seller from spamming the buyer with duplicate "Your order has shipped" emails.
+    const isFirstShip = order.status === "paid";
+
     await base44.asServiceRole.entities.Order.update(orderId, {
       tracking_number: trackingNumber.trim(),
       status: "shipped",
     });
 
-    base44.asServiceRole.functions.invoke("orderNotification", { orderId, event: "shipped" }).catch(() => {});
+    if (isFirstShip) {
+      base44.asServiceRole.functions.invoke("orderNotification", { orderId, event: "shipped" }).catch(() => {});
+    }
 
     return Response.json({ ok: true });
   } catch (error) {
