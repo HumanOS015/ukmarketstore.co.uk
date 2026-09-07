@@ -82,10 +82,14 @@ export default function Layout() {
       {/* Footer */}
       <footer className="border-t border-border bg-card/50">
         <div className="max-w-7xl mx-auto px-4 pt-8 pb-20 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} UKMarketStore. All rights reserved.</p>
+          <div className="flex flex-col items-center sm:items-start gap-1">
+            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} UKMarketStore. All rights reserved.</p>
+            <p className="text-xs text-muted-foreground">Trading name: UKMarketStore · Contact: support@ukmarketstore.co.uk</p>
+          </div>
           <div className="flex items-center gap-5">
             <Link to="/about" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">About</Link>
             <Link to="/buyer-protection" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Buyer Protection</Link>
+            <Link to="/returns" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Returns</Link>
             <Link to="/terms" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Terms</Link>
             <Link to="/privacy" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Privacy</Link>
           </div>
