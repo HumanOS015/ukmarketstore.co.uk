@@ -16,14 +16,14 @@ const sanitizeText = (value, max = 200) => {
   return s.length > max ? s.slice(0, max) + '…' : s;
 };
 
-// Internal notification function — called from other backend functions (webhook, escrow
-// release, refund) which run server-side without a user session, and from the frontend
-// (seller "shipped" notification). Security: internal events must present the shared
-// ESCROW_RELEASE_TOKEN (read from secrets by the calling function, never hardcoded in a
-// file), and each event is cross-checked against the order's current status — which only
-// trusted backend flows can change — so a caller cannot trigger a fake "refunded" /
-// "released" email for an order that never underwent that transition. The frontend-only
-// "shipped" event instead requires an authenticated seller.
+// Internal notification function — called only by trusted backend functions (checkout
+// webhook, escrow release, refund, markShipped) which run server-side. Security: every
+// event must present the shared ESCROW_RELEASE_TOKEN (read from secrets by the calling
+// function, never hardcoded in a file), and each event is cross-checked against the
+// order's current status — which only trusted backend flows can change — so a caller
+// cannot trigger a fake email for an order that never underwent that transition. The
+// "shipped" event is raised only by markShipped, which enforces first-ship dedup, so a
+// seller cannot invoke orderNotification directly to spam the buyer with shipping emails.
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -46,14 +46,11 @@ export default async function(req) {
       return Response.json({ error: 'Unknown event' }, { status: 400 });
     }
 
-    // Internal events (placed, delivered, released, refunded) are only raised by trusted
-    // backend functions, which present the shared internal token. The frontend-only
-    // "shipped" event instead requires an authenticated seller (checked below). Auth is
-    // verified BEFORE any database lookup so unauthorized callers can't probe order ids.
-    if (event !== 'shipped') {
-      if (!payload.internal_token || payload.internal_token !== secrets.get('ESCROW_RELEASE_TOKEN')) {
-        return Response.json({ error: 'Unauthorized' }, { status: 401 });
-      }
+    // Every event is raised only by a trusted backend function, which presents the shared
+    // internal token. Auth is verified BEFORE any database lookup so unauthorized callers
+    // (including a seller trying to re-trigger "shipped") can't probe order ids.
+    if (!payload.internal_token || payload.internal_token !== secrets.get('ESCROW_RELEASE_TOKEN')) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const orders = await base44.asServiceRole.entities.Order.filter({ id: orderId }, '-created_date', 1);
@@ -64,16 +61,9 @@ export default async function(req) {
       return Response.json({ error: 'Order status does not match event' }, { status: 409 });
     }
 
-    // "shipped" is the only event triggered from the frontend (by the seller). Require an
-    // authenticated seller; all other events come from internal service-role callers.
-    if (event === 'shipped') {
-      const authenticated = await base44.auth.isAuthenticated().catch(() => false);
-      if (!authenticated) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-      const me = await base44.auth.me();
-      if (!me || me.email !== order.seller_email) {
-        return Response.json({ error: 'Forbidden' }, { status: 403 });
-      }
-    }
+    // "shipped" notification dedup is enforced upstream in markShipped (only sent on the
+    // first paid -> shipped transition). Requiring the internal token here means a seller
+    // cannot bypass that by invoking orderNotification directly.
 
     const title = sanitizeText(order.product_title, 200) || 'your item';
     const price = typeof order.price === 'number' ? `£${order.price.toFixed(2)}` : '';

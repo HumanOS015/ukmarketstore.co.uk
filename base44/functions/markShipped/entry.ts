@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
+import { secrets } from "base44:runtime";
 
 // Seller marks an order as shipped and attaches a tracking number.
 // This is the ONLY path that transitions an order to "shipped" from the client —
@@ -48,7 +49,11 @@ export default async function(req) {
     });
 
     if (isFirstShip) {
-      base44.asServiceRole.functions.invoke("orderNotification", { orderId, event: "shipped" }).catch(() => {});
+      base44.asServiceRole.functions.invoke("orderNotification", {
+        orderId,
+        event: "shipped",
+        internal_token: secrets.get("ESCROW_RELEASE_TOKEN"),
+      }).catch(() => {});
     }
 
     return Response.json({ ok: true });
