@@ -7,16 +7,24 @@ import { transferToSeller } from "../../shared/escrow.ts";
 //   1. Orders still "shipped" after 14 days (buyer never confirmed delivery)
 //   2. Orders "delivered" where the buyer confirmed but the earlier transfer failed
 //      (e.g. platform balance hadn't settled) — retries the payout.
-// Security: this is an admin-only scheduled task. The platform's workflow runner invokes
-// it with an admin session, and dashboard admins may also call it directly. Anonymous HTTP
-// callers are rejected before any escrow processing runs — this gates real Stripe transfers,
-// so no hardcoded string or client-supplied flag is accepted.
+// Security: this is an admin-only scheduled task. Accepted callers:
+//   1. The platform's workflow runner / dashboard admins (authenticated admin session)
+//   2. Internal backend functions presenting the ESCROW_RELEASE_TOKEN shared secret
+// Anonymous HTTP callers have neither and are rejected before any escrow processing runs —
+// this gates real Stripe transfers, so no hardcoded string or client-supplied flag is accepted.
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
 
     const user = await base44.auth.me().catch(() => null);
-    if (!user || user.role !== "admin") {
+    const isAdmin = !!user && user.role === "admin";
+
+    let hasSecret = false;
+    if (!isAdmin) {
+      const body = await req.json().catch(() => ({}));
+      hasSecret = typeof body.internal_token === "string" && body.internal_token === secrets.get("ESCROW_RELEASE_TOKEN");
+    }
+    if (!isAdmin && !hasSecret) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
