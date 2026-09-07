@@ -55,7 +55,6 @@ export default function Layout() {
           <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} UKMarket. All rights reserved.</p>
           <div className="flex items-center gap-5">
             <Link to="/about" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">About</Link>
-            <Link to="/contact" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Contact</Link>
             <Link to="/buyer-protection" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Buyer Protection</Link>
             <Link to="/terms" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Terms</Link>
           </div>

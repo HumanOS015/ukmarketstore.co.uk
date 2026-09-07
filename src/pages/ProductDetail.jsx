@@ -10,7 +10,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -23,7 +22,6 @@ import {
   Tag,
   AlertCircle,
   RefreshCw,
-  Mail,
 } from "lucide-react";
 import { toast } from "sonner";
 import moment from "moment";
@@ -40,10 +38,6 @@ export default function ProductDetail() {
   const [currentUser, setCurrentUser] = useState(null);
   const [error, setError] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
-  const [contactOpen, setContactOpen] = useState(false);
-  const [contactMsg, setContactMsg] = useState("");
-  const [contactEmail, setContactEmail] = useState("");
-  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -116,39 +110,6 @@ export default function ProductDetail() {
     }
   };
 
-  const handleContactSeller = async () => {
-    const fromEmail = currentUser?.email || contactEmail.trim();
-    if (!fromEmail) {
-      toast.error("Please enter your email so the seller can reply");
-      return;
-    }
-    if (!contactMsg.trim()) {
-      toast.error("Please enter a message");
-      return;
-    }
-    setSending(true);
-    try {
-      await withTimeout(
-        base44.integrations.Core.SendEmail({
-          to: product.seller_email,
-          subject: `Question about: ${product.title}`,
-          body: `A buyer is asking about your listing "${product.title}" (£${product.price?.toFixed(2)}).\n\nFrom: ${fromEmail}\n\nMessage:\n${contactMsg.trim()}\n\n— Sent via UKMarketStore`,
-        }),
-        15000,
-        "Sending message"
-      );
-      toast.success("Message sent! The seller will reply to your email.");
-      setContactOpen(false);
-      setContactMsg("");
-      setContactEmail("");
-    } catch (err) {
-      console.error("Contact seller failed", err);
-      toast.error("Couldn't send your message. Please try again.");
-    } finally {
-      setSending(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -193,6 +154,13 @@ export default function ProductDetail() {
 
   return (
     <div className="max-w-3xl mx-auto md:pl-20">
+      {/* Secure Marketplace trust badge */}
+      <div className="mx-4 mt-4 mb-1 flex items-center gap-2 rounded-xl bg-primary/5 border border-primary/20 px-3 py-2">
+        <Shield className="w-4 h-4 text-primary shrink-0" />
+        <span className="text-xs font-semibold text-primary">Secure Marketplace</span>
+        <span className="text-[11px] text-muted-foreground">· Verified sellers · Tracked UK delivery only</span>
+      </div>
+
       {/* Image Gallery */}
       <div className="relative aspect-square md:aspect-video md:rounded-2xl overflow-hidden bg-muted">
         <img
@@ -277,20 +245,17 @@ export default function ProductDetail() {
             </div>
             <div>
               <p className="text-sm font-medium">Marketplace Seller</p>
-              <p className="text-xs text-muted-foreground">
-                Listed {moment(product.created_date).fromNow()}
-              </p>
+              <div className="flex items-center gap-1.5 mt-1">
+                <Badge variant="secondary" className="gap-1 bg-green-100 text-green-800 border-green-200">
+                  <Shield className="w-3 h-3" />
+                  Verified Seller
+                </Badge>
+                <span className="text-xs text-muted-foreground">
+                  · Listed {moment(product.created_date).fromNow()}
+                </span>
+              </div>
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="rounded-xl gap-1.5"
-            onClick={() => setContactOpen(true)}
-          >
-            <Mail className="w-4 h-4" />
-            Contact
-          </Button>
         </div>
 
         {/* Description */}
@@ -302,6 +267,33 @@ export default function ProductDetail() {
             </p>
           </div>
         )}
+
+        {/* Safety Section */}
+        <div className="safety-section rounded-2xl border border-border bg-muted/30 p-4 space-y-4">
+          <div>
+            <h3 className="text-sm font-semibold mb-2">🔒 Safe Marketplace Guarantee</h3>
+            <ul className="text-xs text-muted-foreground space-y-1 list-disc pl-5">
+              <li>No address sharing</li>
+              <li>No meetups</li>
+              <li>Secure payments only</li>
+              <li>Buyer Protection included</li>
+              <li>Sellers paid safely through UKMarketStore</li>
+              <li>10% commission protects both sides</li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold mb-1">🛡️ Verified Seller System</h3>
+            <p className="text-xs text-muted-foreground">All sellers are verified by UKMarketStore. Orders are protected until delivery is confirmed.</p>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold mb-1">💳 Secure Checkout Only</h3>
+            <p className="text-xs text-muted-foreground">Buyers and sellers cannot contact each other until payment is complete.</p>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold mb-1">📦 Delivery Only — No Public Meetups</h3>
+            <p className="text-xs text-muted-foreground">All orders are delivered safely. No in-person exchanges allowed.</p>
+          </div>
+        </div>
 
         {/* Verified Buyer Protection Badge */}
         <div className="rounded-2xl border border-green-200 bg-green-50 p-4">
@@ -334,48 +326,6 @@ export default function ProductDetail() {
           </p>
         )}
       </div>
-
-      {/* Contact Seller Dialog */}
-      <Dialog open={contactOpen} onOpenChange={setContactOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Contact seller</DialogTitle>
-            <DialogDescription>
-              Ask a question about "{product.title}". Your message is sent to the seller by email.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
-            {!currentUser?.email && (
-              <div>
-                <Label className="text-sm font-medium">Your email</Label>
-                <Input
-                  type="email"
-                  placeholder="your@email.com"
-                  value={contactEmail}
-                  onChange={(e) => setContactEmail(e.target.value)}
-                  className="mt-1.5 rounded-xl"
-                />
-              </div>
-            )}
-            <div>
-              <Label className="text-sm font-medium">Message</Label>
-              <Textarea
-                placeholder="Hi, I'm interested in this item..."
-                value={contactMsg}
-                onChange={(e) => setContactMsg(e.target.value)}
-                className="mt-1.5 rounded-xl min-h-[120px]"
-              />
-            </div>
-            <Button
-              onClick={handleContactSeller}
-              disabled={sending}
-              className="w-full h-12 rounded-xl font-semibold"
-            >
-              {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : "Send message"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Buy Dialog */}
       <Dialog open={buyDialogOpen} onOpenChange={setBuyDialogOpen}>
