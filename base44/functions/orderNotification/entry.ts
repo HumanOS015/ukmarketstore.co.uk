@@ -1,14 +1,16 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
+import { secrets } from 'base44:runtime';
 
 const BRAND = 'UKMarketStore';
 
 // Internal notification function — called from other backend functions (webhook, escrow
 // release, refund) which run server-side without a user session, and from the frontend
-// (seller "shipped" notification). Security: each event is cross-checked against the
-// order's current status, which only trusted backend flows can change — so an anonymous
-// caller cannot trigger a fake "refunded"/"released" email for an order that never
-// underwent that transition. The frontend-only "shipped" event additionally requires the
-// authenticated seller.
+// (seller "shipped" notification). Security: internal events must present the shared
+// ESCROW_RELEASE_TOKEN (read from secrets by the calling function, never hardcoded in a
+// file), and each event is cross-checked against the order's current status — which only
+// trusted backend flows can change — so a caller cannot trigger a fake "refunded" /
+// "released" email for an order that never underwent that transition. The frontend-only
+// "shipped" event instead requires an authenticated seller.
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -29,6 +31,16 @@ export default async function(req) {
     const requiredStatus = REQUIRED_STATUS[event];
     if (!requiredStatus) {
       return Response.json({ error: 'Unknown event' }, { status: 400 });
+    }
+
+    // Internal events (placed, delivered, released, refunded) are only raised by trusted
+    // backend functions, which present the shared internal token. The frontend-only
+    // "shipped" event instead requires an authenticated seller (checked below). Auth is
+    // verified BEFORE any database lookup so unauthorized callers can't probe order ids.
+    if (event !== 'shipped') {
+      if (!payload.internal_token || payload.internal_token !== secrets.get('ESCROW_RELEASE_TOKEN')) {
+        return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      }
     }
 
     const orders = await base44.asServiceRole.entities.Order.filter({ id: orderId }, '-created_date', 1);

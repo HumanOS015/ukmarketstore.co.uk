@@ -83,7 +83,7 @@ export default async function(req) {
           }
 
           // Notify seller + buyer (non-blocking)
-          base44.asServiceRole.functions.invoke("orderNotification", { orderId, event: "placed" }).catch(() => {});
+          base44.asServiceRole.functions.invoke("orderNotification", { orderId, event: "placed", internal_token: secrets.get("ESCROW_RELEASE_TOKEN") }).catch(() => {});
         }
         break;
       }
@@ -102,7 +102,7 @@ export default async function(req) {
             await base44.asServiceRole.entities.Product.update(productId, { status: "active" });
           }
           if (!wasAlreadyRefunded) {
-            base44.asServiceRole.functions.invoke("orderNotification", { orderId, event: "refunded" }).catch(() => {});
+            base44.asServiceRole.functions.invoke("orderNotification", { orderId, event: "refunded", internal_token: secrets.get("ESCROW_RELEASE_TOKEN") }).catch(() => {});
           }
         }
         break;

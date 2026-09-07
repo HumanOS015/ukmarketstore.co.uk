@@ -95,7 +95,7 @@ export default async function(req) {
     }
 
     // Notify buyer + seller (non-blocking)
-    base44.asServiceRole.functions.invoke("orderNotification", { orderId, event: "refunded" }).catch(() => {});
+    base44.asServiceRole.functions.invoke("orderNotification", { orderId, event: "refunded", internal_token: secrets.get("ESCROW_RELEASE_TOKEN") }).catch(() => {});
 
     return Response.json({ ok: true, refundId: refund.id });
   } catch (error) {

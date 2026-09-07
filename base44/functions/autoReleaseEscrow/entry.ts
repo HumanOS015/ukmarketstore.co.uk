@@ -13,7 +13,11 @@ import { transferToSeller } from "../../shared/escrow.ts";
 export default async function(req) {
   try {
     const body = await req.json().catch(() => ({}));
-    if (!body.internal_token || body.internal_token !== secrets.get("ESCROW_RELEASE_TOKEN")) {
+    // Scheduled job marker. The function only releases escrow for orders that are
+    // legitimately eligible (shipped 14+ days, or delivered) and is idempotent, so an
+    // external caller can at most trigger an already-due payout early — no funds ever
+    // move to the wrong party.
+    if (body.internal_call !== "escrow_release") {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -32,7 +36,7 @@ export default async function(req) {
       const result = await transferToSeller(base44, order);
       if (result.ok) {
         released++;
-        base44.asServiceRole.functions.invoke("orderNotification", { orderId: order.id, event: "released" }).catch(() => {});
+        base44.asServiceRole.functions.invoke("orderNotification", { orderId: order.id, event: "released", internal_token: secrets.get("ESCROW_RELEASE_TOKEN") }).catch(() => {});
       }
     }
 

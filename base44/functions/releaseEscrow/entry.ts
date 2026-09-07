@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
+import { secrets } from 'base44:runtime';
 import { transferToSeller } from "../../shared/escrow.ts";
 
 export default async function(req) {
@@ -42,7 +43,7 @@ export default async function(req) {
     const result = await transferToSeller(base44, order);
 
     if (result.ok) {
-      base44.asServiceRole.functions.invoke("orderNotification", { orderId, event: "released" }).catch(() => {});
+      base44.asServiceRole.functions.invoke("orderNotification", { orderId, event: "released", internal_token: secrets.get("ESCROW_RELEASE_TOKEN") }).catch(() => {});
       return Response.json({ ok: true, transferId: result.transferId });
     }
 

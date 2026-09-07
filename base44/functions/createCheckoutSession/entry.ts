@@ -6,7 +6,16 @@ export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
-    const { productId, buyerEmail, shippingAddress } = body;
+    let { productId, buyerEmail, shippingAddress } = body;
+
+    // Public guest checkout: authentication is optional. If the buyer is logged in and
+    // didn't supply an email, use their verified account email. Inputs are strictly
+    // validated below regardless of auth state.
+    const authenticated = await base44.auth.isAuthenticated().catch(() => false);
+    if (authenticated && !buyerEmail) {
+      const me = await base44.auth.me().catch(() => null);
+      if (me?.email) buyerEmail = me.email;
+    }
 
     if (!productId || !buyerEmail || !shippingAddress) {
       return Response.json({ error: "Missing required fields" }, { status: 400 });

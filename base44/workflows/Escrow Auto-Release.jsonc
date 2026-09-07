@@ -13,7 +13,7 @@
           "with": {
             "function_name": "autoReleaseEscrow",
             "args": {
-              "internal_token": "3d3c7f5413374c498b5c2d22550dd8555a45a3617df14b5cab3ae67c77a212e9"
+              "internal_call": "escrow_release"
             }
           },
           "then": "end",
