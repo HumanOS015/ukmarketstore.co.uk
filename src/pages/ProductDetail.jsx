@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import {
   ArrowLeft,
   Shield,
@@ -40,6 +41,7 @@ export default function ProductDetail() {
   const [buyDialogOpen, setBuyDialogOpen] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
   const [address, setAddress] = useState("");
+  const [buyerEmail, setBuyerEmail] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
   const [error, setError] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
@@ -47,6 +49,18 @@ export default function ProductDetail() {
 
   useEffect(() => {
     loadData();
+  }, [id]);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentStatus = urlParams.get("payment");
+    if (paymentStatus === "success") {
+      toast.success("Payment successful! The seller has been notified.");
+      window.history.replaceState({}, "", window.location.pathname);
+    } else if (paymentStatus === "cancelled") {
+      toast.error("Payment was cancelled. You were not charged.");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
   }, [id]);
 
   const loadData = async () => {
@@ -60,6 +74,7 @@ export default function ProductDetail() {
       ]);
       setProduct(productData[0]);
       setCurrentUser(user);
+      if (user?.email) setBuyerEmail(user.email);
     } catch (err) {
       console.error("Failed to load product", err);
       setError(true);
@@ -69,9 +84,13 @@ export default function ProductDetail() {
   };
 
   const handleBuyNow = async () => {
-    if (!currentUser) {
-      toast.error("Please sign in to complete your purchase");
-      base44.auth.redirectToLogin(window.location.pathname);
+    // Stripe Checkout won't work inside an iframe (app preview)
+    if (window.self !== window.top) {
+      toast.error("Checkout only works from the published app. Please open it in a new tab.");
+      return;
+    }
+    if (!buyerEmail.trim()) {
+      toast.error("Please enter your email address");
       return;
     }
     if (!address.trim()) {
@@ -81,29 +100,27 @@ export default function ProductDetail() {
     setPurchasing(true);
 
     try {
-      await withTimeout(
-        base44.functions.invoke("completePurchase", {
+      const response = await withTimeout(
+        base44.functions.invoke("createCheckoutSession", {
           productId: product.id,
+          buyerEmail: buyerEmail.trim(),
           shippingAddress: address.trim(),
         }),
-        15000,
-        "Processing payment"
+        20000,
+        "Preparing checkout"
       );
 
-      toast.success("Purchase successful! The seller has been notified.");
-      setBuyDialogOpen(false);
-      navigate("/orders");
+      // Redirect to Stripe Checkout
+      window.location.href = response.data.checkoutUrl;
     } catch (err) {
-      console.error("Purchase failed", err);
+      console.error("Checkout failed", err);
       const msg = err?.response?.data?.error || err?.data?.error;
       if (msg === "This item is no longer available") {
         toast.error("Sorry, this item was just sold by another buyer.");
         setBuyDialogOpen(false);
         loadData();
-      } else if (err?.status === 401 || err?.status === 403 || err?.response?.status === 401) {
-        toast.error("Your session expired. Please sign in again.");
       } else {
-        toast.error("Payment couldn't be completed. Please try again.");
+        toast.error("Couldn't start checkout. Please try again.");
       }
     } finally {
       setPurchasing(false);
@@ -397,6 +414,17 @@ export default function ProductDetail() {
             </div>
 
             <div>
+              <Label className="text-sm font-medium">Email Address</Label>
+              <Input
+                type="email"
+                placeholder="your@email.com"
+                value={buyerEmail}
+                onChange={(e) => setBuyerEmail(e.target.value)}
+                className="mt-1.5 rounded-xl h-11"
+              />
+            </div>
+
+            <div>
               <Label className="text-sm font-medium">Delivery Address</Label>
               <Textarea
                 placeholder="Enter your full UK delivery address..."
@@ -427,7 +455,7 @@ export default function ProductDetail() {
               {purchasing ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                `Pay £${product.price?.toFixed(2)}`
+                "Continue to Secure Checkout"
               )}
             </Button>
 
