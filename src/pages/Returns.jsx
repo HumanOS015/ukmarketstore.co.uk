@@ -8,7 +8,7 @@ const sections = [
   },
   {
     title: "2. How to Cancel",
-    content: `To cancel an order, contact us at support@ukmarketstore.co.uk within 14 days of receiving your item, quoting your order number. We will forward your cancellation request to the seller and coordinate the return and refund through UKMarketStore's escrow system. If your order has not yet been dispatched, we can cancel it and refund you immediately.`,
+    content: `To cancel an order, contact us at ukmarketstore@hotmail.com within 14 days of receiving your item, quoting your order number. We will forward your cancellation request to the seller and coordinate the return and refund through UKMarketStore's escrow system. If your order has not yet been dispatched, we can cancel it and refund you immediately.`,
   },
   {
     title: "3. Refund Timeline",
@@ -24,7 +24,7 @@ const sections = [
   },
   {
     title: "6. Faulty or Misdescribed Items",
-    content: `If an item arrives faulty, damaged, or significantly not as described, you are entitled to a full refund (including return postage) regardless of the 14-day window. Report the issue to support@ukmarketstore.co.uk as soon as possible and within 48 hours of delivery so we can hold the seller's escrow funds pending resolution.`,
+    content: `If an item arrives faulty, damaged, or significantly not as described, you are entitled to a full refund (including return postage) regardless of the 14-day window. Report the issue to ukmarketstore@hotmail.com as soon as possible and within 48 hours of delivery so we can hold the seller's escrow funds pending resolution.`,
   },
   {
     title: "7. Seller Responsibilities",
@@ -32,7 +32,7 @@ const sections = [
   },
   {
     title: "8. Contact Us",
-    content: `If you have any questions about returns or cancellations, please contact us at support@ukmarketstore.co.uk and include your order number and details of the issue.`,
+    content: `If you have any questions about returns or cancellations, please contact us at ukmarketstore@hotmail.com and include your order number and details of the issue.`,
   },
 ];
 
