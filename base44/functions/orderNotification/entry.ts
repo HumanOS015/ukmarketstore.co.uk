@@ -3,6 +3,19 @@ import { secrets } from 'base44:runtime';
 
 const BRAND = 'UKMarketStore';
 
+// Seller-controlled strings (product title, tracking number) are interpolated into email
+// subjects and bodies. Strip HTML tags, angle brackets and line breaks so a malicious seller
+// can't inject deceptive links/HTML or manipulate the email structure via a product title or
+// tracking number. Cap length to keep notifications readable.
+const sanitizeText = (value, max = 200) => {
+  if (!value) return '';
+  const s = String(value)
+    .replace(/<[^>]*>/g, '')      // strip HTML tags
+    .replace(/[<>\r\n\t]/g, ' ')  // neutralize angle brackets & line/control chars
+    .trim();
+  return s.length > max ? s.slice(0, max) + '…' : s;
+};
+
 // Internal notification function — called from other backend functions (webhook, escrow
 // release, refund) which run server-side without a user session, and from the frontend
 // (seller "shipped" notification). Security: internal events must present the shared
@@ -62,10 +75,10 @@ export default async function(req) {
       }
     }
 
-    const title = order.product_title || 'your item';
+    const title = sanitizeText(order.product_title, 200) || 'your item';
     const price = typeof order.price === 'number' ? `£${order.price.toFixed(2)}` : '';
     const payout = typeof order.seller_payout === 'number' ? `£${order.seller_payout.toFixed(2)}` : '';
-    const tracking = order.tracking_number || '';
+    const tracking = sanitizeText(order.tracking_number, 200);
 
     const send = (to, subject, text) =>
       base44.asServiceRole.integrations.Core.SendEmail({ to, subject, body: text });
