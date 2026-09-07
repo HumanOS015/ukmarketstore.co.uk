@@ -385,6 +385,11 @@ export default function ProductDetail() {
               Your payment is held securely. Funds are only released to the seller once you confirm delivery.
             </div>
 
+            <div className="text-xs text-muted-foreground p-3 rounded-xl bg-amber-50 border border-amber-200">
+              <p className="font-medium text-amber-800 mb-0.5">🔒 Secure Checkout Only</p>
+              Buyers and sellers cannot contact each other until payment is complete. Complete your purchase to proceed.
+            </div>
+
             <Button
               onClick={handleBuyNow}
               disabled={purchasing}
