@@ -11,7 +11,10 @@
         "release_batch": {
           "call": "invoke_backend_function",
           "with": {
-            "function_name": "autoReleaseEscrow"
+            "function_name": "autoReleaseEscrow",
+            "args": {
+              "internal_token": "3d3c7f5413374c498b5c2d22550dd8555a45a3617df14b5cab3ae67c77a212e9"
+            }
           },
           "then": "end",
           "x-base44": {
