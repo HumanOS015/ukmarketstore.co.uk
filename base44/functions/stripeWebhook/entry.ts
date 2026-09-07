@@ -92,9 +92,17 @@ export default async function(req) {
         const orderId = charge.metadata?.order_id;
         const productId = charge.metadata?.product_id;
         if (orderId) {
+          // If the order was already "refunded", refundOrder already sent the
+          // notification. Only notify when this is a refund issued directly in
+          // Stripe (dashboard) that the platform didn't originate.
+          const existing = (await base44.asServiceRole.entities.Order.filter({ id: orderId }))[0];
+          const wasAlreadyRefunded = existing?.status === "refunded";
           await base44.asServiceRole.entities.Order.update(orderId, { status: "refunded" });
           if (productId) {
             await base44.asServiceRole.entities.Product.update(productId, { status: "active" });
+          }
+          if (!wasAlreadyRefunded) {
+            base44.asServiceRole.functions.invoke("orderNotification", { orderId, event: "refunded" }).catch(() => {});
           }
         }
         break;

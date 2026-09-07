@@ -37,6 +37,31 @@ export default async function(req) {
       return Response.json({ error: "No payment intent on file to refund" }, { status: 400 });
     }
 
+    // If escrow was already released to the seller (order "completed"), reverse the
+    // transfer first so the platform reclaims the seller's 90% before refunding the
+    // buyer. Without this, the platform would fund the full refund out of its own
+    // balance while the seller keeps the payout. If the reversal fails (e.g. the
+    // seller's Connect account has insufficient balance), proceed with the refund
+    // anyway — the buyer must be made whole — and log it for admin follow-up.
+    if (order.transfer_id) {
+      const reverseParams = new URLSearchParams();
+      reverseParams.append("amount", String(Math.round(order.seller_payout * 100)));
+      const reverseRes = await fetch(`https://api.stripe.com/v1/transfers/${order.transfer_id}/reversals`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${secrets.get("STRIPE_SECRET_KEY")}`,
+          "Stripe-Version": STRIPE_VERSION,
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Idempotency-Key": `reverse_${order.id}`,
+        },
+        body: reverseParams,
+      });
+      if (!reverseRes.ok) {
+        const err = await reverseRes.json().catch(() => ({}));
+        console.error("Transfer reversal failed for order", order.id, JSON.stringify(err));
+      }
+    }
+
     // Issue the refund in Stripe
     const params = new URLSearchParams();
     params.append("payment_intent", order.payment_intent_id);

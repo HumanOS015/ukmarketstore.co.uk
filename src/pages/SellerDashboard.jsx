@@ -73,22 +73,13 @@ export default function SellerDashboard() {
     setSaving(true);
     try {
       await withTimeout(
-        base44.entities.Order.update(trackingModal.orderId, {
-          tracking_number: `${carrier}: ${trackingNumber.trim()}`,
-          status: "shipped",
+        base44.functions.invoke("markShipped", {
+          orderId: trackingModal.orderId,
+          trackingNumber: `${carrier}: ${trackingNumber.trim()}`,
         }),
         15000,
         "Saving tracking"
       );
-      // Mark the listing as sold — the seller owns the product, so RLS allows this
-      if (trackingModal.productId) {
-        try {
-          await base44.entities.Product.update(trackingModal.productId, { status: "sold" });
-        } catch (e) {
-          console.error("Failed to mark product sold", e);
-        }
-      }
-      base44.functions.invoke("orderNotification", { orderId: trackingModal.orderId, event: "shipped" }).catch(() => {});
       setOrders((prev) =>
         prev.map((o) =>
           o.id === trackingModal.orderId
@@ -101,7 +92,8 @@ export default function SellerDashboard() {
       setTrackingNumber("");
     } catch (err) {
       console.error("Failed to save tracking", err);
-      toast.error("Couldn't save the tracking number. Please try again.");
+      const msg = err?.response?.data?.error || err?.data?.error;
+      toast.error(msg || "Couldn't save the tracking number. Please try again.");
     } finally {
       setSaving(false);
     }
