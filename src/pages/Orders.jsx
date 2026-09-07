@@ -128,15 +128,29 @@ export default function Orders() {
   const handleConfirmDelivery = async (orderId) => {
     setConfirmingId(orderId);
     try {
-      await base44.entities.Order.update(orderId, { status: "delivered" });
-      setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, status: "delivered" } : o))
+      const res = await withTimeout(
+        base44.functions.invoke("releaseEscrow", { orderId }),
+        30000,
+        "Releasing escrow"
       );
-      toast.success("Delivery confirmed — the seller has been notified.");
-      base44.functions.invoke("orderNotification", { orderId, event: "delivered" }).catch(() => {});
+      if (res.data?.ok) {
+        setOrders((prev) =>
+          prev.map((o) => (o.id === orderId ? { ...o, status: "completed" } : o))
+        );
+        toast.success("Delivery confirmed — the seller has been paid.");
+      } else if (res.data?.delivered) {
+        // Buyer confirmed, but the payout is pending (platform balance settling)
+        setOrders((prev) =>
+          prev.map((o) => (o.id === orderId ? { ...o, status: "delivered" } : o))
+        );
+        toast.success("Delivery confirmed — the seller will be paid shortly.");
+      } else {
+        toast.error(res.data?.reason || "Couldn't complete. Please try again.");
+      }
     } catch (err) {
       console.error("Failed to confirm delivery", err);
-      toast.error("Couldn't confirm delivery. Please try again.");
+      const msg = err?.response?.data?.error || err?.data?.error;
+      toast.error(msg || "Couldn't confirm delivery. Please try again.");
     } finally {
       setConfirmingId(null);
     }

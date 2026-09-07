@@ -65,7 +65,6 @@ export default async function(req) {
       return Response.json({ error: "Invalid signature" }, { status: 400 });
     }
 
-    // Handle the event
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
@@ -73,15 +72,17 @@ export default async function(req) {
         const productId = session.metadata?.product_id;
 
         if (orderId) {
-          // Update order to paid
-          await base44.asServiceRole.entities.Order.update(orderId, { status: "paid" });
+          // Mark paid and store the PaymentIntent id (needed for refunds later)
+          await base44.asServiceRole.entities.Order.update(orderId, {
+            status: "paid",
+            payment_intent_id: session.payment_intent || null,
+          });
 
-          // Mark product as sold
           if (productId) {
             await base44.asServiceRole.entities.Product.update(productId, { status: "sold" });
           }
 
-          // Send notification email (non-blocking)
+          // Notify seller + buyer (non-blocking)
           base44.asServiceRole.functions.invoke("orderNotification", { orderId, event: "placed" }).catch(() => {});
         }
         break;

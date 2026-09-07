@@ -19,7 +19,7 @@ export default async function(req) {
     }
     const product = products[0];
 
-    // Look up the seller's Stripe Connect account — they must be onboarded to receive payouts
+    // The seller must have a connected Stripe account so we can pay them when escrow releases
     const payoutAccount = (await base44.asServiceRole.entities.PayoutAccount.filter({ seller_email: product.seller_email }))[0];
     if (!payoutAccount || !payoutAccount.charges_enabled) {
       return Response.json({ error: "This seller hasn't set up payments yet" }, { status: 400 });
@@ -43,7 +43,8 @@ export default async function(req) {
       shipping_address: shippingAddress,
     });
 
-    // Create Stripe Checkout session with Connect split (10% platform fee, rest to seller)
+    // Escrow: the full payment lands in the platform account. The seller's 90% is transferred
+    // later (on delivery confirmation or after 14 days) — NOT at checkout.
     const params = new URLSearchParams();
     params.append("mode", "payment");
     params.append("line_items[0][quantity]", "1");
@@ -54,9 +55,6 @@ export default async function(req) {
     params.append("metadata[order_id]", order.id);
     params.append("metadata[product_id]", product.id);
     params.append("metadata[base44_app_id]", secrets.get("BASE44_APP_ID") || "");
-    // Connect: platform keeps 10% application fee, remaining 90% transfers to the seller's account
-    params.append("application_fee_amount", String(Math.round(commission * 100)));
-    params.append("transfer_data[destination]", payoutAccount.stripe_account_id);
     params.append("success_url", `${APP_URL}/product/${product.id}?payment=success`);
     params.append("cancel_url", `${APP_URL}/product/${product.id}?payment=cancelled`);
 
@@ -74,7 +72,6 @@ export default async function(req) {
     if (!stripeResponse.ok) {
       const errorData = await stripeResponse.json();
       console.error("Stripe error", JSON.stringify(errorData));
-      // Delete the pending order since checkout session creation failed
       await base44.asServiceRole.entities.Order.delete(order.id).catch(() => {});
       return Response.json({ error: "Failed to create checkout session" }, { status: 500 });
     }

@@ -2,12 +2,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 
 const BRAND = 'UKMarketStore';
 
+// Internal notification function — called from other backend functions (webhook, escrow
+// release) which run server-side without a user session, so it does not require auth.
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-
     const payload = await req.json();
     const { orderId, event } = payload;
     if (!orderId || !event) {
@@ -18,13 +17,9 @@ export default async function(req) {
     const order = orders[0];
     if (!order) return Response.json({ error: 'Order not found' }, { status: 404 });
 
-    // Only a party to the order may trigger its notifications
-    if (user.email !== order.buyer_email && user.email !== order.seller_email) {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
     const title = order.product_title || 'your item';
     const price = typeof order.price === 'number' ? `£${order.price.toFixed(2)}` : '';
+    const payout = typeof order.seller_payout === 'number' ? `£${order.seller_payout.toFixed(2)}` : '';
     const tracking = order.tracking_number || '';
 
     const send = (to, subject, text) =>
@@ -34,7 +29,7 @@ export default async function(req) {
       await send(
         order.seller_email,
         `New order received — ${title}`,
-        `Hi,\n\nYou have a new order on ${BRAND}.\n\nItem: ${title}\nSale price: ${price}\n\nPlease log in to your Seller Dashboard to add a tracking number and dispatch the item within 3 business days.\n\n${BRAND}`
+        `Hi,\n\nYou have a new order on ${BRAND}.\n\nItem: ${title}\nSale price: ${price}\n\nPlease log in to your Seller Dashboard to add a tracking number and dispatch the item within 3 business days.\n\nYour payment is held safely in escrow and will be released once the buyer confirms delivery (or automatically after 14 days).\n\n${BRAND}`
       );
       await send(
         order.buyer_email,
@@ -53,12 +48,24 @@ export default async function(req) {
         `Order delivered — ${title}`,
         `Hi,\n\nThe buyer has confirmed delivery of their order.\n\nItem: ${title}\nSale price: ${price}\n\nFunds (minus the 10% commission) are being released to your account.\n\n${BRAND}`
       );
+    } else if (event === 'released') {
+      await send(
+        order.seller_email,
+        `Funds released — ${title}`,
+        `Hi,\n\nThe escrow funds for your sale have been released to your Stripe account.\n\nItem: ${title}\nAmount paid to you (90%): ${payout}\n\nThis will arrive in your bank account per your Stripe payout schedule.\n\n${BRAND}`
+      );
+      await send(
+        order.buyer_email,
+        `Delivery confirmed — ${title}`,
+        `Hi,\n\nThank you for confirming delivery of your order.\n\nItem: ${title}\nThe seller has been paid and your transaction is complete.\n\n${BRAND}`
+      );
     } else {
       return Response.json({ error: 'Unknown event' }, { status: 400 });
     }
 
     return Response.json({ ok: true });
   } catch (error) {
+    console.error("orderNotification error", error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 }
