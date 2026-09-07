@@ -17,6 +17,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import SellerDashboard from './pages/SellerDashboard';
 import About from './pages/About';
 import BuyerProtectionAssistant from './pages/BuyerProtectionAssistant';
+import Admin from './pages/Admin';
 import OAuthConsent from './pages/OAuthConsent';
 
 const AuthenticatedApp = () => {
@@ -68,6 +69,7 @@ const AuthenticatedApp = () => {
         <Route path="/seller-dashboard" element={<SellerDashboard />} />
         <Route path="/about" element={<About />} />
         <Route path="/buyer-protection-assistant" element={<BuyerProtectionAssistant />} />
+        <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>
     </Routes>

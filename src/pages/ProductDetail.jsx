@@ -23,6 +23,7 @@ import {
   AlertCircle,
   RefreshCw,
   Truck,
+  Share2,
 } from "lucide-react";
 import { toast } from "sonner";
 import moment from "moment";
@@ -114,6 +115,18 @@ export default function ProductDetail() {
     }
   };
 
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: product.title, url });
+      } catch (e) {}
+    } else {
+      navigator.clipboard.writeText(url);
+      toast.success("Link copied to clipboard");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -180,6 +193,12 @@ export default function ProductDetail() {
           className="absolute top-4 left-4 w-10 h-10 rounded-full bg-card/80 backdrop-blur-md flex items-center justify-center hover:bg-card transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
+        </button>
+        <button
+          onClick={handleShare}
+          className="absolute top-4 right-4 w-10 h-10 rounded-full bg-card/80 backdrop-blur-md flex items-center justify-center hover:bg-card transition-colors"
+        >
+          <Share2 className="w-5 h-5" />
         </button>
         {allImages.length > 1 && (
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">

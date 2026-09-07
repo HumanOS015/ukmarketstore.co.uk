@@ -11,6 +11,7 @@ export default function Home() {
   const [error, setError] = useState(false);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All Categories");
+  const [sortBy, setSortBy] = useState("newest");
 
   useEffect(() => {
     loadProducts();
@@ -45,6 +46,12 @@ export default function Home() {
     return matchSearch && matchCategory;
   });
 
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortBy === "price-low") return a.price - b.price;
+    if (sortBy === "price-high") return b.price - a.price;
+    return new Date(b.created_date) - new Date(a.created_date);
+  });
+
   return (
     <div className="max-w-7xl mx-auto px-4 md:pl-20 py-4">
       {/* Hero */}
@@ -67,10 +74,29 @@ export default function Home() {
         />
       </div>
 
-      {/* Results count */}
-      <p className="text-xs text-muted-foreground mb-4">
-        {filtered.length} {filtered.length === 1 ? "listing" : "listings"} found
-      </p>
+      {/* Results count + sort */}
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-xs text-muted-foreground">
+          {sorted.length} {sorted.length === 1 ? "listing" : "listings"} found
+        </p>
+        <div className="flex gap-1.5">
+          {[
+            { key: "newest", label: "Newest" },
+            { key: "price-low", label: "£ Low" },
+            { key: "price-high", label: "£ High" },
+          ].map((opt) => (
+            <button
+              key={opt.key}
+              onClick={() => setSortBy(opt.key)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                sortBy === opt.key ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Grid */}
       {loading ? (
@@ -102,7 +128,7 @@ export default function Home() {
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
-          {filtered.map((product) => (
+          {sorted.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>

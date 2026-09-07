@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard } from "lucide-react";
+import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard, Ban } from "lucide-react";
 import CookieConsent from "./CookieConsent";
+import { useAuth } from "@/lib/AuthContext";
 
 const navItems = [
 { to: "/", icon: Home, label: "Home" },
@@ -11,6 +12,19 @@ const navItems = [
 
 export default function Layout() {
   const location = useLocation();
+  const { user } = useAuth();
+
+  if (user?.banned) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 text-center">
+        <Ban className="w-12 h-12 text-destructive mb-4" />
+        <h1 className="text-xl font-bold mb-2">Account Suspended</h1>
+        <p className="text-sm text-muted-foreground max-w-sm">
+          Your account has been banned from UKMarketStore. Please contact support if you believe this is an error.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -41,6 +55,15 @@ export default function Layout() {
               <FileText className="w-3.5 h-3.5 text-[hsl(var(--primary))]" />
               Terms
             </Link>
+            {user?.role === "admin" && (
+              <Link
+                to="/admin"
+                className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                <Shield className="w-3.5 h-3.5" />
+                Admin
+              </Link>
+            )}
           </div>
         </div>
       </header>
