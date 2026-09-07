@@ -7,21 +7,18 @@ import { transferToSeller } from "../../shared/escrow.ts";
 //   1. Orders still "shipped" after 14 days (buyer never confirmed delivery)
 //   2. Orders "delivered" where the buyer confirmed but the earlier transfer failed
 //      (e.g. platform balance hadn't settled) — retries the payout.
-// Security: this function has no user session (it's a scheduled job), so it requires a
-// shared secret (ESCROW_RELEASE_TOKEN) that only the workflow presents. Anonymous HTTP
-// callers are rejected before any escrow processing runs.
+// Security: this is an admin-only scheduled task. The platform's workflow runner invokes
+// it with an admin session, and dashboard admins may also call it directly. Anonymous HTTP
+// callers are rejected before any escrow processing runs — this gates real Stripe transfers,
+// so no hardcoded string or client-supplied flag is accepted.
 export default async function(req) {
   try {
-    const body = await req.json().catch(() => ({}));
-    // Scheduled job marker. The function only releases escrow for orders that are
-    // legitimately eligible (shipped 14+ days, or delivered) and is idempotent, so an
-    // external caller can at most trigger an already-due payout early — no funds ever
-    // move to the wrong party.
-    if (body.internal_call !== "escrow_release") {
+    const base44 = createClientFromRequest(req);
+
+    const user = await base44.auth.me().catch(() => null);
+    if (!user || user.role !== "admin") {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const base44 = createClientFromRequest(req);
 
     const fourteenDaysAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
 

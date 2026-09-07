@@ -12,9 +12,7 @@
           "call": "invoke_backend_function",
           "with": {
             "function_name": "autoReleaseEscrow",
-            "args": {
-              "internal_call": "escrow_release"
-            }
+            "args": {}
           },
           "then": "end",
           "x-base44": {
