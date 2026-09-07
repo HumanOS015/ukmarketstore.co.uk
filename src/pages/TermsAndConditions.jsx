@@ -4,27 +4,27 @@ import { ArrowLeft, FileText } from "lucide-react";
 const sections = [
   {
     title: "1. Introduction",
-    content: `Welcome to UKMarket ("we", "our", "us"). By accessing or using our platform, you agree to be bound by these Terms and Conditions. Please read them carefully before using our services. If you do not agree, you must not use UKMarket.`,
+    content: `Welcome to UKMarketStore ("we", "our", "us"). By accessing or using our platform, you agree to be bound by these Terms and Conditions. Please read them carefully before using our services. If you do not agree, you must not use UKMarketStore.`,
   },
   {
     title: "2. Eligibility",
-    content: `You must be at least 18 years of age and a resident of the United Kingdom to use UKMarket. By creating an account, you confirm that you meet these requirements and that the information you provide is accurate and up to date.`,
+    content: `You must be at least 18 years of age and a resident of the United Kingdom to use UKMarketStore. By creating an account, you confirm that you meet these requirements and that the information you provide is accurate and up to date.`,
   },
   {
     title: "3. Buying & Selling",
-    content: `Sellers are responsible for accurately describing their items, including condition, postcode, and images. Buyers agree to purchase in good faith. Once a purchase is confirmed, it creates a binding agreement between buyer and seller. UKMarket acts solely as an intermediary platform and is not a party to any transaction.`,
+    content: `Sellers are responsible for accurately describing their items, including condition, postcode, and images. Buyers agree to purchase in good faith. Once a purchase is confirmed, it creates a binding agreement between buyer and seller. UKMarketStore acts solely as an intermediary platform facilitating the transaction and holding buyer funds in escrow until delivery is confirmed.`,
   },
   {
     title: "4. Commission & Fees",
-    content: `UKMarket charges a 10% commission on every completed sale. This fee is automatically deducted from the seller's payout. The seller's net payout (90% of the sale price) will be transferred after the buyer confirms delivery. There are no fees for listing items or browsing the platform.`,
+    content: `UKMarketStore charges a 10% commission on every completed sale. This fee is automatically deducted from the seller's payout. The seller's net payout (90% of the sale price) will be transferred after the buyer confirms delivery. There are no fees for listing items or browsing the platform.`,
   },
   {
     title: "5. Buyer Protection & Escrow",
-    content: `All payments are held in escrow via Stripe until the buyer confirms receipt of their item. Funds are only released to the seller after delivery is confirmed. Sellers must provide a valid UK tracking number within 48 hours of a sale. If a tracking number is not provided within this window, the buyer will receive a full automatic refund. Disputes must be raised within 48 hours of delivery. UKMarket reserves the right to make final decisions on all disputes.`,
+    content: `All payments are held in escrow via Stripe until the buyer confirms receipt of their item. Funds are only released to the seller after delivery is confirmed. Sellers must dispatch items within 3 business days of a sale and provide a valid UK tracking number within that window. If a seller fails to dispatch or provide tracking within 3 business days, the buyer will receive a full automatic refund. Disputes must be raised within 48 hours of delivery. UKMarketStore reserves the right to make final decisions on all disputes.`,
   },
   {
     title: "6. Prohibited Items",
-    content: `You must not list or sell: illegal items, counterfeit goods, hazardous materials, weapons, controlled substances, or any items prohibited under UK law. Any listings containing prohibited or dangerous items will be automatically removed from the platform. UKMarket reserves the right to suspend any account found in violation of this policy.`,
+    content: `You must not list or sell: illegal items, counterfeit goods, hazardous materials, weapons, controlled substances, or any items prohibited under UK law. Any listings containing prohibited or dangerous items will be automatically removed from the platform. UKMarketStore reserves the right to suspend any account found in violation of this policy.`,
   },
   {
     title: "7. User Conduct",
@@ -32,19 +32,19 @@ const sections = [
   },
   {
     title: "8. Intellectual Property",
-    content: `All content on UKMarket, including logos, design, and software, is owned by UKMarket and protected by UK intellectual property law. By listing items, you grant UKMarket a non-exclusive licence to display your listing content on the platform.`,
+    content: `All content on UKMarketStore, including logos, design, and software, is owned by UKMarketStore and protected by UK intellectual property law. By listing items, you grant UKMarketStore a non-exclusive licence to display your listing content on the platform.`,
   },
   {
     title: "9. Limitation of Liability",
-    content: `UKMarket is a platform provider and is not liable for item conditions, accuracy of listings, or disputes arising from the quality of goods. However, we will issue a full refund to the buyer if the seller fails to provide a valid UK tracking number within 48 hours of sale. Our total liability is otherwise limited to the commission amount collected on the relevant transaction.`,
+    content: `UKMarketStore is a platform provider and is not liable for item conditions, accuracy of listings, or disputes arising from the quality of goods. However, we will issue a full refund to the buyer if the seller fails to dispatch the item or provide a valid UK tracking number within 3 business days of sale. Our total liability is otherwise limited to the commission amount collected on the relevant transaction.`,
   },
   {
     title: "10. Privacy",
-    content: `Your use of UKMarket is also governed by our Privacy Policy. We collect and process personal data in accordance with UK GDPR. We do not sell your personal information to third parties.`,
+    content: `Your use of UKMarketStore is also governed by our Privacy Policy. We collect and process personal data in accordance with UK GDPR. We do not sell your personal information to third parties.`,
   },
   {
     title: "11. Changes to Terms",
-    content: `We reserve the right to update these Terms and Conditions at any time. We will notify users of significant changes via email or an in-app notice. Continued use of UKMarket after changes constitutes acceptance of the revised terms.`,
+    content: `We reserve the right to update these Terms and Conditions at any time. We will notify users of significant changes via email or an in-app notice. Continued use of UKMarketStore after changes constitutes acceptance of the revised terms.`,
   },
   {
     title: "12. Governing Law",
@@ -80,9 +80,9 @@ export default function TermsAndConditions() {
       {/* Intro banner */}
       <div className="mt-6 p-4 rounded-2xl bg-primary/5 border border-primary/10">
         <p className="text-sm leading-relaxed text-muted-foreground">
-          These Terms and Conditions govern your use of UKMarket. By using our platform,
-          you agree to comply with and be bound by the following terms. Please read
-          carefully before buying or selling.
+        These Terms and Conditions govern your use of UKMarketStore. By using our platform,
+        you agree to comply with and be bound by the following terms. Please read
+        carefully before buying or selling.
         </p>
       </div>
 
@@ -100,8 +100,8 @@ export default function TermsAndConditions() {
       <div className="mt-10 p-4 rounded-2xl bg-muted/50 border border-border text-sm text-muted-foreground">
         <p className="font-medium text-foreground mb-1">Contact Us</p>
         <p>If you have any questions about these Terms and Conditions, please contact us at{" "}
-          <a href="mailto:legal@ukmarket.co.uk" className="text-primary hover:underline">
-            legal@ukmarket.co.uk
+          <a href="mailto:support@ukmarketstore.co.uk" className="text-primary hover:underline">
+            support@ukmarketstore.co.uk
           </a>.
         </p>
       </div>

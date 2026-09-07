@@ -49,7 +49,7 @@ const faqs = [
   },
   {
     q: "How long does the seller have to ship?",
-    a: "Sellers must dispatch items within 3 business days. If they fail to ship, you'll receive an automatic refund.",
+    a: "Sellers must dispatch items within 3 business days of a sale and provide a valid UK tracking number within that window. If they fail to dispatch or provide tracking, you'll receive an automatic refund.",
   },
   {
     q: "Is my payment information safe?",
@@ -79,7 +79,7 @@ export default function BuyerProtection() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Buyer Protection</h1>
           <p className="text-sm text-muted-foreground">
-            Your money is safe with UKMarket
+            Your money is safe with UKMarketStore
           </p>
         </div>
       </div>
@@ -87,7 +87,7 @@ export default function BuyerProtection() {
       {/* Intro */}
       <div className="mt-6 p-4 rounded-2xl bg-primary/5 border border-primary/10">
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Every purchase on UKMarket is protected. We hold your payment in a secure
+          Every purchase on UKMarketStore is protected. We hold your payment in a secure
           escrow until you confirm you've received your item. If something goes wrong,
           we've got your back with a full refund guarantee.
         </p>
@@ -122,7 +122,7 @@ export default function BuyerProtection() {
       <div className="mt-4 p-4 rounded-2xl bg-muted/50 border border-border">
         <h3 className="font-semibold text-sm mb-1">10% Commission</h3>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          UKMarket charges a 10% commission on every sale. This covers payment
+          UKMarketStore charges a 10% commission on every sale. This covers payment
           processing, buyer protection, dispute resolution, and platform
           maintenance. Sellers see the exact payout amount before listing.
         </p>
