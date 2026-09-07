@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { Truck } from "lucide-react";
+import { formatDeliveryDate } from "@/lib/deliveryDate";
 
 export default function ProductCard({ product }) {
   return (
@@ -31,6 +33,12 @@ export default function ProductCard({ product }) {
         <p className="text-primary font-bold text-lg mt-0.5">
           £{product.price?.toFixed(2)}
         </p>
+        {product.estimated_delivery && (
+          <p className="flex items-center gap-1 text-[11px] text-muted-foreground mt-1">
+            <Truck className="w-3 h-3 shrink-0" />
+            Delivery by {formatDeliveryDate(product.estimated_delivery)}
+          </p>
+        )}
       </div>
     </Link>
   );

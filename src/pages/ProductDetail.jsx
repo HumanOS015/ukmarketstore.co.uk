@@ -22,10 +22,12 @@ import {
   Tag,
   AlertCircle,
   RefreshCw,
+  Truck,
 } from "lucide-react";
 import { toast } from "sonner";
 import moment from "moment";
 import { withTimeout } from "@/lib/withTimeout";
+import { formatDeliveryDate } from "@/lib/deliveryDate";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -236,6 +238,21 @@ export default function ProductDetail() {
             )}
           </div>
         </div>
+
+        {/* Estimated delivery date */}
+        {product.estimated_delivery && (
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/5 border border-primary/20">
+            <Truck className="w-4 h-4 text-primary shrink-0" />
+            <div className="leading-tight">
+              <p className="text-sm font-medium">
+                Estimated delivery by {formatDeliveryDate(product.estimated_delivery)}
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                Tracked UK Delivery · {product.estimated_delivery}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Listing info */}
         <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-muted/50">
