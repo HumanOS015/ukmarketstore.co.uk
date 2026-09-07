@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Trash2, Ban, CheckCircle, Shield, Users, Package } from "lucide-react";
+import { Loader2, Trash2, Ban, CheckCircle, Shield, Users, Package, ShoppingBag, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import moment from "moment";
 
@@ -13,7 +13,9 @@ export default function Admin() {
   const [tab, setTab] = useState("listings");
   const [products, setProducts] = useState([]);
   const [users, setUsers] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refundingId, setRefundingId] = useState(null);
 
   useEffect(() => {
     if (user && user.role !== "admin") {
@@ -30,12 +32,14 @@ export default function Admin() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [allProducts, allUsers] = await Promise.all([
+      const [allProducts, allUsers, allOrders] = await Promise.all([
         base44.entities.Product.list("-created_date", 500),
         base44.entities.User.list("-created_date", 500),
+        base44.entities.Order.list("-created_date", 500),
       ]);
       setProducts(allProducts);
       setUsers(allUsers);
+      setOrders(allOrders);
     } catch (err) {
       console.error("Admin load failed", err);
       toast.error("Failed to load admin data");
@@ -53,6 +57,27 @@ export default function Admin() {
       toast.success("Listing removed");
     } catch (err) {
       toast.error("Failed to remove listing");
+    }
+  };
+
+  const handleRefund = async (orderId) => {
+    if (!window.confirm("Issue a full refund to the buyer? This cannot be undone.")) return;
+    setRefundingId(orderId);
+    try {
+      const res = await base44.functions.invoke("refundOrder", { orderId });
+      if (res.data?.ok) {
+        setOrders((prev) =>
+          prev.map((o) => (o.id === orderId ? { ...o, status: "refunded" } : o))
+        );
+        toast.success("Refund issued — buyer has been notified.");
+      } else {
+        toast.error(res.data?.error || "Refund failed.");
+      }
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.data?.error;
+      toast.error(msg || "Refund failed.");
+    } finally {
+      setRefundingId(null);
     }
   };
 
@@ -113,6 +138,15 @@ export default function Admin() {
           <Users className="w-4 h-4" />
           Users ({users.length})
         </button>
+        <button
+          onClick={() => setTab("orders")}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+            tab === "orders" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+          }`}
+        >
+          <ShoppingBag className="w-4 h-4" />
+          Orders ({orders.length})
+        </button>
       </div>
 
       {tab === "listings" ? (
@@ -146,7 +180,7 @@ export default function Admin() {
             </div>
           ))}
         </div>
-      ) : (
+      ) : tab === "users" ? (
         <div className="space-y-2">
           {users.map((u) => (
             <div key={u.id} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card">
@@ -187,6 +221,57 @@ export default function Admin() {
               )}
             </div>
           ))}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {orders.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">No orders yet.</p>
+          ) : (
+            orders.map((o) => (
+              <div key={o.id} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card">
+                {o.product_image && (
+                  <img
+                    src={o.product_image}
+                    alt={o.product_title}
+                    className="w-12 h-12 rounded-lg object-cover shrink-0"
+                    loading="lazy"
+                  />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm truncate">{o.product_title}</p>
+                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                    <span className="text-primary font-semibold text-sm">£{o.price?.toFixed(2)}</span>
+                    <Badge
+                      variant={o.status === "refunded" || o.status === "disputed" ? "destructive" : o.status === "completed" || o.status === "delivered" ? "default" : "secondary"}
+                      className="text-[10px]"
+                    >
+                      {o.status?.replace("_", " ")}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground truncate">
+                      Buyer: {o.buyer_email}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {moment(o.created_date).format("DD MMM YYYY")}
+                    </span>
+                  </div>
+                </div>
+                {o.status !== "refunded" && o.status !== "pending_payment" && o.payment_intent_id && (
+                  <button
+                    onClick={() => handleRefund(o.id)}
+                    disabled={refundingId === o.id}
+                    className="shrink-0 px-3 h-9 rounded-lg text-xs font-medium flex items-center gap-1.5 border border-border text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-60"
+                  >
+                    {refundingId === o.id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <RotateCcw className="w-3.5 h-3.5" />
+                    )}
+                    Refund
+                  </button>
+                )}
+              </div>
+            ))
+          )}
         </div>
       )}
     </div>

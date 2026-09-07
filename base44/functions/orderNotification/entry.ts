@@ -59,6 +59,17 @@ export default async function(req) {
         `Delivery confirmed — ${title}`,
         `Hi,\n\nThank you for confirming delivery of your order.\n\nItem: ${title}\nThe seller has been paid and your transaction is complete.\n\n${BRAND}`
       );
+    } else if (event === 'refunded') {
+      await send(
+        order.buyer_email,
+        `Refund issued — ${title}`,
+        `Hi,\n\nA refund of ${price} has been issued for your order.\n\nItem: ${title}\n\nThe funds will appear back on your card within 5–10 business days, depending on your bank.\n\n${BRAND}`
+      );
+      await send(
+        order.seller_email,
+        `Order refunded — ${title}`,
+        `Hi,\n\nThe order below has been refunded and the listing re-activated.\n\nItem: ${title}\n\nIf you already dispatched the item, please contact the courier to attempt recovery.\n\n${BRAND}`
+      );
     } else {
       return Response.json({ error: 'Unknown event' }, { status: 400 });
     }
