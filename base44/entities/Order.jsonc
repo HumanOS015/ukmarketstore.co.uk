@@ -98,19 +98,9 @@
       ]
     },
     "update": {
-      "$or": [
-        {
-          "data.seller_email": "{{user.email}}"
-        },
-        {
-          "data.buyer_email": "{{user.email}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "delete": {
       "user_condition": {
