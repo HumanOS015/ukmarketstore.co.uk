@@ -84,9 +84,11 @@ export default function ProductDetail() {
   };
 
   const handleBuyNow = async () => {
-    // Stripe Checkout won't work inside an iframe (app preview)
+    // Stripe Checkout won't work inside an iframe (app preview) — open the published app instead
     if (window.self !== window.top) {
-      toast.error("Checkout only works from the published app. Please open it in a new tab.");
+      const publishedUrl = `https://ukmarketstore.base44.app/product/${product.id}`;
+      window.open(publishedUrl, '_blank');
+      toast.info("Opening the live app in a new tab — checkout works there, not in the preview.");
       return;
     }
     if (!buyerEmail.trim()) {
