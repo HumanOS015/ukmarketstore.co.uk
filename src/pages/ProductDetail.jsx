@@ -80,7 +80,7 @@ export default function ProductDetail() {
     const sellerPayout = parseFloat((price - commission).toFixed(2));
 
     try {
-      await withTimeout(
+      const newOrder = await withTimeout(
         base44.entities.Order.create({
           product_id: product.id,
           product_title: product.title,
@@ -96,6 +96,8 @@ export default function ProductDetail() {
         15000,
         "Processing payment"
       );
+
+      base44.functions.invoke("orderNotification", { orderId: newOrder.id, event: "placed" }).catch(() => {});
 
       toast.success("Purchase successful! The seller has been notified.");
       setBuyDialogOpen(false);

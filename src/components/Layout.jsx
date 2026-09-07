@@ -1,5 +1,6 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard } from "lucide-react";
+import CookieConsent from "./CookieConsent";
 
 const navItems = [
 { to: "/", icon: Home, label: "Home" },
@@ -57,6 +58,7 @@ export default function Layout() {
             <Link to="/about" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">About</Link>
             <Link to="/buyer-protection" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Buyer Protection</Link>
             <Link to="/terms" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Terms</Link>
+            <Link to="/privacy" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">Privacy</Link>
           </div>
         </div>
       </footer>
@@ -110,6 +112,7 @@ export default function Layout() {
         </div>
       </nav>
 
+      <CookieConsent />
     </div>);
 
 }

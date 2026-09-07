@@ -3,9 +3,10 @@ import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Loader2, Package, ShoppingBag, ArrowRight, LifeBuoy, AlertCircle, RefreshCw } from "lucide-react";
+import { Loader2, Package, ShoppingBag, ArrowRight, LifeBuoy, AlertCircle, RefreshCw, CheckCircle } from "lucide-react";
 import moment from "moment";
 import { withTimeout } from "@/lib/withTimeout";
+import { toast } from "sonner";
 
 const STATUS_COLORS = {
   pending_payment: "bg-yellow-100 text-yellow-800",
@@ -17,33 +18,45 @@ const STATUS_COLORS = {
   disputed: "bg-red-100 text-red-800",
 };
 
-function OrderCard({ order }) {
+function OrderCard({ order, onConfirm, confirming }) {
   return (
-    <Link
-      to={`/product/${order.product_id}`}
-      className="flex gap-3 p-3 rounded-xl bg-card border border-border hover:shadow-md transition-all"
-    >
-      {order.product_image && (
-        <img
-          src={order.product_image}
-          alt={order.product_title}
-          className="w-16 h-16 rounded-lg object-cover shrink-0"
-        />
-      )}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{order.product_title}</p>
-        <p className="text-primary font-bold text-sm">£{order.price?.toFixed(2)}</p>
-        <div className="flex items-center gap-2 mt-1">
-          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[order.status] || "bg-muted text-muted-foreground"}`}>
-            {order.status?.replace("_", " ")}
-          </span>
-          <span className="text-[10px] text-muted-foreground">
-            {moment(order.created_date).fromNow()}
-          </span>
+    <div>
+      <Link
+        to={`/product/${order.product_id}`}
+        className="flex gap-3 p-3 rounded-xl bg-card border border-border hover:shadow-md transition-all"
+      >
+        {order.product_image && (
+          <img
+            src={order.product_image}
+            alt={order.product_title}
+            className="w-16 h-16 rounded-lg object-cover shrink-0"
+          />
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium truncate">{order.product_title}</p>
+          <p className="text-primary font-bold text-sm">£{order.price?.toFixed(2)}</p>
+          <div className="flex items-center gap-2 mt-1">
+            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[order.status] || "bg-muted text-muted-foreground"}`}>
+              {order.status?.replace("_", " ")}
+            </span>
+            <span className="text-[10px] text-muted-foreground">
+              {moment(order.created_date).fromNow()}
+            </span>
+          </div>
         </div>
-      </div>
-      <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0 self-center" />
-    </Link>
+        <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0 self-center" />
+      </Link>
+      {order.status === "shipped" && onConfirm && (
+        <button
+          onClick={onConfirm}
+          disabled={confirming}
+          className="w-full mt-2 h-10 rounded-xl bg-green-600 text-white text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-60"
+        >
+          {confirming ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+          Confirm Delivery
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -52,6 +65,7 @@ export default function Orders() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [user, setUser] = useState(null);
+  const [confirmingId, setConfirmingId] = useState(null);
 
   useEffect(() => {
     loadOrders();
@@ -78,6 +92,23 @@ export default function Orders() {
       setError(true);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleConfirmDelivery = async (orderId) => {
+    setConfirmingId(orderId);
+    try {
+      await base44.entities.Order.update(orderId, { status: "delivered" });
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: "delivered" } : o))
+      );
+      toast.success("Delivery confirmed — the seller has been notified.");
+      base44.functions.invoke("orderNotification", { orderId, event: "delivered" }).catch(() => {});
+    } catch (err) {
+      console.error("Failed to confirm delivery", err);
+      toast.error("Couldn't confirm delivery. Please try again.");
+    } finally {
+      setConfirmingId(null);
     }
   };
 
@@ -143,7 +174,14 @@ export default function Orders() {
           {purchases.length === 0 ? (
             <EmptyState text="No purchases yet" sub="Items you buy will appear here" />
           ) : (
-            purchases.map((o) => <OrderCard key={o.id} order={o} />)
+            purchases.map((o) => (
+              <OrderCard
+                key={o.id}
+                order={o}
+                onConfirm={() => handleConfirmDelivery(o.id)}
+                confirming={confirmingId === o.id}
+              />
+            ))
           )}
         </TabsContent>
 

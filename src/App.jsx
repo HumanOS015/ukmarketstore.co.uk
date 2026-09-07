@@ -13,6 +13,7 @@ import Orders from './pages/Orders';
 import Profile from './pages/Profile';
 import BuyerProtection from './pages/BuyerProtection';
 import TermsAndConditions from './pages/TermsAndConditions';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import SellerDashboard from './pages/SellerDashboard';
 import About from './pages/About';
 import BuyerProtectionAssistant from './pages/BuyerProtectionAssistant';
@@ -63,6 +64,7 @@ const AuthenticatedApp = () => {
         <Route path="/profile" element={<Profile />} />
         <Route path="/buyer-protection" element={<BuyerProtection />} />
         <Route path="/terms" element={<TermsAndConditions />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/seller-dashboard" element={<SellerDashboard />} />
         <Route path="/about" element={<About />} />
         <Route path="/buyer-protection-assistant" element={<BuyerProtectionAssistant />} />

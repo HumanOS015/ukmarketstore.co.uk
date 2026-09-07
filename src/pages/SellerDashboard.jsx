@@ -87,6 +87,7 @@ export default function SellerDashboard() {
           console.error("Failed to mark product sold", e);
         }
       }
+      base44.functions.invoke("orderNotification", { orderId: trackingModal.orderId, event: "shipped" }).catch(() => {});
       setOrders((prev) =>
         prev.map((o) =>
           o.id === trackingModal.orderId
