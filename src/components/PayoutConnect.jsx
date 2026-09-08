@@ -9,6 +9,7 @@ export default function PayoutConnect({ user }) {
   const [account, setAccount] = useState(null);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
+  const [connectUrl, setConnectUrl] = useState(null);
 
   useEffect(() => {
     const load = async () => {
@@ -41,9 +42,11 @@ export default function PayoutConnect({ user }) {
         "Preparing Stripe"
       );
       if (res.data?.url) {
-        // Stripe onboarding won't work inside the builder iframe
+        // Stripe onboarding can't load inside an iframe, and a programmatic
+        // window.open after an async call gets blocked as a popup — so in an
+        // iframe we surface a tappable link instead (a real user gesture opens it).
         if (window.self !== window.top) {
-          window.open(res.data.url, "_blank");
+          setConnectUrl(res.data.url);
         } else {
           window.location.href = res.data.url;
         }
@@ -95,10 +98,22 @@ export default function PayoutConnect({ user }) {
           </p>
         </div>
       </div>
-      <Button className="w-full mt-3 rounded-xl gap-2" onClick={connect} disabled={connecting}>
-        {connecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-        {connecting ? "Connecting…" : "Connect with Stripe"}
-      </Button>
+      {connectUrl && window.self !== window.top ? (
+        <a
+          href={connectUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full mt-3 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2"
+        >
+          <CreditCard className="w-4 h-4" />
+          Open Stripe setup →
+        </a>
+      ) : (
+        <Button className="w-full mt-3 rounded-xl gap-2" onClick={connect} disabled={connecting}>
+          {connecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+          {connecting ? "Connecting…" : "Connect with Stripe"}
+        </Button>
+      )}
     </div>
   );
 }
