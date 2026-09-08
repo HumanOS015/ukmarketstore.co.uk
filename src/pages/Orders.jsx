@@ -3,7 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Loader2, Package, ShoppingBag, ArrowRight, LifeBuoy, AlertCircle, RefreshCw, CheckCircle, Star } from "lucide-react";
+import { Loader2, Package, ShoppingBag, ArrowRight, LifeBuoy, AlertCircle, RefreshCw, CheckCircle, Star, Truck } from "lucide-react";
+import { detectCourier } from "@/lib/courier";
 import {
   Dialog,
   DialogContent,
@@ -54,6 +55,21 @@ function OrderCard({ order, onConfirm, confirming, onReview, reviewed, onDispute
         </div>
         <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0 self-center" />
       </Link>
+      {order.tracking_number && ["shipped", "delivered"].includes(order.status) && (() => {
+        const courier = detectCourier(order.tracking_number);
+        const url = courier?.trackingUrl || `https://www.google.com/search?q=${encodeURIComponent("track parcel " + order.tracking_number)}`;
+        return (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full mt-2 h-10 rounded-xl border border-border text-sm font-medium flex items-center justify-center gap-2 hover:bg-muted transition-colors"
+          >
+            <Truck className="w-4 h-4" />
+            {courier ? `Track with ${courier.name}` : "Track parcel"}
+          </a>
+        );
+      })()}
       {order.status === "shipped" && onConfirm && (
         <button
           onClick={onConfirm}
