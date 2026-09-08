@@ -1,0 +1,45 @@
+{
+  "name": "Abandoned Cart Reminder",
+  "description": "Emails buyers who started checkout but didn't pay (one reminder 1\u20132h after), and cleans up never-paid orders older than 24h",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 * * * *",
+      "one_time_date": null,
+      "timezone": "Europe/London",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "abandoned_cart_reminder",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "remind": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "abandonedCartReminder",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Remind abandoned carts",
+            "description": "Email buyers who didn't finish checkout"
+          }
+        }
+      }
+    ]
+  }
+}

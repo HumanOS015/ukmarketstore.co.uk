@@ -26,7 +26,7 @@ const STATUS_COLORS = {
   disputed: "bg-red-100 text-red-800",
 };
 
-function OrderCard({ order, onConfirm, confirming, onReview, reviewed }) {
+function OrderCard({ order, onConfirm, confirming, onReview, reviewed, onDispute }) {
   return (
     <div>
       <Link
@@ -73,6 +73,15 @@ function OrderCard({ order, onConfirm, confirming, onReview, reviewed }) {
           Leave a Review
         </button>
       )}
+      {["shipped", "delivered"].includes(order.status) && onDispute && (
+        <button
+          onClick={onDispute}
+          className="w-full mt-2 h-10 rounded-xl border border-amber-200 text-amber-700 text-sm font-medium flex items-center justify-center gap-2 hover:bg-amber-50 transition-colors"
+        >
+          <AlertCircle className="w-4 h-4" />
+          Report a Problem
+        </button>
+      )}
       {["delivered", "completed"].includes(order.status) && reviewed && (
         <div className="w-full mt-2 h-10 rounded-xl bg-muted text-sm font-medium flex items-center justify-center gap-2 text-muted-foreground">
           <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
@@ -94,6 +103,9 @@ export default function Orders() {
   const [reviewComment, setReviewComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewedOrderIds, setReviewedOrderIds] = useState(new Set());
+  const [disputeOrder, setDisputeOrder] = useState(null);
+  const [disputeReason, setDisputeReason] = useState("");
+  const [submittingDispute, setSubmittingDispute] = useState(false);
 
   useEffect(() => {
     loadOrders();
@@ -181,6 +193,35 @@ export default function Orders() {
     }
   };
 
+  const handleDispute = async () => {
+    if (!disputeOrder) return;
+    if (disputeReason.trim().length < 5) {
+      toast.error("Please describe the issue (at least 5 characters)");
+      return;
+    }
+    setSubmittingDispute(true);
+    try {
+      const res = await withTimeout(
+        base44.functions.invoke("openDispute", { orderId: disputeOrder.id, reason: disputeReason.trim() }),
+        20000,
+        "Opening dispute"
+      );
+      if (res.data?.ok) {
+        setOrders((prev) => prev.map((o) => (o.id === disputeOrder.id ? { ...o, status: "disputed" } : o)));
+        toast.success("Your dispute has been submitted. Our team will review it.");
+        setDisputeOrder(null);
+        setDisputeReason("");
+      } else {
+        toast.error(res.data?.error || "Couldn't open a dispute.");
+      }
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.data?.error;
+      toast.error(msg || "Couldn't open a dispute.");
+    } finally {
+      setSubmittingDispute(false);
+    }
+  };
+
   const purchases = orders.filter((o) => o.buyer_email === user?.email);
   const sales = orders.filter((o) => o.seller_email === user?.email);
 
@@ -251,6 +292,7 @@ export default function Orders() {
                 confirming={confirmingId === o.id}
                 onReview={() => { setReviewOrder(o); setReviewRating(5); setReviewComment(""); }}
                 reviewed={reviewedOrderIds.has(o.id)}
+                onDispute={() => { setDisputeOrder(o); setDisputeReason(""); }}
               />
             ))
           )}
@@ -300,6 +342,35 @@ export default function Orders() {
             >
               {submittingReview ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit Review"}
             </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!disputeOrder} onOpenChange={(open) => !open && setDisputeOrder(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Report a Problem</DialogTitle>
+            <DialogDescription>
+              Tell us what went wrong with "{disputeOrder?.product_title}". Your payment stays held in escrow until our team reviews it.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <Textarea
+              placeholder="Describe the issue — e.g. item not received, not as described, damaged in transit..."
+              value={disputeReason}
+              onChange={(e) => setDisputeReason(e.target.value)}
+              className="rounded-xl min-h-[120px]"
+            />
+            <button
+              onClick={handleDispute}
+              disabled={submittingDispute}
+              className="w-full h-11 rounded-xl bg-amber-600 text-white text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
+            >
+              {submittingDispute ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit Dispute"}
+            </button>
+            <p className="text-[11px] text-center text-muted-foreground">
+              Opening a dispute pauses the seller's payout. False claims may affect your account.
+            </p>
           </div>
         </DialogContent>
       </Dialog>

@@ -32,6 +32,9 @@ import { useWishlist } from "@/lib/WishlistContext";
 import moment from "moment";
 import { withTimeout } from "@/lib/withTimeout";
 import { formatDeliveryDate } from "@/lib/deliveryDate";
+import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
+import SimilarItems from "@/components/product/SimilarItems";
+import RecentlyViewed from "@/components/product/RecentlyViewed";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -46,10 +49,15 @@ export default function ProductDetail() {
   const [error, setError] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
   const { isSaved, toggle } = useWishlist();
+  const { record } = useRecentlyViewed();
 
   useEffect(() => {
     loadData();
   }, [id]);
+
+  useEffect(() => {
+    if (id) record(id);
+  }, [id, record]);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -467,6 +475,13 @@ export default function ProductDetail() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {product && (
+        <div className="px-4 pt-2 pb-8 space-y-8">
+          <SimilarItems category={product.category} excludeId={product.id} />
+          <RecentlyViewed excludeId={product.id} />
+        </div>
+      )}
     </div>
   );
 }

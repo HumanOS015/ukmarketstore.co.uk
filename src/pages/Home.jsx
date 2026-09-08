@@ -4,6 +4,12 @@ import ProductCard from "../components/ProductCard";
 import SearchBar from "../components/SearchBar";
 import { Loader2, PackageOpen, AlertCircle, RefreshCw } from "lucide-react";
 import { withTimeout } from "@/lib/withTimeout";
+import { Link } from "react-router-dom";
+
+const CATEGORIES = [
+  "Electronics", "Fashion", "Home & Garden", "Sports", "Toys", "Motors",
+  "Books", "Music", "Collectibles", "Health & Beauty", "Pet Supplies", "Other",
+];
 
 export default function Home() {
   const [products, setProducts] = useState([]);
@@ -69,6 +75,19 @@ export default function Home() {
         <p className="text-muted-foreground text-sm mt-1">
           Buy & sell across the United Kingdom
         </p>
+      </div>
+
+      {/* Category chips */}
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-4 -mx-4 px-4">
+        {CATEGORIES.map((c) => (
+          <Link
+            key={c}
+            to={`/category/${encodeURIComponent(c)}`}
+            className="shrink-0 px-3 py-1.5 rounded-full bg-muted text-xs font-medium text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors whitespace-nowrap"
+          >
+            {c}
+          </Link>
+        ))}
       </div>
 
       {/* Search */}
