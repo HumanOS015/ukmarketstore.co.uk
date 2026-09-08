@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { secrets } from 'base44:runtime';
+import { APP_URL } from "../../shared/stripe.ts";
 
 const BRAND = 'UKMarketStore';
 
@@ -105,7 +106,7 @@ export default async function(req) {
       await send(
         order.buyer_email,
         `Delivery confirmed — ${title}`,
-        `Hi,\n\nThank you for confirming delivery of your order.\n\nItem: ${title}\nThe seller has been paid and your transaction is complete.\n\n${BRAND}`
+        `Hi,\n\nThank you for confirming delivery of your order.\n\nItem: ${title}\nThe seller has been paid and your transaction is complete.\n\nIf you have a moment, please leave a quick review of your seller so others can buy with confidence:\n${APP_URL}/orders\n\n${BRAND}`
       );
     } else if (event === 'refunded') {
       await send(

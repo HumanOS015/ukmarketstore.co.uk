@@ -129,6 +129,11 @@ export default function SellerDashboard() {
   const activeOrders = orders.filter((o) => !["refunded", "completed"].includes(o.status));
   const completedOrders = orders.filter((o) => ["completed", "refunded"].includes(o.status));
 
+  const gmv = orders.filter((o) => ["paid", "shipped", "delivered", "completed"].includes(o.status)).reduce((s, o) => s + (o.price || 0), 0);
+  const inEscrow = orders.filter((o) => ["paid", "shipped", "delivered"].includes(o.status)).reduce((s, o) => s + (o.price || 0), 0);
+  const paidOut = orders.filter((o) => o.status === "completed").reduce((s, o) => s + (o.seller_payout || 0), 0);
+  const commissionPaid = orders.filter((o) => o.status === "completed").reduce((s, o) => s + (o.commission || 0), 0);
+
   return (
     <div className="max-w-2xl mx-auto px-4 md:pl-20 py-6">
       <button
@@ -149,6 +154,26 @@ export default function SellerDashboard() {
       </div>
 
       <PayoutConnect user={user} />
+
+      {/* Earnings */}
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <p className="text-lg font-bold text-primary">£{gmv.toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Total Sales</p>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <p className="text-lg font-bold text-amber-600">£{inEscrow.toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">In Escrow (pending)</p>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <p className="text-lg font-bold text-green-600">£{paidOut.toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Paid Out</p>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <p className="text-lg font-bold text-muted-foreground">£{commissionPaid.toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Commission Paid</p>
+        </div>
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 mb-8">

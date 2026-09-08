@@ -3,9 +3,10 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Trash2, Ban, CheckCircle, Shield, Users, Package, ShoppingBag, RotateCcw } from "lucide-react";
+import { Loader2, Trash2, Ban, CheckCircle, Shield, Users, Package, ShoppingBag, RotateCcw, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import moment from "moment";
+import AnalyticsTab from "@/components/admin/AnalyticsTab";
 
 export default function Admin() {
   const { user } = useAuth();
@@ -147,6 +148,15 @@ export default function Admin() {
           <ShoppingBag className="w-4 h-4" />
           Orders ({orders.length})
         </button>
+        <button
+          onClick={() => setTab("analytics")}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+            tab === "analytics" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+          }`}
+        >
+          <BarChart3 className="w-4 h-4" />
+          Analytics
+        </button>
       </div>
 
       {tab === "listings" ? (
@@ -222,6 +232,8 @@ export default function Admin() {
             </div>
           ))}
         </div>
+      ) : tab === "analytics" ? (
+        <AnalyticsTab orders={orders} products={products} users={users} />
       ) : (
         <div className="space-y-2">
           {orders.length === 0 ? (
