@@ -65,7 +65,7 @@ export const WishlistProvider = ({ children }) => {
   const isSavedFn = useCallback((productId) => wishlistIds.has(productId), [wishlistIds]);
 
   return (
-    <WishlistContext.Provider value={{ isSaved: isSavedFn, toggle, refresh: loadWishlist }}>
+    <WishlistContext.Provider value={{ isSaved: isSavedFn, toggle, refresh: loadWishlist, wishlistIds }}>
       {children}
     </WishlistContext.Provider>
   );
