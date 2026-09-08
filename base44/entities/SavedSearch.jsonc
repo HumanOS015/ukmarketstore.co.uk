@@ -1,0 +1,37 @@
+{
+  "name": "SavedSearch",
+  "type": "object",
+  "properties": {
+    "buyer_email": {
+      "type": "string",
+      "description": "Buyer email who saved the search"
+    },
+    "query": {
+      "type": "string",
+      "description": "Search query text (empty = any)"
+    },
+    "category": {
+      "type": "string",
+      "description": "Category filter, or 'All Categories'"
+    },
+    "last_notified_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp of the last digest email sent for this search"
+    }
+  },
+  "required": [
+    "buyer_email"
+  ],
+  "rls": {
+    "create": {
+      "data.buyer_email": "{{user.email}}"
+    },
+    "read": {
+      "data.buyer_email": "{{user.email}}"
+    },
+    "delete": {
+      "data.buyer_email": "{{user.email}}"
+    }
+  }
+}

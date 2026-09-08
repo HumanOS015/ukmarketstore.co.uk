@@ -1,0 +1,45 @@
+{
+  "name": "Saved Search Digest",
+  "description": "Emails buyers a daily digest of new listings matching their saved searches",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 8 * * *",
+      "one_time_date": null,
+      "timezone": "Europe/London",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "saved_search_digest",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "digest": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "savedSearchDigest",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Send search digests",
+            "description": "Email buyers new matches for their saved searches"
+          }
+        }
+      }
+    ]
+  }
+}

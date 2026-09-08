@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import ProductCard from "../components/ProductCard";
 import SearchBar from "../components/SearchBar";
-import { Loader2, PackageOpen, AlertCircle, RefreshCw } from "lucide-react";
+import { Loader2, PackageOpen, AlertCircle, RefreshCw, Bell, X } from "lucide-react";
+import { toast } from "sonner";
 import { withTimeout } from "@/lib/withTimeout";
 import { Link } from "react-router-dom";
 
@@ -19,9 +20,27 @@ export default function Home() {
   const [category, setCategory] = useState("All Categories");
   const [sortBy, setSortBy] = useState("newest");
   const [visibleCount, setVisibleCount] = useState(20);
+  const [user, setUser] = useState(null);
+  const [savedSearches, setSavedSearches] = useState([]);
+  const [savingSearch, setSavingSearch] = useState(false);
 
   useEffect(() => {
     loadProducts();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const u = await base44.auth.me().catch(() => null);
+        setUser(u);
+        if (u?.email) {
+          const saved = await base44.entities.SavedSearch.filter({ buyer_email: u.email }, "-created_date", 50);
+          setSavedSearches(saved);
+        }
+      } catch (e) {
+        // ignore — saved searches are a secondary feature
+      }
+    })();
   }, []);
 
   const loadProducts = async () => {
@@ -65,6 +84,47 @@ export default function Home() {
     setVisibleCount(20);
   }, [search, category, sortBy]);
 
+  const isSearchActive = !!(search.trim() || category !== "All Categories");
+  const currentKey = `${search.trim().toLowerCase()}|${category}`;
+  const alreadySaved = savedSearches.some(
+    (s) => `${(s.query || "").trim().toLowerCase()}|${s.category || "All Categories"}` === currentKey
+  );
+
+  const handleSaveSearch = async () => {
+    if (!user?.email) {
+      toast.info("Log in to save searches and get alerts");
+      return;
+    }
+    setSavingSearch(true);
+    try {
+      const created = await base44.entities.SavedSearch.create({
+        buyer_email: user.email,
+        query: search.trim(),
+        category,
+      });
+      setSavedSearches((prev) => [created, ...prev]);
+      toast.success("Search saved — you'll get a daily email when new items match");
+    } catch (e) {
+      toast.error("Couldn't save this search");
+    } finally {
+      setSavingSearch(false);
+    }
+  };
+
+  const handleDeleteSearch = async (id) => {
+    try {
+      await base44.entities.SavedSearch.delete(id);
+      setSavedSearches((prev) => prev.filter((s) => s.id !== id));
+    } catch (e) {
+      toast.error("Couldn't remove this search");
+    }
+  };
+
+  const applySavedSearch = (s) => {
+    setSearch(s.query || "");
+    setCategory(s.category || "All Categories");
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 md:pl-20 py-4">
       {/* Hero */}
@@ -100,11 +160,45 @@ export default function Home() {
         />
       </div>
 
+      {/* Saved searches */}
+      {user?.email && savedSearches.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto pb-2 mb-4 -mx-4 px-4">
+          {savedSearches.map((s) => (
+            <div
+              key={s.id}
+              className="shrink-0 flex items-center gap-1 pl-3 pr-1 py-1.5 rounded-full bg-primary/10 text-xs font-medium text-primary whitespace-nowrap"
+            >
+              <button onClick={() => applySavedSearch(s)} className="hover:underline">
+                {s.query || "All"}{s.category && s.category !== "All Categories" ? ` · ${s.category}` : ""}
+              </button>
+              <button
+                onClick={() => handleDeleteSearch(s.id)}
+                className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-primary/20"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Results count + sort */}
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-xs text-muted-foreground">
-          {sorted.length} {sorted.length === 1 ? "listing" : "listings"} found
-        </p>
+      <div className="flex items-center justify-between mb-4 gap-2">
+        <div className="flex items-center gap-2">
+          <p className="text-xs text-muted-foreground">
+            {sorted.length} {sorted.length === 1 ? "listing" : "listings"} found
+          </p>
+          {isSearchActive && user?.email && !alreadySaved && (
+            <button
+              onClick={handleSaveSearch}
+              disabled={savingSearch}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors disabled:opacity-60"
+            >
+              <Bell className="w-3 h-3" />
+              {savingSearch ? "Saving…" : "Save search"}
+            </button>
+          )}
+        </div>
         <div className="flex gap-1.5">
           {[
             { key: "newest", label: "Newest" },
