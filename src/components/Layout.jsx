@@ -85,6 +85,7 @@ export default function Layout() {
           <div className="flex flex-col items-center sm:items-start gap-1">
             <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} UKMarketStore. All rights reserved.</p>
             <p className="text-xs text-muted-foreground">Trading name: UKMarketStore · Contact: ukmarketstore@hotmail.com</p>
+            <p className="text-xs text-muted-foreground">Registered business address: [To be added] · UKMarketStore operates as an online marketplace</p>
           </div>
           <div className="flex items-center gap-5">
             <Link to="/about" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">About</Link>
