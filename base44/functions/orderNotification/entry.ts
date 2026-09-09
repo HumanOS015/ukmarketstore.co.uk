@@ -63,8 +63,8 @@ export default async function(req) {
     }
 
     // "shipped" notification dedup is enforced upstream in markShipped (only sent on the
-    // first paid -> shipped transition). Requiring the internal token here means a seller
-    // cannot bypass that by invoking orderNotification directly.
+    // first paid -> shipped transition) AND here via the Order.shipping_notified flag, so a
+    // repeat call — even with the internal token — cannot re-send the shipping email.
 
     const title = sanitizeText(order.product_title, 200) || 'your item';
     const price = typeof order.price === 'number' ? `£${order.price.toFixed(2)}` : '';
@@ -86,11 +86,19 @@ export default async function(req) {
         `Hi,\n\nThank you for your purchase on ${BRAND}.\n\nItem: ${title}\nPrice: ${price}\n\nYour payment is held securely in escrow and will only be released to the seller once you confirm delivery. The seller will dispatch your item shortly.\n\n${BRAND}`
       );
     } else if (event === 'shipped') {
+      // Defense-in-depth dedup: even if a caller somehow presented the internal
+      // token, the "Your order has shipped" email may only be sent once per order.
+      // markShipped raises this event only on the first paid -> shipped transition;
+      // this flag is the second lock that prevents repeat sends.
+      if (order.shipping_notified) {
+        return Response.json({ error: 'Shipping notification already sent' }, { status: 409 });
+      }
       await send(
         order.buyer_email,
         `Your order has shipped — ${title}`,
         `Hi,\n\nGood news — your item is on its way.\n\nItem: ${title}\nTracking: ${tracking}\n\nOnce you receive it, please confirm delivery in your Orders page so the seller can be paid.\n\n${BRAND}`
       );
+      await base44.asServiceRole.entities.Order.update(order.id, { shipping_notified: true });
     } else if (event === 'delivered') {
       await send(
         order.seller_email,

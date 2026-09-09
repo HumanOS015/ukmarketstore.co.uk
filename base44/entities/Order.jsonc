@@ -56,6 +56,11 @@
       "type": "string",
       "description": "Shipping tracking number"
     },
+    "shipping_notified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the buyer has already been sent the 'your order has shipped' email (dedup)"
+    },
     "payment_intent_id": {
       "type": "string",
       "description": "Stripe PaymentIntent ID (for refunds)"
