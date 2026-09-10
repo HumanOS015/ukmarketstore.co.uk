@@ -31,12 +31,28 @@ export default async function(req) {
 
     const pending = await base44.asServiceRole.entities.Order.filter({ status: "pending_payment" }, "-created_date", 100);
 
+    // The buyer_email on a pending order comes from the public, unauthenticated checkout
+    // endpoint, which accepts any email without ownership verification. Only send
+    // abandoned-cart reminders to addresses that belong to a registered user account, so
+    // the public endpoint can't be used as an open spam relay to arbitrary addresses.
+    const candidates = pending.filter((o) => {
+      const created = new Date(o.created_date).getTime();
+      return created <= oneHourAgo && created >= twoHoursAgo && o.buyer_email;
+    });
+    const uniqueEmails = [...new Set(candidates.map((o) => o.buyer_email))];
+    const registeredEmails = new Set<string>();
+    for (const email of uniqueEmails) {
+      const users = await base44.asServiceRole.entities.User.filter({ email }, "-created_date", 1).catch(() => []);
+      if (users.length > 0) registeredEmails.add(email);
+    }
+
     let reminded = 0;
     let cleaned = 0;
     for (const order of pending) {
       const created = new Date(order.created_date).getTime();
-      // One-shot reminder window: created 1–2h ago
+      // One-shot reminder window: created 1–2h ago, only to registered (verified) buyers
       if (created <= oneHourAgo && created >= twoHoursAgo) {
+        if (!registeredEmails.has(order.buyer_email)) continue;
         const title = sanitizeText(order.product_title, 200) || "this item";
         await base44.asServiceRole.integrations.Core.SendEmail({
           to: order.buyer_email,
