@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { secrets } from "base44:runtime";
 import { APP_URL } from "../../shared/stripe.ts";
+import { sanitizeText } from "../../shared/sanitize.ts";
 
 // Runs hourly via the "Abandoned Cart Reminder" workflow.
 // 1. Emails buyers who started checkout (pending_payment) between 1h and 2h ago — a single
@@ -36,10 +37,11 @@ export default async function(req) {
       const created = new Date(order.created_date).getTime();
       // One-shot reminder window: created 1–2h ago
       if (created <= oneHourAgo && created >= twoHoursAgo) {
+        const title = sanitizeText(order.product_title, 200) || "this item";
         await base44.asServiceRole.integrations.Core.SendEmail({
           to: order.buyer_email,
-          subject: `Still interested in ${order.product_title || "this item"}?`,
-          body: `Hi,\n\nYou started checkout for "${order.product_title}" on UKMarketStore but didn't complete payment. The item is still available — finish your purchase before someone else does:\n\n${APP_URL}/product/${order.product_id}\n\nUKMarketStore`,
+          subject: `Still interested in ${title}?`,
+          body: `Hi,\n\nYou started checkout for "${title}" on UKMarketStore but didn't complete payment. The item is still available — finish your purchase before someone else does:\n\n${APP_URL}/product/${order.product_id}\n\nUKMarketStore`,
         }).catch(() => {});
         reminded++;
       }

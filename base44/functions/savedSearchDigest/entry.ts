@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { secrets } from "base44:runtime";
 import { APP_URL } from "../../shared/stripe.ts";
+import { sanitizeText } from "../../shared/sanitize.ts";
 
 // Runs daily via the "Saved Search Digest" workflow.
 // For each saved search, finds active products listed since the last digest that match the
@@ -45,12 +46,13 @@ export default async function(req) {
       if (matches.length === 0) continue;
 
       const top = matches.slice(0, 5);
-      const lines = top.map((p) => `- ${p.title} - £${p.price}\n  ${APP_URL}/product/${p.id}`);
+      const lines = top.map((p) => `- ${sanitizeText(p.title, 200)} - £${p.price}\n  ${APP_URL}/product/${p.id}`);
       const scope = cat ? cat.toLowerCase() : "listing";
+      const queryLabel = q ? sanitizeText(s.query, 100) : "";
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: s.buyer_email,
-        subject: `${matches.length} new ${scope}${matches.length === 1 ? "" : "s"} on UKMarketStore${q ? ` matching "${s.query}"` : ""}`,
-        body: `Hi,\n\n${matches.length} new ${scope}${matches.length === 1 ? "" : "s"} ${q ? `matching "${s.query}" ` : ""}just listed on UKMarketStore.\n\n${lines.join("\n\n")}\n\nUKMarketStore`,
+        subject: `${matches.length} new ${scope}${matches.length === 1 ? "" : "s"} on UKMarketStore${queryLabel ? ` matching "${queryLabel}"` : ""}`,
+        body: `Hi,\n\n${matches.length} new ${scope}${matches.length === 1 ? "" : "s"} ${queryLabel ? `matching "${queryLabel}" ` : ""}just listed on UKMarketStore.\n\n${lines.join("\n\n")}\n\nUKMarketStore`,
       }).catch(() => {});
 
       await base44.asServiceRole.entities.SavedSearch.update(s.id, { last_notified_date: now.toISOString() }).catch(() => {});
