@@ -19,8 +19,8 @@ const sections = [
     content: `UKMarketStore charges a 10% commission on every completed sale. This fee is automatically deducted from the seller's payout. The seller's net payout (90% of the sale price) will be transferred after the buyer confirms delivery. There are no fees for listing items or browsing the platform.`,
   },
   {
-    title: "5. Buyer Protection & Escrow Automation all buyer payments are held securely in escrow via stripe connect. The 48-hour disput window is strickly automated based on logistics data:",
-    content: `Automated Timer: the 48-hour dispute window begins the exact minute the integrated UK carrier (e.g., Royal Mail, Evri, DPD) updates the tracking status to "Delivered." Releasing Funds: If a buyer does not click "Confirm Delivery" or manually "Reaise a Dispute" within 48-hours of that carrier dilivery timestamp, the stripe escrow system will automatically close the transaction and release the funds (minus our 10% commission) to the seller. Lost Parcels: If a tracking number does not show a "delivered" status within the estimated delivery window, the buyer can open a dispute for non-delivery to hold the automated release of fund. `,
+    title: "5. Buyer Protection & Escrow Automation all buyer payments are held securely in escrow via stripe connect. The 48-hour dispute window is strictly automated based on logistics data:",
+    content: `Automated Timer: the 48-hour dispute window begins the exact minute the integrated UK carrier (e.g., Royal Mail, Evri, DPD) updates the tracking status to "Delivered." Releasing Funds: If a buyer does not click "Confirm Delivery" or manually "Reaise a Dispute" within 48-hours of that carrier delivery timestamp, the stripe escrow system will automatically close the transaction and release the funds (minus our 10% commission) to the seller. Lost Parcels: If a tracking number does not show a "delivered" status within the estimated delivery window, the buyer can open a dispute for non-delivery to hold the automated release of fund. `,
   },
   {
     title: "6. Prohibited Items",
