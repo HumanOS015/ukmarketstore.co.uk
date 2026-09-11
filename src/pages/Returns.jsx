@@ -8,7 +8,7 @@ const sections = [
   },
   {
     title: "2. How to Initiate a Return or Cancellation to cancel an error or request a return: ",
-    content: `For Business Sale: Contact the seller directly or email support@ukmarketstore.co.uk within 14 days of receiving your item. The individual business seller is lagally responsible for providing a return address and managing the refunds. For Private Sales  Returns can only be initiated by raising an official dispute within the 48-hour post-delivery window if the item arrives faulty or does not match the sellers description..`,
+    content: `For Business Sale: Contact the seller directly or email support@ukmarketstore.co.uk within 14 days of receiving your item. The individual business seller is lagally responsible for providing a return address and managing the refunds. For Private Sales  Returns can only be initiated by raising an official dispute within the 48-hour post-delivery window if the item arrives faulty or does not match the sellers description.`,
   },
   {
     title: "3. Refund Timeline",
