@@ -19,7 +19,7 @@ const sections = [
     content: `UKMarketStore charges a 10% commission on every completed sale. This fee is automatically deducted from the seller's payout. The seller's net payout (90% of the sale price) will be transferred after the buyer confirms delivery. There are no fees for listing items or browsing the platform.`,
   },
   {
-    title: "5. Buyer Protection & Escrow",
+    title: "5. Buyer Protection & Escrow Automation all buyer payments are held securely in escrow via stripe connect. The 48-hour disput window is strickly automated based on logistics data:",
     content: `All payments are held in escrow via Stripe until the buyer confirms receipt of their item. Funds are only released to the seller after delivery is confirmed. Sellers must dispatch items within 3 business days of a sale and provide a valid UK tracking number within that window. If a seller fails to dispatch or provide tracking within 3 business days, the buyer will receive a full automatic refund. Disputes must be raised within 48 hours of delivery. UKMarketStore reserves the right to make final decisions on all disputes.`,
   },
   {
