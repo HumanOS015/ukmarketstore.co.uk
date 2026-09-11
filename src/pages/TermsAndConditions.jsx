@@ -20,7 +20,7 @@ const sections = [
   },
   {
     title: "5. Buyer Protection & Escrow Automation all buyer payments are held securely in escrow via stripe connect. The 48-hour disput window is strickly automated based on logistics data:",
-    content: `All payments are held in escrow via Stripe until the buyer confirms receipt of their item. Funds are only released to the seller after delivery is confirmed. Sellers must dispatch items within 3 business days of a sale and provide a valid UK tracking number within that window. If a seller fails to dispatch or provide tracking within 3 business days, the buyer will receive a full automatic refund. Disputes must be raised within 48 hours of delivery. UKMarketStore reserves the right to make final decisions on all disputes.`,
+    content: `Automated Timer: the 48-hour dispute window begins the exact minute the integrated UK carrier (e.g., Royal Mail, Evri, DPD) updates the tracking status to "Delivered." Releasing Funds: If a buyer does not click "Confirm Delivery" or manually "Reaise a Dispute" within 48-hours of that carrier dilivery timestamp, the stripe escrow system will automatically close the transaction and release the funds (minus our 10% commission) to the seller. Lost Parcels: If a tracking number does not show a "delivered" status within the estimated delivery window, the buyer can open a dispute for non-delivery to hold the automated release of fund. `,
   },
   {
     title: "6. Prohibited Items",
