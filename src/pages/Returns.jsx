@@ -4,11 +4,11 @@ import { ArrowLeft, RotateCcw } from "lucide-react";
 const sections = [
   {
     title: "1. Your Right to Cancel and return",
-    content: `The right to return an item depends strictly on whether the seller is a private individual or a registered business: peer-to-peer sales (private sellers): purchases made from private individuals are final. under UK law, private sellers are not requird to accept returns for "change of mind" or sizing issues. Returns are only mandatory if the item is proven to be "Faulty" or "Not as described" business sales (Registered Businesses): in accordance with the UK Consumer Contracts Regulations 2023, buyers purchasing froma registered business seller have a statutory 14-day right to cancel and return most online purchases for any reason.`,
+    content: `The right to return an item depends strictly on whether the seller is a private individual or a registered business: peer-to-peer sales (private sellers): purchases made from private individuals are final. under UK law, private sellers are not required to accept returns for "change of mind" or sizing issues. Returns are only mandatory if the item is proven to be "Faulty" or "Not as described" business sales (Registered Businesses): in accordance with the UK Consumer Contracts Regulations 2023, buyers purchasing from a registered business seller have a statutory 14-day right to cancel and return most online purchases for any reason.`,
   },
   {
     title: "2. How to Initiate a Return or Cancellation to cancel an error or request a return: ",
-    content: `For Business Sale: Contact the seller directly or email support@ukmarketstore.co.uk within 14 days of receiving your item. The individual business seller is lagally responsible for providing a return address and managing the refunds. For Private Sales  Returns can only be initiated by raising an official dispute within the 48-hour post-delivery window if the item arrives faulty or does not match the sellers description.`,
+    content: `For Business Sale: Contact the seller directly or email support@ukmarketstore.co.uk within 14 days of receiving your item. The individual business seller is legally responsible for providing a return address and managing the refunds. For Private Sales  Returns can only be initiated by raising an official dispute within the 48-hour post-delivery window if the item arrives faulty or does not match the sellers description.`,
   },
   {
     title: "3. Refund Timeline",
@@ -16,7 +16,7 @@ const sections = [
   },
   {
     title: "4. Returning the Item",
-    content: `Unless the item is faulty, not as described, or the seller has agreed otherwise, you are responsible for the cost of returning the item to the seller and for ensuring it is returned in a reasonable condition. Sellers must not refuse a valid return. If the seller fails to dispatch the item or provide a valid UK tracking number within 3 business days of sale, you are entitled to a full automatic refund with no return required.`,
+    content: `Unless the item is faulty, not as described, or the seller has agreed otherwise, you are responsible for the cost of returning the item to the seller and for ensuring it is returned in a reasonable condition. Sellers must not refuse a valid return. If the seller fails to dispatch the item or provide a valid UK tracking number within 3 business days of sale, you are entitled to a full automated refund with no return required.`,
   },
   {
     title: "5. Items That Cannot Be Returned",
