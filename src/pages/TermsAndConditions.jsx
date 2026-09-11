@@ -100,7 +100,7 @@ export default function TermsAndConditions() {
       <div className="mt-10 p-4 rounded-2xl bg-muted/50 border border-border text-sm text-muted-foreground">
         <p className="font-medium text-foreground mb-1">Contact Us</p>
         <p>If you have any questions about these Terms and Conditions, please contact us at{" "}
-          <a href="mailto:ukmarketstore@hotmail.com" className="text-primary hover:underline">
+          <a href="mailto:support@ukmarketstore.co.uk" className="text-primary hover:underline">
             ukmarketstore@hotmail.com
           </a>.
         </p>
