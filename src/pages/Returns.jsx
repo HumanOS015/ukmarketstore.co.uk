@@ -3,8 +3,8 @@ import { ArrowLeft, RotateCcw } from "lucide-react";
 
 const sections = [
   {
-    title: "1. Your Right to Cancel",
-    content: `Under the Consumer Contracts (Information, Cancellation and Additional Charges) Regulations 2013, you have the right to cancel most online purchases within 14 days, beginning the day after you receive your item. This applies to buyers purchasing from sellers on UKMarketStore. UKMarketStore is a marketplace that connects buyers and sellers; the individual seller is responsible for honouring your cancellation and refund rights.`,
+    title: "1. Your Right to Cancel and return",
+    content: `The right to return an item depends strictly on whether the seller is a private individual or a registered business: peer-to-peer sales (private sellers): purchases made from private individuals are final. under UK law, private sellers are not requird to accept returns for "change of mind" or sizing issues. Returns are only mandatory if the item is proven to be "Faulty" or "Not as described" business sales (Registered Businesses): in accordance with the UK Consumer Contracts Regulations 2023, buyers purchasing froma registered business seller have a statutory 14-day right to cancel and return most online purchases for any reason.`,
   },
   {
     title: "2. How to Cancel",
