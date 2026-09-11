@@ -84,8 +84,8 @@ export default function Layout() {
         <div className="max-w-7xl mx-auto px-4 pt-8 pb-20 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex flex-col items-center sm:items-start gap-1">
             <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} UKMarketStore. All rights reserved.</p>
-            <p className="text-xs text-muted-foreground">Trading name: UKMarketStore · Contact: ukmarketstore@hotmail.com</p>
-            <p className="text-xs text-muted-foreground">Registered business address: [To be added] · UKMarketStore operates as an online marketplace</p>
+            <p className="text-xs text-muted-foreground">Trading name: UKMarketStore · Contact: ukmarketstore@hotmail.co.uk</p>
+          
           </div>
           <div className="flex items-center gap-5">
             <Link to="/about" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">About</Link>
