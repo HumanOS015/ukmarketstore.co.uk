@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { secrets } from "base44:runtime";
+import { sanitizeText } from "../../shared/sanitize.ts";
 
 // Buyer opens a dispute on an active order. This is the ONLY client path that sets an order
 // to "disputed" — Order update RLS is admin-only, so buyers can't change status directly.
@@ -43,11 +44,15 @@ export default async function(req) {
       description: `Dispute opened by buyer: ${reason.trim()}`,
     });
 
-    // Notify the platform admin so the dispute is reviewed promptly
+    // Notify the platform admin so the dispute is reviewed promptly.
+    // product_title is seller-controlled and reason is buyer-controlled; sanitize both before
+    // interpolating into the email subject/body to prevent HTML/CRLF injection.
+    const title = sanitizeText(order.product_title, 200) || "order";
+    const reasonText = sanitizeText(reason, 1000);
     base44.asServiceRole.integrations.Core.SendEmail({
       to: "ukmarketstore@hotmail.com",
-      subject: `Dispute opened — ${order.product_title || "order"}`,
-      body: `A buyer has opened a dispute.\n\nItem: ${order.product_title}\nBuyer: ${order.buyer_email}\nSeller: ${order.seller_email}\nPrice: £${order.price}\nReason: ${reason.trim()}\n\nReview the order in the Admin panel.`,
+      subject: `Dispute opened — ${title}`,
+      body: `A buyer has opened a dispute.\n\nItem: ${title}\nBuyer: ${order.buyer_email}\nSeller: ${order.seller_email}\nPrice: £${order.price}\nReason: ${reasonText}\n\nReview the order in the Admin panel.`,
     }).catch(() => {});
 
     return Response.json({ ok: true });
