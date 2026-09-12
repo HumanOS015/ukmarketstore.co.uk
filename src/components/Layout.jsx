@@ -22,8 +22,8 @@ export default function Layout() {
         <p className="text-sm text-muted-foreground max-w-sm">
           Your account has been banned from UKMarketStore. Please contact support if you believe this is an error.
         </p>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -32,7 +32,7 @@ export default function Layout() {
       <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border">
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <img src="https://media.base44.com/images/public/69cdac0e3dd4898d79118860/ad38efa69_no_change__2_.png"
+            <img src="https://media.base44.com/images/public/69cdac0e3dd4898d79118860/dd93ae03f_Copilot_20260912_230059.png"
 
             alt="UKMarketStore logo"
             className="w-10 h-10 rounded-lg object-contain opacity-100"
@@ -43,8 +43,8 @@ export default function Layout() {
           <div className="flex items-center gap-4">
             <Link
               to="/wishlist"
-              className="flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
-            >
+              className="flex items-center justify-center text-muted-foreground hover:text-primary transition-colors">
+              
               <Heart className="w-4 h-4" />
             </Link>
             <Link
@@ -61,15 +61,15 @@ export default function Layout() {
               <FileText className="w-3.5 h-3.5 text-[hsl(var(--primary))]" />
               Terms
             </Link>
-            {user?.role === "admin" && (
-              <Link
-                to="/admin"
-                className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
-              >
+            {user?.role === "admin" &&
+            <Link
+              to="/admin"
+              className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors">
+              
                 <Shield className="w-3.5 h-3.5" />
                 Admin
               </Link>
-            )}
+            }
           </div>
         </div>
       </header>
