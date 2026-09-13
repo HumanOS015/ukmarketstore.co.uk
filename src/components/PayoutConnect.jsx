@@ -66,8 +66,8 @@ export default function PayoutConnect({ user }) {
       <div className="rounded-2xl border border-border bg-card p-4 flex items-center gap-3">
         <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
         <span className="text-sm text-muted-foreground">Checking payout status…</span>
-      </div>
-    );
+      </div>);
+
   }
 
   const connected = account?.charges_enabled;
@@ -83,12 +83,12 @@ export default function PayoutConnect({ user }) {
         <Button variant="outline" size="sm" className="rounded-xl shrink-0" onClick={connect} disabled={connecting}>
           Manage
         </Button>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
-    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 hidden">
       <div className="flex items-start gap-3">
         <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
         <div className="flex-1">
@@ -98,22 +98,22 @@ export default function PayoutConnect({ user }) {
           </p>
         </div>
       </div>
-      {connectUrl && window.self !== window.top ? (
-        <a
-          href={connectUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full mt-3 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2"
-        >
+      {connectUrl && window.self !== window.top ?
+      <a
+        href={connectUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-full mt-3 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2">
+        
           <CreditCard className="w-4 h-4" />
           Open Stripe setup →
-        </a>
-      ) : (
-        <Button className="w-full mt-3 rounded-xl gap-2" onClick={connect} disabled={connecting}>
+        </a> :
+
+      <Button className="w-full mt-3 rounded-xl gap-2" onClick={connect} disabled={connecting}>
           {connecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
           {connecting ? "Connecting…" : "Connect with Stripe"}
         </Button>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 }
