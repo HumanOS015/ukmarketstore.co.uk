@@ -35,7 +35,7 @@ export default function Layout() {
             <img src="https://media.base44.com/images/public/69cdac0e3dd4898d79118860/dd93ae03f_Copilot_20260912_230059.png"
 
             alt="UKMarketStore logo"
-            className="w-10 h-10 rounded-lg object-contain opacity-100"
+            className="w-10 h-10 rounded-lg object-contain opacity-100 my-2"
             fetchpriority="high" />
             
             <span className="font-bold tracking-tight text-sm">UKMarketStore</span>
