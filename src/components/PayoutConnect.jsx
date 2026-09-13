@@ -87,33 +87,33 @@ export default function PayoutConnect({ user }) {
 
   }
 
-  return (
-    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 hidden">
-      <div className="flex items-start gap-3">
-        <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-        <div className="flex-1">
-          <p className="text-sm font-medium text-amber-800">Connect your bank account to receive payouts</p>
-          <p className="text-xs text-amber-700 mt-0.5">
-            You need to connect with Stripe to get paid for your sales. It takes about 2 minutes.
-          </p>
-        </div>
-      </div>
-      {connectUrl && window.self !== window.top ?
-      <a
-        href={connectUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="w-full mt-3 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2">
-        
-          <CreditCard className="w-4 h-4" />
-          Open Stripe setup →
-        </a> :
+  return null;
 
-      <Button className="w-full mt-3 rounded-xl gap-2" onClick={connect} disabled={connecting}>
-          {connecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-          {connecting ? "Connecting…" : "Connect with Stripe"}
-        </Button>
-      }
-    </div>);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }

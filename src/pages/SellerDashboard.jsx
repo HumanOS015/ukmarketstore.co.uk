@@ -157,22 +157,22 @@ export default function SellerDashboard() {
 
       {/* Earnings */}
       <div className="grid grid-cols-2 gap-3 mb-6">
-        <div className="rounded-2xl border border-border bg-card p-4 hidden">
-          <p className="text-lg font-bold text-primary">£{gmv.toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">Total Sales</p>
-        </div>
-        <div className="rounded-2xl border border-border bg-card p-4 hidden">
-          <p className="text-lg font-bold text-amber-600">£{inEscrow.toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">In Escrow (pending)</p>
-        </div>
-        <div className="rounded-2xl border border-border bg-card p-4 hidden">
-          <p className="text-lg font-bold text-green-600">£{paidOut.toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">Paid Out</p>
-        </div>
-        <div className="rounded-2xl border border-border bg-card p-4 hidden">
-          <p className="text-lg font-bold text-muted-foreground">£{commissionPaid.toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">Commission Paid</p>
-        </div>
+        
+
+
+        
+        
+
+
+        
+        
+
+
+        
+        
+
+
+        
       </div>
 
       {/* Stats */}
