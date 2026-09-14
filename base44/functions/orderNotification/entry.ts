@@ -74,14 +74,25 @@ export default async function(req) {
     const send = (to, subject, text) =>
       base44.asServiceRole.integrations.Core.SendEmail({ to, subject, body: text });
 
+    // buyer_email originates from the public, unauthenticated checkout endpoint, which
+    // accepts any email without ownership verification. Only send buyer-facing emails to
+    // an address that belongs to a registered user (login = email verified by platform
+    // auth), so the public endpoint can't be used as an open email relay to arbitrary
+    // addresses. Seller emails are unaffected (seller_email is the verified Stripe Connect
+    // account holder). This mirrors the registered-user gating in abandonedCartReminder.
+    const isBuyerRegistered = !!(
+      await base44.asServiceRole.entities.User.filter({ email: order.buyer_email }, '-created_date', 1).catch(() => [])
+    )[0];
+    const sendBuyer = (subject, text) =>
+      isBuyerRegistered ? send(order.buyer_email, subject, text) : Promise.resolve();
+
     if (event === 'placed') {
       await send(
         order.seller_email,
         `New order received — ${title}`,
         `Hi,\n\nYou have a new order on ${BRAND}.\n\nItem: ${title}\nSale price: ${price}\n\nPlease log in to your Seller Dashboard to add a tracking number and dispatch the item within 3 business days.\n\nYour payment is held safely in escrow and will be released once the buyer confirms delivery (or automatically after 7 days).\n\n${BRAND}`
       );
-      await send(
-        order.buyer_email,
+      await sendBuyer(
         `Order confirmed — ${title}`,
         `Hi,\n\nThank you for your purchase on ${BRAND}.\n\nItem: ${title}\nPrice: ${price}\n\nYour payment is held securely in escrow and will only be released to the seller once you confirm delivery. The seller will dispatch your item shortly.\n\n${BRAND}`
       );
@@ -93,8 +104,7 @@ export default async function(req) {
       if (order.shipping_notified) {
         return Response.json({ error: 'Shipping notification already sent' }, { status: 409 });
       }
-      await send(
-        order.buyer_email,
+      await sendBuyer(
         `Your order has shipped — ${title}`,
         `Hi,\n\nGood news — your item is on its way.\n\nItem: ${title}\nTracking: ${tracking}\n\nOnce you receive it, please confirm delivery in your Orders page so the seller can be paid.\n\n${BRAND}`
       );
@@ -111,14 +121,12 @@ export default async function(req) {
         `Funds released — ${title}`,
         `Hi,\n\nThe escrow funds for your sale have been released to your Stripe account.\n\nItem: ${title}\nAmount paid to you (90%): ${payout}\n\nThis will arrive in your bank account per your Stripe payout schedule.\n\n${BRAND}`
       );
-      await send(
-        order.buyer_email,
+      await sendBuyer(
         `Delivery confirmed — ${title}`,
         `Hi,\n\nThank you for confirming delivery of your order.\n\nItem: ${title}\nThe seller has been paid and your transaction is complete.\n\nIf you have a moment, please leave a quick review of your seller so others can buy with confidence:\n${APP_URL}/orders\n\n${BRAND}`
       );
     } else if (event === 'refunded') {
-      await send(
-        order.buyer_email,
+      await sendBuyer(
         `Refund issued — ${title}`,
         `Hi,\n\nA refund of ${price} has been issued for your order.\n\nItem: ${title}\n\nThe funds will appear back on your card within 5–10 business days, depending on your bank.\n\n${BRAND}`
       );
