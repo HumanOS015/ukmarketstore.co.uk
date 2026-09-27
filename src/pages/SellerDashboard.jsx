@@ -83,7 +83,8 @@ export default function SellerDashboard() {
       await withTimeout(
         base44.functions.invoke("markShipped", {
           orderId: trackingModal.orderId,
-          trackingNumber: `${carrier}: ${trackingNumber.trim()}`
+          carrier,
+          trackingNumber: trackingNumber.trim()
         }),
         15000,
         "Saving tracking"
@@ -91,7 +92,7 @@ export default function SellerDashboard() {
       setOrders((prev) =>
       prev.map((o) =>
       o.id === trackingModal.orderId ?
-      { ...o, tracking_number: `${carrier}: ${trackingNumber.trim()}`, status: "shipped" } :
+      { ...o, tracking_number: trackingNumber.trim(), carrier, tracking_status: "in_transit", status: "shipped" } :
       o
       )
       );
@@ -310,7 +311,7 @@ function OrderCard({ order, onAddTracking }) {
         <p className="text-sm font-semibold mt-0.5">£{order.price?.toFixed(2)}</p>
         {hasTracking ?
         <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-            <Truck className="w-3 h-3" /> {order.tracking_number}
+            <Truck className="w-3 h-3" /> {order.carrier ? `${order.carrier} · ` : ""}{order.tracking_number}
           </p> :
 
         onAddTracking &&
