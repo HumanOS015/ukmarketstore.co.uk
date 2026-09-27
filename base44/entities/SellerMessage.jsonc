@@ -1,0 +1,42 @@
+{
+  "name": "SellerMessage",
+  "type": "object",
+  "properties": {
+    "conversation_id": {
+      "type": "string"
+    },
+    "sender_email": {
+      "type": "string",
+      "format": "email"
+    },
+    "recipient_email": {
+      "type": "string",
+      "format": "email"
+    },
+    "body": {
+      "type": "string",
+      "maxLength": 2000
+    }
+  },
+  "required": [
+    "conversation_id",
+    "sender_email",
+    "recipient_email",
+    "body"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.sender_email": "{{user.email}}"
+        },
+        {
+          "data.recipient_email": "{{user.email}}"
+        }
+      ]
+    },
+    "create": {
+      "data.sender_email": "{{user.email}}"
+    }
+  }
+}

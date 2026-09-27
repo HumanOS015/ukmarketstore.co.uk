@@ -1,0 +1,69 @@
+{
+  "name": "SellerConversation",
+  "type": "object",
+  "properties": {
+    "product_id": {
+      "type": "string"
+    },
+    "product_title": {
+      "type": "string"
+    },
+    "product_image": {
+      "type": "string"
+    },
+    "buyer_email": {
+      "type": "string",
+      "format": "email"
+    },
+    "seller_email": {
+      "type": "string",
+      "format": "email"
+    },
+    "last_message": {
+      "type": "string"
+    },
+    "last_message_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "unread_for_buyer": {
+      "type": "boolean",
+      "default": false
+    },
+    "unread_for_seller": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "product_id",
+    "product_title",
+    "buyer_email",
+    "seller_email"
+  ],
+  "rls": {
+    "create": {
+      "data.buyer_email": "{{user.email}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.buyer_email": "{{user.email}}"
+        },
+        {
+          "data.seller_email": "{{user.email}}"
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.buyer_email": "{{user.email}}"
+        },
+        {
+          "data.seller_email": "{{user.email}}"
+        }
+      ]
+    }
+  }
+}
