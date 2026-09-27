@@ -63,7 +63,7 @@
         "sold",
         "removed"
       ],
-      "default": "pending_stripe",
+      "default": "active",
       "description": "Listing status. Pending Stripe means saved but not purchasable until seller payout setup is complete."
     },
     "condition": {
