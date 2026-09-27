@@ -64,6 +64,10 @@
       ],
       "description": "Delivery carrier selected by the seller"
     },
+    "shipped_at": {
+      "type": "date-time",
+      "description": "Timestamp when the seller first marked the order shipped"
+    },
     "tracking_status": {
       "type": "string",
       "enum": [
