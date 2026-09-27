@@ -58,12 +58,13 @@
     "status": {
       "type": "string",
       "enum": [
+        "pending_stripe",
         "active",
         "sold",
         "removed"
       ],
-      "default": "active",
-      "description": "Listing status"
+      "default": "pending_stripe",
+      "description": "Listing status. Pending Stripe means saved but not purchasable until seller payout setup is complete."
     },
     "condition": {
       "type": "string",
