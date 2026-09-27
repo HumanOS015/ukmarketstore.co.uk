@@ -87,7 +87,37 @@ export default function PayoutConnect({ user }) {
 
   }
 
-  return null;
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
+      <div className="flex items-start gap-3">
+        <CreditCard className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+        <div className="flex-1">
+          <p className="text-sm font-medium">Connect your Stripe payouts</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Complete Stripe's secure setup to receive your earnings when your items sell.
+          </p>
+        </div>
+      </div>
+      {connectUrl ? (
+        <Button asChild className="w-full rounded-xl">
+          <a href={connectUrl} target="_blank" rel="noopener noreferrer">
+            Continue to Stripe
+          </a>
+        </Button>
+      ) : (
+        <Button className="w-full rounded-xl" onClick={connect} disabled={connecting}>
+          {connecting ? (
+            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Preparing Stripe…</>
+          ) : (
+            <><CreditCard className="w-4 h-4 mr-2" /> Connect Stripe payouts</>
+          )}
+        </Button>
+      )}
+      <p className="text-[11px] text-muted-foreground text-center">
+        You'll be taken to Stripe to complete the payout setup securely.
+      </p>
+    </div>
+  );
 
 
 
