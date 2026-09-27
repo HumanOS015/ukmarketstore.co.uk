@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard, Ban, Heart, MessageCircle } from "lucide-react";
+import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard, Ban, Heart, MessageCircle, Bell } from "lucide-react";
 import CookieConsent from "./CookieConsent";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/AuthContext";
 
 const navItems = [
@@ -13,6 +14,24 @@ const navItems = [
 export default function Layout() {
   const location = useLocation();
   const { user } = useAuth();
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    const loadUnread = async () => {
+      if (!user?.email) return;
+      try {
+        await base44.functions.invoke("sync-notifications", {});
+        const rows = await base44.entities.Notification.filter({ user_email: user.email, read: false }, "-created_date", 50);
+        if (active) setUnreadNotifications(rows?.length || 0);
+      } catch (err) {
+        console.warn("Notification count unavailable", err);
+      }
+    };
+    loadUnread();
+    const timer = setInterval(loadUnread, 60000);
+    return () => { active = false; clearInterval(timer); };
+  }, [user?.email]);
 
   if (user?.banned) {
     return (
@@ -43,6 +62,10 @@ export default function Layout() {
           <div className="flex items-center gap-4">
             <Link to="/messages" className="flex items-center justify-center text-muted-foreground hover:text-primary transition-colors" aria-label="Messages">
               <MessageCircle className="w-4 h-4" />
+            </Link>
+            <Link to="/notifications" className="relative flex items-center justify-center text-muted-foreground hover:text-primary transition-colors" aria-label="Notifications">
+              <Bell className="w-4 h-4" />
+              {unreadNotifications > 0 && <span className="absolute -top-2 -right-2 min-w-4 h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">{unreadNotifications > 99 ? "99+" : unreadNotifications}</span>}
             </Link>
             <Link
               to="/wishlist"
