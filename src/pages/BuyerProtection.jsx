@@ -20,9 +20,9 @@ const steps = [
   },
   {
     icon: Lock,
-    title: "Funds Held in Escrow",
+    title: "Funds Held for Transaction Processing",
     description:
-      "Your payment is held securely by our payment processor. The seller is notified of the sale but won't receive the funds until you confirm delivery.",
+      "Your payment is processed through our payment provider. The timing and release of funds are handled through the platform's payment system and applicable transaction rules. UKMarketStore's Buyer Protection process does not remove your legal rights against a business seller.",
   },
   {
     icon: Truck,
@@ -34,7 +34,7 @@ const steps = [
     icon: CheckCircle,
     title: "Confirm Delivery",
     description:
-      "Once you receive the item and are satisfied, confirm delivery. Only then are the funds released to the seller (minus our 10% commission).",
+      "Once you receive the item and are satisfied, confirm delivery. The transaction is then completed in accordance with the platform's payment and protection process, subject to any dispute, refund or other applicable rights.",
   },
 ];
 
@@ -45,11 +45,11 @@ const faqs = [
   },
   {
     q: "What if the item is not as described?",
-    a: "You have 48 hours after delivery to raise a dispute if the item doesn't match the listing. We'll review the case and can issue a full or partial refund.",
+    a: "You should report a problem as soon as possible through UKMarketStore so we can investigate. A platform dispute deadline may apply to the additional Buyer Protection process, but it does not remove or limit any statutory rights that apply to your purchase.",
   },
   {
     q: "How long does the seller have to ship?",
-    a: "Sellers must dispatch items within 3 business days of a sale and provide a valid UK tracking number within that window. If they fail to dispatch or provide tracking, you'll receive an automatic refund.",
+    a: "Sellers are expected to dispatch items within the marketplace's stated handling period and provide valid tracking where required. If a seller fails to dispatch in accordance with the marketplace rules, UKMarketStore may provide a platform refund in accordance with its Buyer Protection process.",
   },
   {
     q: "Is my payment information safe?",
@@ -87,9 +87,7 @@ export default function BuyerProtection() {
       {/* Intro */}
       <div className="mt-6 p-4 rounded-2xl bg-primary/5 border border-primary/10">
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Every purchase on UKMarketStore is protected. We hold your payment in a secure
-          escrow until you confirm you've received your item. If something goes wrong,
-          we've got your back with a full refund guarantee.
+          UKMarketStore provides an additional Buyer Protection process for purchases made through the platform. It is designed to help when an order is not delivered or there is a significant problem with the item. This platform protection does not replace or limit any statutory rights that may apply to you.
         </p>
       </div>
 
