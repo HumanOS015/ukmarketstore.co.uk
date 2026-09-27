@@ -45,6 +45,7 @@ export default function Sell() {
     estimated_delivery: "",
   });
   const [payoutReady, setPayoutReady] = useState(null); // null = checking, false = not connected, true = connected
+  const [pendingProduct, setPendingProduct] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
@@ -149,7 +150,7 @@ export default function Sell() {
     setLoading(true);
     try {
       const user = await withTimeout(base44.auth.me(), 15000, "Verifying account");
-      await withTimeout(
+      const createdProduct = await withTimeout(
         base44.entities.Product.create({
           title: form.title.trim(),
           description: form.description.trim(),
@@ -163,12 +164,16 @@ export default function Sell() {
           additional_images: additionalImages,
           seller_email: user.email,
           seller_name: user.full_name || user.email,
-          status: "active",
+          status: payoutReady ? "active" : "pending_stripe",
         }),
         15000,
-        "Publishing listing"
+        "Saving listing"
       );
-      setSuccess(true);
+      if (payoutReady) {
+        setSuccess(true);
+      } else {
+        setPendingProduct(createdProduct);
+      }
     } catch (err) {
       console.error("Failed to create listing", err);
       if (err?.status === 401 || err?.status === 403) {
@@ -191,25 +196,18 @@ export default function Sell() {
     );
   }
 
-  if (payoutReady === false) {
+
+  if (pendingProduct) {
     return (
-      <div className="max-w-lg mx-auto px-4 md:pl-20 py-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" /> Back
-        </button>
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center mb-4">
-          <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
-            <CreditCard className="w-7 h-7 text-amber-600" />
-          </div>
-          <h2 className="text-xl font-bold mb-2">Connect payouts to sell</h2>
-          <p className="text-sm text-muted-foreground">
-            Before you can list items, you need to connect a Stripe account so buyers can pay you and you receive your earnings automatically.
-          </p>
+      <div className="max-w-lg mx-auto px-4 md:pl-20 py-6 flex flex-col items-center justify-center min-h-[60vh] text-center">
+        <div className="w-20 h-20 rounded-full bg-amber-100 flex items-center justify-center mb-4">
+          <CreditCard className="w-10 h-10 text-amber-600" />
         </div>
-        <PayoutConnect user={currentUser} />
+        <h2 className="text-2xl font-bold mb-2">Your listing is saved</h2>
+        <p className="text-muted-foreground mb-2">Your item has been saved successfully.</p>
+        <p className="text-sm text-muted-foreground mb-6 max-w-md">To make your listing live and receive payments, connect Stripe. Your listing will remain saved while you complete the secure payout setup.</p>
+        <div className="w-full max-w-md mb-4"><PayoutConnect user={currentUser} /></div>
+        <Button variant="outline" className="rounded-xl" onClick={() => navigate("/profile")}>View My Listings</Button>
       </div>
     );
   }
