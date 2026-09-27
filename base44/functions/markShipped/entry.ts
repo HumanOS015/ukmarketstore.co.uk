@@ -10,9 +10,9 @@ export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
-    const { orderId, trackingNumber } = body;
+    const { orderId, trackingNumber, carrier } = body;
 
-    if (!orderId || typeof trackingNumber !== "string" || trackingNumber.trim().length < 2 || trackingNumber.length > 200) {
+    if (!orderId || !["Royal Mail", "Evri"].includes(carrier) || typeof trackingNumber !== "string" || trackingNumber.trim().length < 2 || trackingNumber.length > 200) {
       return Response.json({ error: "Invalid request" }, { status: 400 });
     }
 
@@ -45,6 +45,8 @@ export default async function(req) {
 
     await base44.asServiceRole.entities.Order.update(orderId, {
       tracking_number: trackingNumber.trim(),
+      carrier,
+      tracking_status: "in_transit",
       status: "shipped",
     });
 
