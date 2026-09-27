@@ -33,7 +33,10 @@ export default async function(req) {
     const shippedOrders = await base44.asServiceRole.entities.Order.filter({ status: "shipped" }, "-created_date", 100);
     const deliveredOrders = await base44.asServiceRole.entities.Order.filter({ status: "delivered" }, "-created_date", 100);
 
-    const eligibleShipped = shippedOrders.filter((o) => new Date(o.created_date).getTime() < sevenDaysAgo);
+    const eligibleShipped = shippedOrders.filter((o) => {
+      const shippedAt = o.shipped_at ? new Date(o.shipped_at).getTime() : new Date(o.created_date).getTime();
+      return shippedAt < sevenDaysAgo;
+    });
     const toRelease = [...eligibleShipped, ...deliveredOrders];
 
     let released = 0;
