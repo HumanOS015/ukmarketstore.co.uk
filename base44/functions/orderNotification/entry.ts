@@ -94,7 +94,7 @@ export default async function(req) {
       );
       await sendBuyer(
         `Order confirmed — ${title}`,
-        `Hi,\n\nThank you for your purchase on ${BRAND}.\n\nItem: ${title}\nPrice: ${price}\n\nYour payment is held securely in escrow and will only be released to the seller once you confirm delivery. The seller will dispatch your item shortly.\n\n${BRAND}`
+        `Hi,\n\nThank you for your purchase on ${BRAND}.\n\nItem: ${title}\nPrice: ${price}\n\nYour payment is held securely in escrow while the seller dispatches your item. The seller will be paid when delivery is confirmed by the courier or when the platform's fallback release conditions are met.\n\n${BRAND}`
       );
     } else if (event === 'shipped') {
       // Defense-in-depth dedup: even if a caller somehow presented the internal
@@ -106,14 +106,14 @@ export default async function(req) {
       }
       await sendBuyer(
         `Your order has shipped — ${title}`,
-        `Hi,\n\nGood news — your item is on its way.\n\nItem: ${title}\nTracking: ${tracking}\n\nOnce you receive it, please confirm delivery in your Orders page so the seller can be paid.\n\n${BRAND}`
+        `Hi,\n\nGood news — your item is on its way.\n\nItem: ${title}\nTracking: ${tracking}\n\nYour courier's tracking status will be used to confirm delivery. You can also report a problem from your Orders page if there is an issue.\n\n${BRAND}`
       );
       await base44.asServiceRole.entities.Order.update(order.id, { shipping_notified: true });
     } else if (event === 'delivered') {
       await send(
         order.seller_email,
         `Order delivered — ${title}`,
-        `Hi,\n\nThe buyer has confirmed delivery of their order.\n\nItem: ${title}\nSale price: ${price}\n\nFunds (minus the 10% commission) are being released to your account.\n\n${BRAND}`
+        `Hi,\n\nThe courier has confirmed delivery of the order.\n\nItem: ${title}\nSale price: ${price}\n\nFunds (minus the 10% commission) are being released to your account.\n\n${BRAND}`
       );
     } else if (event === 'released') {
       await send(
@@ -123,7 +123,7 @@ export default async function(req) {
       );
       await sendBuyer(
         `Delivery confirmed — ${title}`,
-        `Hi,\n\nThank you for confirming delivery of your order.\n\nItem: ${title}\nThe seller has been paid and your transaction is complete.\n\nIf you have a moment, please leave a quick review of your seller so others can buy with confidence:\n${APP_URL}/orders\n\n${BRAND}`
+        `Hi,\n\nThe courier has confirmed delivery of your order and the transaction is being completed.\n\nItem: ${title}\nThe seller has been paid and your transaction is complete.\n\nIf you have a moment, please leave a quick review of your seller so others can buy with confidence:\n${APP_URL}/orders\n\n${BRAND}`
       );
     } else if (event === 'refunded') {
       await sendBuyer(
