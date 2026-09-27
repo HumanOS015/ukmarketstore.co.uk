@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard, Ban, Heart, MessageCircle, Bell } from "lucide-react";
 import CookieConsent from "./CookieConsent";
+import { base44 } from "@/api/base44Client";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/AuthContext";
 
