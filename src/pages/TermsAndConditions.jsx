@@ -12,15 +12,15 @@ const sections = [
   },
   {
     title: "3. Buying & Selling",
-    content: `Sellers are responsible for accurately describing their items, including condition, postcode, and images. Buyers agree to purchase in good faith. Once a purchase is confirmed, it creates a binding agreement between buyer and seller. UKMarketStore acts solely as an intermediary platform facilitating the transaction and holding buyer funds in escrow until delivery is confirmed.`,
+    content: `Sellers are responsible for accurately describing their items, including condition and images, and for complying with the laws that apply to their sales. Buyers agree to purchase in good faith. Once a purchase is confirmed, it may create a binding contract between buyer and seller. UKMarketStore operates the marketplace and facilitates payments and communications. Nothing in these Terms removes or limits statutory consumer rights that apply to a purchase.`,
   },
   {
     title: "4. Commission & Fees",
-    content: `UKMarketStore charges a 10% commission on every completed sale. This fee is automatically deducted from the seller's payout. The seller's net payout (90% of the sale price) will be transferred after the buyer confirms delivery. There are no fees for listing items or browsing the platform.`,
+    content: `UKMarketStore charges a 10% commission on each completed sale, unless a different fee is clearly displayed before the seller lists or sells an item. The applicable commission is deducted from the seller's payout. There are no fees for listing items or browsing the platform unless clearly stated.`,
   },
   {
     title: "5. Buyer Protection & Escrow Automation all buyer payments are held securely in escrow via stripe connect. The 48-hour dispute window is strictly automated based on logistics data:",
-    content: `Automated Timer: the 48-hour dispute window begins the exact minute the integrated UK carrier (e.g., Royal Mail, Evri, DPD) updates the tracking status to "Delivered." Releasing Funds: If a buyer does not click "Confirm Delivery" or manually "Reaise a Dispute" within 48-hours of that carrier delivery timestamp, the stripe escrow system will automatically close the transaction and release the funds (minus our 10% commission) to the seller. Lost Parcels: If a tracking number does not show a "delivered" status within the estimated delivery window, the buyer can open a dispute for non-delivery to hold the automated release of fund. `,
+    content: `Platform dispute process: where UKMarketStore applies a 48-hour platform dispute window after a delivery event, buyers should use the dispute process promptly if there is a problem. The platform may use tracking information when administering the transaction. A missed platform deadline does not by itself waive statutory consumer rights. Lost or delayed parcels can be reported through the platform so the transaction can be investigated and the appropriate payment or refund action considered. `,
   },
   {
     title: "6. Prohibited Items",
@@ -36,7 +36,7 @@ const sections = [
   },
   {
     title: "9. Limitation of Liability",
-    content: `UKMarketStore is a platform provider and is not liable for item conditions, accuracy of listings, or disputes arising from the quality of goods. However, we will issue a full refund to the buyer if the seller fails to dispatch the item or provide a valid UK tracking number within 3 business days of sale. Our total liability is otherwise limited to the commission amount collected on the relevant transaction.`,
+    content: `UKMarketStore operates as a marketplace platform and does not become the seller of goods listed by users unless expressly stated otherwise. Sellers remain responsible for their listings and for the legal obligations that apply to their sales. UKMarketStore may provide refunds under its Buyer Protection process where the marketplace rules are met. Nothing in these Terms excludes or limits liability or consumer rights where doing so would be unlawful, including rights relating to faulty or misdescribed goods. Any limitation of liability applies only to the extent permitted by law.`,
   },
   {
     title: "10. Privacy",
@@ -100,7 +100,7 @@ export default function TermsAndConditions() {
       <div className="mt-10 p-4 rounded-2xl bg-muted/50 border border-border text-sm text-muted-foreground">
         <p className="font-medium text-foreground mb-1">Contact Us</p>
         <p>If you have any questions about these Terms and Conditions, please contact us at{" "}
-          <a href="mailto:support@ukmarketstore.co.uk" className="text-primary hover:underline">
+          <a href="mailto:ukmarketstore@hotmail.com" className="text-primary hover:underline">
             ukmarketstore@hotmail.com
           </a>.
         </p>
