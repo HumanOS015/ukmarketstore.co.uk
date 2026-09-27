@@ -20,6 +20,7 @@ import BuyerProtectionAssistant from './pages/BuyerProtectionAssistant';
 import Admin from './pages/Admin';
 import Wishlist from './pages/Wishlist';
 import SellerStorefront from './pages/SellerStorefront';
+import SellerMessages from './pages/SellerMessages';
 import Returns from './pages/Returns';
 import Category from './pages/Category';
 import { WishlistProvider } from '@/lib/WishlistContext';
@@ -78,6 +79,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin" element={<Admin />} />
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/seller/:email" element={<SellerStorefront />} />
+        <Route path="/messages" element={<SellerMessages />} />
         <Route path="/returns" element={<Returns />} />
         <Route path="/category/:category" element={<Category />} />
         <Route path="*" element={<PageNotFound />} />
