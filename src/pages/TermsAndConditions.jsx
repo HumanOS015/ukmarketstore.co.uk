@@ -19,7 +19,7 @@ const sections = [
     content: `UKMarketStore charges a 10% commission on each completed sale, unless a different fee is clearly displayed before the seller lists or sells an item. The applicable commission is deducted from the seller's payout. There are no fees for listing items or browsing the platform unless clearly stated.`,
   },
   {
-    title: "5. Buyer Protection & Escrow Automation all buyer payments are held securely in escrow via stripe connect. The 48-hour dispute window is strictly automated based on logistics data:",
+    title: "5. Buyer Protection & Payment Processing",
     content: `Platform dispute process: where UKMarketStore applies a 48-hour platform dispute window after a delivery event, buyers should use the dispute process promptly if there is a problem. The platform may use tracking information when administering the transaction. A missed platform deadline does not by itself waive statutory consumer rights. Lost or delayed parcels can be reported through the platform so the transaction can be investigated and the appropriate payment or refund action considered. `,
   },
   {
@@ -80,9 +80,7 @@ export default function TermsAndConditions() {
       {/* Intro banner */}
       <div className="mt-6 p-4 rounded-2xl bg-primary/5 border border-primary/10">
         <p className="text-sm leading-relaxed text-muted-foreground">
-        These Terms and Conditions govern your use of UKMarketStore. By using our platform,
-        you agree to comply with and be bound by the following terms. Please read
-        carefully before buying or selling.
+        These Terms and Conditions govern your use of UKMarketStore. They explain how the marketplace works for buyers and sellers. Nothing in these Terms is intended to remove or limit rights that cannot lawfully be excluded.
         </p>
       </div>
 
