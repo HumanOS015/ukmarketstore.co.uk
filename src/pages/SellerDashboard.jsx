@@ -39,6 +39,14 @@ export default function SellerDashboard() {
       try {
         const me = await withTimeout(base44.auth.me(), 15000, "Loading account");
         setUser(me);
+
+        // Re-check Stripe after returning from onboarding and activate any saved listings.
+        // The backend safely leaves listings pending until Stripe confirms charges are enabled.
+        try {
+          await withTimeout(base44.functions.invoke("createConnectAccount", {}), 20000, "Checking payout setup");
+        } catch (stripeCheckError) {
+          console.warn("Stripe status check skipped", stripeCheckError);
+        }
         const data = await withTimeout(
           base44.entities.Order.filter({ seller_email: me.email }, "-created_date", 50),
           15000,
