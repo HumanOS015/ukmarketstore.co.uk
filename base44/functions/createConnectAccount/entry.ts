@@ -77,6 +77,22 @@ export default async function(req) {
     }).catch(() => {});
 
     const onboarded = account.details_submitted && account.charges_enabled;
+
+    // Listings saved before Stripe setup stay hidden until the seller can receive payments.
+    if (onboarded) {
+      try {
+        const pendingListings = await base44.asServiceRole.entities.Product.filter({
+          seller_email: sellerEmail,
+          status: "pending_stripe",
+        });
+        for (const listing of pendingListings) {
+          await base44.asServiceRole.entities.Product.update(listing.id, { status: "active" });
+        }
+      } catch (activationError) {
+        console.error("Failed to activate pending listings", activationError);
+      }
+    }
+
     let url;
 
     if (onboarded) {
