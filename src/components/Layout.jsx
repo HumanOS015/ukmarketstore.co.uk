@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard, Ban, Heart } from "lucide-react";
+import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard, Ban, Heart, MessageCircle } from "lucide-react";
 import CookieConsent from "./CookieConsent";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -41,6 +41,9 @@ export default function Layout() {
             <span className="font-bold tracking-tight text-lg">UKMarketStore</span>
           </Link>
           <div className="flex items-center gap-4">
+            <Link to="/messages" className="flex items-center justify-center text-muted-foreground hover:text-primary transition-colors" aria-label="Messages">
+              <MessageCircle className="w-4 h-4" />
+            </Link>
             <Link
               to="/wishlist"
               className="flex items-center justify-center text-muted-foreground hover:text-primary transition-colors">
