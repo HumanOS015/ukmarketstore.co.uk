@@ -43,10 +43,12 @@ export default async function(req) {
     // seller from spamming the buyer with duplicate "Your order has shipped" emails.
     const isFirstShip = order.status === "paid";
 
+    const shippedAt = isFirstShip ? new Date().toISOString() : order.shipped_at;
     await base44.asServiceRole.entities.Order.update(orderId, {
       tracking_number: trackingNumber.trim(),
       carrier,
       tracking_status: "in_transit",
+      shipped_at: shippedAt || new Date().toISOString(),
       status: "shipped",
     });
 
