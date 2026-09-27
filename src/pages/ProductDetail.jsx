@@ -225,6 +225,7 @@ export default function ProductDetail() {
 
   const isOwner = currentUser?.email === product.seller_email;
   const isSold = product.status === "sold";
+  const isPendingStripe = product.status === "pending_stripe";
   const allImages = [product.image_url, ...(product.additional_images || [])].filter(Boolean);
 
   return (
@@ -274,6 +275,11 @@ export default function ProductDetail() {
         {isSold && (
           <div className="absolute inset-0 bg-foreground/50 flex items-center justify-center">
             <span className="text-white font-bold text-3xl tracking-wider">SOLD</span>
+          </div>
+        )}
+        {isPendingStripe && (
+          <div className="absolute inset-0 bg-foreground/50 flex items-center justify-center p-6 text-center">
+            <span className="text-white font-bold text-xl tracking-tight">LISTING NOT YET LIVE</span>
           </div>
         )}
       </div>
@@ -426,7 +432,13 @@ export default function ProductDetail() {
         </div>
 
         {/* Buy Button */}
-        {!isOwner && !isSold && (
+        {isPendingStripe && isOwner && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-center">
+            <p className="text-sm font-semibold text-amber-800">Payment setup required</p>
+            <p className="text-xs text-amber-700 mt-1">This listing is saved but not live yet. Connect Stripe payouts to make it available to buyers.</p>
+          </div>
+        )}
+        {!isOwner && !isSold && !isPendingStripe && (
           <Button
             onClick={() => setBuyDialogOpen(true)}
             className="w-full h-14 rounded-2xl text-base font-semibold gap-2"
