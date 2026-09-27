@@ -54,7 +54,35 @@
     },
     "tracking_number": {
       "type": "string",
-      "description": "Shipping tracking number"
+      "description": "Courier tracking number without carrier prefix"
+    },
+    "carrier": {
+      "type": "string",
+      "enum": [
+        "Royal Mail",
+        "Evri"
+      ],
+      "description": "Delivery carrier selected by the seller"
+    },
+    "tracking_status": {
+      "type": "string",
+      "enum": [
+        "not_started",
+        "in_transit",
+        "delivered",
+        "exception",
+        "unknown"
+      ],
+      "default": "not_started",
+      "description": "Latest carrier delivery status recorded by UKMarketStore"
+    },
+    "last_tracking_check": {
+      "type": "date-time",
+      "description": "Last successful carrier status check"
+    },
+    "delivered_at": {
+      "type": "date-time",
+      "description": "Timestamp when the carrier confirmed delivery"
     },
     "shipping_notified": {
       "type": "boolean",
