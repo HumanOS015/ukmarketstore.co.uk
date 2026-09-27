@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { secrets } from "base44:runtime";
 import { transferToSeller } from "../../shared/escrow.ts";
 
-const ROYAL_MAIL_URL = "https://api.royalmail.net/mailpieces/v3";
+const ROYAL_MAIL_URL = "https://api.royalmail.net/mailpieces/v2";
 
 function normaliseStatus(value) {
   const s = String(value || "").toLowerCase();
