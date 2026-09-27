@@ -23,6 +23,7 @@ import SellerStorefront from './pages/SellerStorefront';
 import SellerMessages from './pages/SellerMessages';
 import Returns from './pages/Returns';
 import Category from './pages/Category';
+import Notifications from './pages/Notifications';
 import { WishlistProvider } from '@/lib/WishlistContext';
 import OAuthConsent from './pages/OAuthConsent';
 
@@ -80,6 +81,7 @@ const AuthenticatedApp = () => {
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/seller/:email" element={<SellerStorefront />} />
         <Route path="/messages" element={<SellerMessages />} />
+        <Route path="/notifications" element={<Notifications />} />
         <Route path="/returns" element={<Returns />} />
         <Route path="/category/:category" element={<Category />} />
         <Route path="*" element={<PageNotFound />} />
