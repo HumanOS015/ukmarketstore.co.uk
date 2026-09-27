@@ -1,0 +1,45 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "delivery_tracking_sync",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "sync_tracking": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "syncDeliveryStatus",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Check Royal Mail and Evri delivery status",
+            "description": "Poll configured carrier APIs and release escrow after confirmed delivery"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Checks shipped UKMarketStore orders for carrier delivery events. A confirmed delivered event moves the order to delivered and attempts the existing Stripe seller transfer. The existing 7-day escrow fallback remains active.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "*/15 * * * *",
+      "one_time_date": null,
+      "timezone": "Europe/London",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "name": "Delivery Tracking Sync"
+}
