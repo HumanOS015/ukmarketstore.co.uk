@@ -35,6 +35,7 @@ import { formatDeliveryDate } from "@/lib/deliveryDate";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import SimilarItems from "@/components/product/SimilarItems";
 import RecentlyViewed from "@/components/product/RecentlyViewed";
+import SellerCard from "@/components/product/SellerCard";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -46,6 +47,7 @@ export default function ProductDetail() {
   const [address, setAddress] = useState("");
   const [buyerEmail, setBuyerEmail] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
+  const [messaging, setMessaging] = useState(false);
   const [error, setError] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
   const { isSaved, toggle } = useWishlist();
@@ -134,6 +136,40 @@ export default function ProductDetail() {
       }
     } finally {
       setPurchasing(false);
+    }
+  };
+
+  const handleMessageSeller = async () => {
+    if (!product?.seller_email || product.seller_email === currentUser?.email) return;
+    if (!currentUser?.email) {
+      base44.auth.redirectToLogin(window.location.href);
+      return;
+    }
+    setMessaging(true);
+    try {
+      const existing = await base44.entities.SellerConversation.filter({
+        product_id: product.id,
+        buyer_email: currentUser.email,
+        seller_email: product.seller_email
+      }, "-created_date", 1);
+      let conversation = existing?.[0];
+      if (!conversation) {
+        conversation = await base44.entities.SellerConversation.create({
+          product_id: product.id,
+          product_title: product.title,
+          product_image: product.image_url || "",
+          buyer_email: currentUser.email,
+          seller_email: product.seller_email,
+          unread_for_buyer: false,
+          unread_for_seller: false
+        });
+      }
+      navigate("/messages?conversation=" + conversation.id);
+    } catch (err) {
+      console.error("Failed to open seller conversation", err);
+      toast.error("Couldn't open messages. Please try again.");
+    } finally {
+      setMessaging(false);
     }
   };
 
@@ -331,6 +367,14 @@ export default function ProductDetail() {
           </Link>
         </div>
 
+        {/* Seller */}
+        <SellerCard
+          product={product}
+          currentUser={currentUser}
+          onMessage={handleMessageSeller}
+          messaging={messaging}
+        />
+
         {/* Description */}
         {product.description && (
           <div>
@@ -356,11 +400,11 @@ export default function ProductDetail() {
           </div>
           <div>
             <h3 className="text-sm font-semibold mb-1">🛡️ Verified Seller System</h3>
-            <p className="text-xs text-muted-foreground">All sellers are verified by UKMarketStore. Orders are protected until delivery is confirmed.</p>
+            <p className="text-xs text-muted-foreground">Seller accounts are verified by UKMarketStore. Orders are protected by our marketplace payment and buyer protection system.</p>
           </div>
           <div>
-            <h3 className="text-sm font-semibold mb-1">💳 Secure Checkout Only</h3>
-            <p className="text-xs text-muted-foreground">Buyers and sellers cannot contact each other until payment is complete.</p>
+            <h3 className="text-sm font-semibold mb-1">💬 Keep messages on UKMarketStore</h3>
+            <p className="text-xs text-muted-foreground">You can message the seller about the item before buying. Keep communication on UKMarketStore and never share sensitive payment details.</p>
           </div>
           <div>
             <h3 className="text-sm font-semibold mb-1">📦 Delivery Only — No Public Meetups</h3>
@@ -453,8 +497,8 @@ export default function ProductDetail() {
             </div>
 
             <div className="text-xs text-muted-foreground p-3 rounded-xl bg-amber-50 border border-amber-200">
-              <p className="font-medium text-amber-800 mb-0.5">🔒 Secure Checkout Only</p>
-              Buyers and sellers cannot contact each other until payment is complete. Complete your purchase to proceed.
+              <p className="font-medium text-amber-800 mb-0.5">💬 Message the seller safely</p>
+              You can contact the seller through UKMarketStore before you buy. Checkout and payment still happen securely through the marketplace.
             </div>
 
             <Button
