@@ -72,7 +72,7 @@ export default function Layout() {
               to="/wishlist"
               className="flex items-center justify-center text-muted-foreground hover:text-primary transition-colors">
               
-              <Heart className="w-4 h-4 pl-6" />
+              <Heart className="w-4 h-4 text-[hsl(var(--card-foreground))] pl-10" />
             </Link>
             <Link
               to="/buyer-protection"
