@@ -31,7 +31,7 @@ export default function Layout() {
     };
     loadUnread();
     const timer = setInterval(loadUnread, 60000);
-    return () => { active = false; clearInterval(timer); };
+    return () => {active = false;clearInterval(timer);};
   }, [user?.email]);
 
   if (user?.banned) {
@@ -72,7 +72,7 @@ export default function Layout() {
               to="/wishlist"
               className="flex items-center justify-center text-muted-foreground hover:text-primary transition-colors">
               
-              <Heart className="w-4 h-4" />
+              <Heart className="w-4 h-4 px-3" />
             </Link>
             <Link
               to="/buyer-protection"
