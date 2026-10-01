@@ -12,7 +12,11 @@ export default async function(req) {
     const body = await req.json();
     const { orderId, trackingNumber, carrier } = body;
 
-    if (!orderId || !["Royal Mail", "Evri"].includes(carrier) || typeof trackingNumber !== "string" || trackingNumber.trim().length < 2 || trackingNumber.length > 200) {
+    // Validation: carrier can be any non-empty string so sellers can use Royal Mail,
+    // Evri, DHL, UPS, or any custom carrier they ship with.
+    const isValidCarrier = typeof carrier === "string" && carrier.trim().length > 0 && carrier.trim().length <= 100;
+
+    if (!orderId || !isValidCarrier || typeof trackingNumber !== "string" || trackingNumber.trim().length < 2 || trackingNumber.length > 200) {
       return Response.json({ error: "Invalid request" }, { status: 400 });
     }
 
@@ -46,7 +50,7 @@ export default async function(req) {
     const shippedAt = isFirstShip ? new Date().toISOString() : order.shipped_at;
     await base44.asServiceRole.entities.Order.update(orderId, {
       tracking_number: trackingNumber.trim(),
-      carrier,
+      carrier: carrier.trim(),
       tracking_status: "in_transit",
       shipped_at: shippedAt || new Date().toISOString(),
       status: "shipped",
