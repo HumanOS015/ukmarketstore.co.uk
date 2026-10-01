@@ -44,7 +44,6 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [buyDialogOpen, setBuyDialogOpen] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
-  const [address, setAddress] = useState("");
   const [buyerEmail, setBuyerEmail] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
   const [messaging, setMessaging] = useState(false);
@@ -52,6 +51,17 @@ export default function ProductDetail() {
   const [activeImage, setActiveImage] = useState(0);
   const { isSaved, toggle } = useWishlist();
   const { record } = useRecentlyViewed();
+
+  // Address form fields
+  const [address, setAddress] = useState({
+    fullName: "",
+    phone: "",
+    streetLine1: "",
+    streetLine2: "",
+    city: "",
+    state: "",
+    postcode: "",
+  });
 
   useEffect(() => {
     loadData();
@@ -101,14 +111,43 @@ export default function ProductDetail() {
       toast.info("Opening the live app in a new tab — checkout works there, not in the preview.");
       return;
     }
+
+    // Validate all address fields
     if (!buyerEmail.trim()) {
       toast.error("Please enter your email address");
       return;
     }
-    if (!address.trim()) {
-      toast.error("Please enter a delivery address");
+    if (!address.fullName.trim()) {
+      toast.error("Please enter your full name");
       return;
     }
+    if (!address.phone.trim()) {
+      toast.error("Please enter your phone number");
+      return;
+    }
+    if (!address.streetLine1.trim()) {
+      toast.error("Please enter your street address");
+      return;
+    }
+    if (!address.city.trim()) {
+      toast.error("Please enter your city");
+      return;
+    }
+    if (!address.postcode.trim()) {
+      toast.error("Please enter your postcode");
+      return;
+    }
+
+    // Combine address for shipping
+    const shippingAddress = [
+      address.fullName,
+      address.streetLine1,
+      address.streetLine2 ? address.streetLine2 : null,
+      address.city,
+      address.state || "",
+      address.postcode,
+    ].filter(Boolean).join(", ");
+
     setPurchasing(true);
 
     try {
@@ -116,7 +155,7 @@ export default function ProductDetail() {
         base44.functions.invoke("createCheckoutSession", {
           productId: product.id,
           buyerEmail: buyerEmail.trim(),
-          shippingAddress: address.trim(),
+          shippingAddress: shippingAddress,
         }),
         20000,
         "Preparing checkout"
@@ -456,17 +495,19 @@ export default function ProductDetail() {
         )}
       </div>
 
-      {/* Buy Dialog */}
+      {/* Buy Dialog - Amazon-style Address Form */}
       <Dialog open={buyDialogOpen} onOpenChange={setBuyDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Confirm Purchase</DialogTitle>
             <DialogDescription>
               You're buying "{product.title}" for £{product.price?.toFixed(2)}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted">
+          
+          <div className="grid grid-cols-2 gap-3 pt-4">
+            {/* Product Summary */}
+            <div className="col-span-2 flex items-center gap-3 p-3 rounded-xl bg-muted">
               <img
                 src={product.image_url}
                 alt={product.title}
@@ -479,55 +520,149 @@ export default function ProductDetail() {
               </div>
             </div>
 
-            <div>
-              <Label className="text-sm font-medium">Email Address</Label>
+            {/* Email */}
+            <div className="col-span-2">
+              <Label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Email Address</Label>
               <Input
                 type="email"
                 placeholder="your@email.com"
                 value={buyerEmail}
                 onChange={(e) => setBuyerEmail(e.target.value)}
-                className="mt-1.5 rounded-xl h-11"
+                className="h-11 rounded-xl"
               />
             </div>
 
-            <div>
-              <Label className="text-sm font-medium">Delivery Address</Label>
-              <Textarea
-                placeholder="Enter your full UK delivery address..."
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className="mt-1.5 rounded-xl"
+            {/* Full Name */}
+            <div className="col-span-2">
+              <Label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Full Name</Label>
+              <Input
+                placeholder="First and last name"
+                value={address.fullName}
+                onChange={(e) => setAddress({ ...address, fullName: e.target.value })}
+                className="h-11 rounded-xl"
               />
             </div>
 
-            <div className="text-xs text-muted-foreground p-3 rounded-xl bg-primary/5">
+            {/* Phone */}
+            <div className="col-span-2">
+              <Label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Phone Number</Label>
+              <Input
+                placeholder="e.g. 07700 900000"
+                value={address.phone}
+                onChange={(e) => setAddress({ ...address, phone: e.target.value })}
+                className="h-11 rounded-xl"
+              />
+            </div>
+
+            {/* Street Line 1 */}
+            <div className="col-span-2">
+              <Label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Street Address</Label>
+              <Input
+                placeholder="House number and street name"
+                value={address.streetLine1}
+                onChange={(e) => setAddress({ ...address, streetLine1: e.target.value })}
+                className="h-11 rounded-xl"
+              />
+            </div>
+
+            {/* Street Line 2 */}
+            <div className="col-span-2">
+              <Label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Apt, suite, etc. (optional)</Label>
+              <Input
+                placeholder="Apartment, unit, or building (if applicable)"
+                value={address.streetLine2}
+                onChange={(e) => setAddress({ ...address, streetLine2: e.target.value })}
+                className="h-11 rounded-xl"
+              />
+            </div>
+
+            {/* City */}
+            <div className="col-span-1">
+              <Label className="text-xs font-semibold text-muted-foreground mb-1.5 block">City</Label>
+              <Input
+                placeholder="City"
+                value={address.city}
+                onChange={(e) => setAddress({ ...address, city: e.target.value })}
+                className="h-11 rounded-xl"
+              />
+            </div>
+
+            {/* State/Region */}
+            <div className="col-span-1">
+              <Label className="text-xs font-semibold text-muted-foreground mb-1.5 block">State/Region</Label>
+              <Input
+                placeholder="e.g. London"
+                value={address.state}
+                onChange={(e) => setAddress({ ...address, state: e.target.value })}
+                className="h-11 rounded-xl"
+              />
+            </div>
+
+            {/* Postcode */}
+            <div className="col-span-2">
+              <Label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Postcode</Label>
+              <Input
+                placeholder="e.g. SW1A 1AA"
+                value={address.postcode}
+                onChange={(e) => setAddress({ ...address, postcode: e.target.value })}
+                className="h-11 rounded-xl uppercase"
+              />
+            </div>
+
+            {/* Buyer Protection Notice */}
+            <div className="col-span-2 text-xs text-muted-foreground p-3 rounded-xl bg-primary/5 border border-primary/20">
               <div className="flex items-center gap-1.5 mb-1">
-                <Shield className="w-3.5 h-3.5 text-primary" />
+                <Shield className="w-3.5 h-3.5 text-primary flex-shrink-0" />
                 <span className="font-medium text-foreground">Buyer Protection Active</span>
               </div>
-              Your payment is held securely. Funds are only released to the seller once you confirm delivery.
+              Your payment is held securely in escrow. Funds are only released to the seller once you confirm delivery.
             </div>
 
-            <div className="text-xs text-muted-foreground p-3 rounded-xl bg-amber-50 border border-amber-200">
+            {/* Messaging Notice */}
+            <div className="col-span-2 text-xs text-muted-foreground p-3 rounded-xl bg-amber-50 border border-amber-200">
               <p className="font-medium text-amber-800 mb-0.5">💬 Message the seller safely</p>
               You can contact the seller through UKMarketStore before you buy. Checkout and payment still happen securely through the marketplace.
             </div>
 
-            <Button
-              onClick={handleBuyNow}
+            {/* Commission Info */}
+            <div className="col-span-2 pt-2 border-t border-border">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs text-muted-foreground">Subtotal:</span>
+                <span className="text-sm font-medium">£{product.price?.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-xs text-muted-foreground">Shipping:</span>
+                <span className="text-sm font-medium">Free</span>
+              </div>
+              <div className="flex justify-between items-center text-base font-bold bg-primary/5 p-2 rounded-lg">
+                <span>Total:</span>
+                <span>£{product.price?.toFixed(2)}</span>
+              </div>
+              <p className="text-[11px] text-center text-muted-foreground mt-2">
+                10% commission included. Payments processed securely via Stripe Connect.
+              </p>
+            </div>
+          </div>
+
+          {/* Buttons */}
+          <div className="flex gap-2 pt-4 border-t border-border">
+            <Button variant="outline" className="flex-1 rounded-xl h-11" onClick={() => setBuyDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              className="flex-1 rounded-xl h-11 font-semibold gap-2" 
+              onClick={handleBuyNow} 
               disabled={purchasing}
-              className="w-full h-12 rounded-xl font-semibold"
             >
               {purchasing ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                "Continue to Secure Checkout"
+                <>
+                  <ShoppingCart className="w-4 h-4" />
+                  Continue to Checkout
+                </>
               )}
             </Button>
-
-            <p className="text-[11px] text-center text-muted-foreground">
-              10% commission applies. Payments processed securely via Stripe Connect.
-            </p>
           </div>
         </DialogContent>
       </Dialog>
