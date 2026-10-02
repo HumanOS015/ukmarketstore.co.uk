@@ -8,8 +8,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+  DialogDescription } from
+"@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -25,8 +25,8 @@ import {
   RefreshCw,
   Truck,
   Share2,
-  Heart,
-} from "lucide-react";
+  Heart } from
+"lucide-react";
 import { toast } from "sonner";
 import { useWishlist } from "@/lib/WishlistContext";
 import moment from "moment";
@@ -60,7 +60,7 @@ export default function ProductDetail() {
     streetLine2: "",
     city: "",
     state: "",
-    postcode: "",
+    postcode: ""
   });
 
   useEffect(() => {
@@ -89,9 +89,9 @@ export default function ProductDetail() {
     setActiveImage(0);
     try {
       const [productData, user] = await Promise.all([
-        withTimeout(base44.entities.Product.filter({ id }, "-created_date", 1), 15000, "Loading listing"),
-        base44.auth.me().catch(() => null),
-      ]);
+      withTimeout(base44.entities.Product.filter({ id }, "-created_date", 1), 15000, "Loading listing"),
+      base44.auth.me().catch(() => null)]
+      );
       setProduct(productData[0]);
       setCurrentUser(user);
       if (user?.email) setBuyerEmail(user.email);
@@ -140,13 +140,13 @@ export default function ProductDetail() {
 
     // Combine address for shipping
     const shippingAddress = [
-      address.fullName,
-      address.streetLine1,
-      address.streetLine2 ? address.streetLine2 : null,
-      address.city,
-      address.state || "",
-      address.postcode,
-    ].filter(Boolean).join(", ");
+    address.fullName,
+    address.streetLine1,
+    address.streetLine2 ? address.streetLine2 : null,
+    address.city,
+    address.state || "",
+    address.postcode].
+    filter(Boolean).join(", ");
 
     setPurchasing(true);
 
@@ -155,7 +155,7 @@ export default function ProductDetail() {
         base44.functions.invoke("createCheckoutSession", {
           productId: product.id,
           buyerEmail: buyerEmail.trim(),
-          shippingAddress: shippingAddress,
+          shippingAddress: shippingAddress
         }),
         20000,
         "Preparing checkout"
@@ -228,8 +228,8 @@ export default function ProductDetail() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
-      </div>
-    );
+      </div>);
+
   }
 
   if (error) {
@@ -242,13 +242,13 @@ export default function ProductDetail() {
         </p>
         <button
           onClick={loadData}
-          className="inline-flex items-center gap-2 px-4 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium"
-        >
+          className="inline-flex items-center gap-2 px-4 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium">
+          
           <RefreshCw className="w-4 h-4" />
           Retry
         </button>
-      </div>
-    );
+      </div>);
+
   }
 
   if (!product) {
@@ -258,8 +258,8 @@ export default function ProductDetail() {
         <Button variant="link" onClick={() => navigate("/")}>
           Back to listings
         </Button>
-      </div>
-    );
+      </div>);
+
   }
 
   const isOwner = currentUser?.email === product.seller_email;
@@ -284,61 +284,61 @@ export default function ProductDetail() {
           className="w-full h-full object-cover transition-opacity duration-200"
           fetchpriority="high"
           loading="eager"
-          key={activeImage}
-        />
+          key={activeImage} />
+        
         <button
           onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 w-10 h-10 rounded-full bg-card/80 backdrop-blur-md flex items-center justify-center hover:bg-card transition-colors"
-        >
+          className="absolute top-4 left-4 w-10 h-10 rounded-full bg-card/80 backdrop-blur-md flex items-center justify-center hover:bg-card transition-colors">
+          
           <ArrowLeft className="w-5 h-5" />
         </button>
         <button
           onClick={handleShare}
-          className="absolute top-4 right-4 w-10 h-10 rounded-full bg-card/80 backdrop-blur-md flex items-center justify-center hover:bg-card transition-colors"
-        >
+          className="absolute top-4 right-4 w-10 h-10 rounded-full bg-card/80 backdrop-blur-md flex items-center justify-center hover:bg-card transition-colors">
+          
           <Share2 className="w-5 h-5" />
         </button>
-        {allImages.length > 1 && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-            {allImages.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setActiveImage(i)}
-                className={`h-1.5 rounded-full transition-all ${
-                  i === activeImage ? "w-6 bg-white" : "w-1.5 bg-white/50"
-                }`}
-              />
-            ))}
+        {allImages.length > 1 &&
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+            {allImages.map((_, i) =>
+          <button
+            key={i}
+            onClick={() => setActiveImage(i)}
+            className={`h-1.5 rounded-full transition-all ${
+            i === activeImage ? "w-6 bg-white" : "w-1.5 bg-white/50"}`
+            } />
+
+          )}
           </div>
-        )}
-        {isSold && (
-          <div className="absolute inset-0 bg-foreground/50 flex items-center justify-center">
+        }
+        {isSold &&
+        <div className="absolute inset-0 bg-foreground/50 flex items-center justify-center">
             <span className="text-white font-bold text-3xl tracking-wider">SOLD</span>
           </div>
-        )}
-        {isPendingStripe && (
-          <div className="absolute inset-0 bg-foreground/50 flex items-center justify-center p-6 text-center">
+        }
+        {isPendingStripe &&
+        <div className="absolute inset-0 bg-foreground/50 flex items-center justify-center p-6 text-center">
             <span className="text-white font-bold text-xl tracking-tight">LISTING NOT YET LIVE</span>
           </div>
-        )}
+        }
       </div>
 
       {/* Thumbnail strip */}
-      {allImages.length > 1 && (
-        <div className="flex gap-2 px-4 pt-3 overflow-x-auto">
-          {allImages.map((url, i) => (
-            <button
-              key={i}
-              onClick={() => setActiveImage(i)}
-              className={`w-16 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-colors ${
-                i === activeImage ? "border-primary" : "border-border"
-              }`}
-            >
+      {allImages.length > 1 &&
+      <div className="flex gap-2 px-4 pt-3 overflow-x-auto">
+          {allImages.map((url, i) =>
+        <button
+          key={i}
+          onClick={() => setActiveImage(i)}
+          className={`w-16 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-colors ${
+          i === activeImage ? "border-primary" : "border-border"}`
+          }>
+          
               <img src={url} alt={`View ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
             </button>
-          ))}
+        )}
         </div>
-      )}
+      }
 
       {/* Details */}
       <div className="px-4 py-5 space-y-5">
@@ -355,15 +355,15 @@ export default function ProductDetail() {
               <Tag className="w-3 h-3" />
               {product.category}
             </Badge>
-            {product.condition && (
-              <Badge variant="outline" className="gap-1">
+            {product.condition &&
+            <Badge variant="outline" className="gap-1">
                 {product.condition}
               </Badge>
-            )}
+            }
             <button
               onClick={() => toggle(product.id)}
-              className="ml-auto flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-red-500 transition-colors"
-            >
+              className="ml-auto flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-red-500 transition-colors">
+              
               <Heart className={`w-4 h-4 ${isSaved(product.id) ? "fill-red-500 text-red-500" : ""}`} />
               {isSaved(product.id) ? "Saved" : "Save"}
             </button>
@@ -371,8 +371,8 @@ export default function ProductDetail() {
         </div>
 
         {/* Estimated delivery date */}
-        {product.estimated_delivery && (
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/5 border border-primary/20">
+        {product.estimated_delivery &&
+        <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/5 border border-primary/20">
             <Truck className="w-4 h-4 text-primary shrink-0" />
             <div className="leading-tight">
               <p className="text-sm font-medium">
@@ -383,7 +383,7 @@ export default function ProductDetail() {
               </p>
             </div>
           </div>
-        )}
+        }
 
         {/* Listing info */}
         <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-muted/50">
@@ -406,8 +406,8 @@ export default function ProductDetail() {
           </div>
           <Link
             to={`/seller/${product.seller_email}`}
-            className="text-xs font-medium text-primary hover:underline shrink-0"
-          >
+            className="text-xs font-medium text-primary hover:underline shrink-0">
+            
             See other items →
           </Link>
         </div>
@@ -417,18 +417,18 @@ export default function ProductDetail() {
           product={product}
           currentUser={currentUser}
           onMessage={handleMessageSeller}
-          messaging={messaging}
-        />
+          messaging={messaging} />
+        
 
         {/* Description */}
-        {product.description && (
-          <div>
+        {product.description &&
+        <div>
             <h2 className="text-sm font-semibold mb-2">Description</h2>
             <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
               {product.description}
             </p>
           </div>
-        )}
+        }
 
         {/* Safety Section */}
         <div className="safety-section rounded-2xl border border-border bg-muted/30 p-4 space-y-4">
@@ -471,28 +471,28 @@ export default function ProductDetail() {
         </div>
 
         {/* Buy Button */}
-        {isPendingStripe && isOwner && (
-          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-center">
+        {isPendingStripe && isOwner &&
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-center">
             <p className="text-sm font-semibold text-amber-800">Payment setup required</p>
             <p className="text-xs text-amber-700 mt-1">This listing is saved but not live yet. Connect Stripe payouts to make it available to buyers.</p>
           </div>
-        )}
-        {!isOwner && !isSold && !isPendingStripe && (
-          <Button
-            onClick={() => setBuyDialogOpen(true)}
-            className="w-full h-14 rounded-2xl text-base font-semibold gap-2"
-            size="lg"
-          >
+        }
+        {!isOwner && !isSold && !isPendingStripe &&
+        <Button
+          onClick={() => setBuyDialogOpen(true)}
+          className="w-full h-14 rounded-2xl text-base font-semibold gap-2"
+          size="lg">
+          
             <ShoppingCart className="w-5 h-5" />
             Buy Now — £{product.price?.toFixed(2)}
           </Button>
-        )}
+        }
 
-        {isOwner && !isSold && (
-          <p className="text-center text-sm text-muted-foreground py-2">
+        {isOwner && !isSold &&
+        <p className="text-center text-sm text-muted-foreground py-2">
             This is your listing
           </p>
-        )}
+        }
       </div>
 
       {/* Buy Dialog - Amazon-style Address Form */}
@@ -512,8 +512,8 @@ export default function ProductDetail() {
                 src={product.image_url}
                 alt={product.title}
                 className="w-16 h-16 rounded-lg object-cover"
-                loading="lazy"
-              />
+                loading="lazy" />
+              
               <div>
                 <p className="font-medium text-sm">{product.title}</p>
                 <p className="text-primary font-bold">£{product.price?.toFixed(2)}</p>
@@ -528,8 +528,8 @@ export default function ProductDetail() {
                 placeholder="your@email.com"
                 value={buyerEmail}
                 onChange={(e) => setBuyerEmail(e.target.value)}
-                className="h-11 rounded-xl"
-              />
+                className="h-11 rounded-xl" />
+              
             </div>
 
             {/* Full Name */}
@@ -539,8 +539,8 @@ export default function ProductDetail() {
                 placeholder="First and last name"
                 value={address.fullName}
                 onChange={(e) => setAddress({ ...address, fullName: e.target.value })}
-                className="h-11 rounded-xl"
-              />
+                className="h-11 rounded-xl" />
+              
             </div>
 
             {/* Phone */}
@@ -550,8 +550,8 @@ export default function ProductDetail() {
                 placeholder="e.g. 07700 900000"
                 value={address.phone}
                 onChange={(e) => setAddress({ ...address, phone: e.target.value })}
-                className="h-11 rounded-xl"
-              />
+                className="h-11 rounded-xl" />
+              
             </div>
 
             {/* Street Line 1 */}
@@ -561,8 +561,8 @@ export default function ProductDetail() {
                 placeholder="House number and street name"
                 value={address.streetLine1}
                 onChange={(e) => setAddress({ ...address, streetLine1: e.target.value })}
-                className="h-11 rounded-xl"
-              />
+                className="h-11 rounded-xl" />
+              
             </div>
 
             {/* Street Line 2 */}
@@ -572,8 +572,8 @@ export default function ProductDetail() {
                 placeholder="Apartment, unit, or building (if applicable)"
                 value={address.streetLine2}
                 onChange={(e) => setAddress({ ...address, streetLine2: e.target.value })}
-                className="h-11 rounded-xl"
-              />
+                className="h-11 rounded-xl" />
+              
             </div>
 
             {/* City */}
@@ -583,8 +583,8 @@ export default function ProductDetail() {
                 placeholder="City"
                 value={address.city}
                 onChange={(e) => setAddress({ ...address, city: e.target.value })}
-                className="h-11 rounded-xl"
-              />
+                className="h-11 rounded-xl" />
+              
             </div>
 
             {/* State/Region */}
@@ -594,8 +594,8 @@ export default function ProductDetail() {
                 placeholder="e.g. London"
                 value={address.state}
                 onChange={(e) => setAddress({ ...address, state: e.target.value })}
-                className="h-11 rounded-xl"
-              />
+                className="h-11 rounded-xl" />
+              
             </div>
 
             {/* Postcode */}
@@ -605,8 +605,8 @@ export default function ProductDetail() {
                 placeholder="e.g. SW1A 1AA"
                 value={address.postcode}
                 onChange={(e) => setAddress({ ...address, postcode: e.target.value })}
-                className="h-11 rounded-xl uppercase"
-              />
+                className="h-11 rounded-xl uppercase" />
+              
             </div>
 
             {/* Buyer Protection Notice */}
@@ -631,8 +631,8 @@ export default function ProductDetail() {
                 <span className="text-sm font-medium">£{product.price?.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center mb-3">
-                <span className="text-xs text-muted-foreground">Shipping:</span>
-                <span className="text-sm font-medium">Free</span>
+                <span className="text-xs text-muted-foreground hidden">Shipping:</span>
+                <span className="text-sm font-medium hidden">Free</span>
               </div>
               <div className="flex justify-between items-center text-base font-bold bg-primary/5 p-2 rounded-lg">
                 <span>Total:</span>
@@ -649,30 +649,30 @@ export default function ProductDetail() {
             <Button variant="outline" className="flex-1 rounded-xl h-11" onClick={() => setBuyDialogOpen(false)}>
               Cancel
             </Button>
-            <Button 
-              className="flex-1 rounded-xl h-11 font-semibold gap-2" 
-              onClick={handleBuyNow} 
-              disabled={purchasing}
-            >
-              {purchasing ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <>
+            <Button
+              className="flex-1 rounded-xl h-11 font-semibold gap-2"
+              onClick={handleBuyNow}
+              disabled={purchasing}>
+              
+              {purchasing ?
+              <Loader2 className="w-4 h-4 animate-spin" /> :
+
+              <>
                   <ShoppingCart className="w-4 h-4" />
                   Continue to Checkout
                 </>
-              )}
+              }
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {product && (
-        <div className="px-4 pt-2 pb-8 space-y-8">
+      {product &&
+      <div className="px-4 pt-2 pb-8 space-y-8">
           <SimilarItems category={product.category} excludeId={product.id} />
           <RecentlyViewed excludeId={product.id} />
         </div>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 }
