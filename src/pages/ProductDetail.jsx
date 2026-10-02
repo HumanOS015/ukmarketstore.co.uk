@@ -631,8 +631,8 @@ export default function ProductDetail() {
                 <span className="text-sm font-medium">£{product.price?.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center mb-3">
-                <span className="text-xs text-muted-foreground hidden">Shipping:</span>
-                <span className="text-sm font-medium hidden">Free</span>
+                
+                
               </div>
               <div className="flex justify-between items-center text-base font-bold bg-primary/5 p-2 rounded-lg">
                 <span>Total:</span>
