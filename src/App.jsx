@@ -106,7 +106,7 @@ const AuthenticatedApp = () => {
         <Route path="/search" element={<MobileSearch />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>
-        <Route path="/welcome" element={<Onboarding />} />
+        <Route path="/welcome" element={<Suspense fallback={PageFallback}><Onboarding /></Suspense>} />
         </Routes>
       </TabMemoryProvider>
     </WishlistProvider>
