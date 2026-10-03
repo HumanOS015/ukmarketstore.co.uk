@@ -51,7 +51,7 @@ export default function MobileTabBar() {
             isActive("/sell") ? "bg-primary/90" : "bg-primary"}`
             }>
             
-            <PlusCircle className="w-8 h-8 text-white stroke-[2] py-1" />
+            <PlusCircle className="w-8 h-8 text-white stroke-[2] mx-auto" />
           </div>
           <span className="text-[11px] font-medium text-primary">Sell</span>
         </Link>
