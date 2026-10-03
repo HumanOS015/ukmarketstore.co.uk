@@ -53,7 +53,7 @@ export default function MobileTabBar() {
             
             <PlusCircle className="w-8 h-8 text-white stroke-[2]" />
           </div>
-          <span className="text-[11px] font-medium text-primary">Sell</span>
+          <span className="text-[11px] font-medium text-primary ml-24">Sell</span>
         </Link>
 
         <TabItem {...TABS[1]} active={isActive(TABS[1].to)} />
