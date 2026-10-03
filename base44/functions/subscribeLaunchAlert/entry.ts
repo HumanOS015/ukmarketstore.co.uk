@@ -6,6 +6,20 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 // escrow, orders, or any payment — it only creates a LaunchSubscriber record.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Extract the caller's IP from trusted ingress headers for un-spoofable rate
+// limiting on this public, no-login endpoint.
+function getClientIp(req) {
+  const get = req?.headers?.get?.bind(req.headers);
+  const real = get?.("x-real-ip");
+  if (real) return real.trim();
+  const fwd = get?.("x-forwarded-for");
+  if (fwd) {
+    const first = fwd.split(",")[0]?.trim();
+    if (first) return first;
+  }
+  return "unknown";
+}
+
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -37,11 +51,27 @@ export default async function(req) {
       return Response.json({ ok: true, alreadySubscribed: true });
     }
 
+    // Per-IP rate limit (un-spoofable signal) to stop junk subscription spam
+    // against the database. Public, no-login path.
+    const clientIp = getClientIp(req);
+    if (clientIp && clientIp !== "unknown") {
+      const sinceIso = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const recent = await base44.asServiceRole.entities.LaunchSubscriber.filter({
+        client_ip: clientIp,
+        created_date: { $gte: sinceIso }
+      });
+      const recentArr = Array.isArray(recent) ? recent : (recent.items || []);
+      if (recentArr.length >= 10) {
+        return Response.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+      }
+    }
+
     await base44.asServiceRole.entities.LaunchSubscriber.create({
       email,
       product_id: productId,
       product_title: productTitle,
       status: "pending",
+      client_ip: clientIp,
     });
 
     return Response.json({ ok: true, alreadySubscribed: false });

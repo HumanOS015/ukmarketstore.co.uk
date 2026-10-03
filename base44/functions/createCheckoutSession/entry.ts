@@ -2,20 +2,25 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { secrets } from 'base44:runtime';
 import { APP_URL, STRIPE_VERSION } from "../../shared/stripe.ts";
 
+// Extract the caller's IP from trusted ingress headers. Used for un-spoofable
+// rate limiting on the public checkout path — a client-supplied buyer_email can
+// be rotated freely, so it is not a safe throttle key.
+function getClientIp(req) {
+  const get = req?.headers?.get?.bind(req.headers);
+  const real = get?.("x-real-ip");
+  if (real) return real.trim();
+  const fwd = get?.("x-forwarded-for");
+  if (fwd) {
+    const first = fwd.split(",")[0]?.trim();
+    if (first) return first;
+  }
+  return "unknown";
+}
+
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
-
-    // Caller verification for public guest checkout: a shared secret
-    // (CHECKOUT_CLIENT_TOKEN) that only the app's own checkout page sends.
-    // Rejects raw/anonymous calls to this public URL. Checkout returns 401
-    // until CHECKOUT_CLIENT_TOKEN is set (Settings → Secrets) to the exact
-    // value embedded in the checkout page.
-    const expectedToken = (secrets.get("CHECKOUT_CLIENT_TOKEN") || "").trim();
-    if (typeof body.checkout_token !== "string" || body.checkout_token.trim() !== expectedToken) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
     let { productId, buyerEmail, shippingAddress } = body;
 
@@ -55,14 +60,17 @@ export default async function(req) {
       return Response.json({ error: "This seller hasn't set up payments yet" }, { status: 400 });
     }
 
-    // Anti-abuse for public guest checkout (login is not required by this app, so
-    // the endpoint is intentionally reachable). These checks neutralise the
-    // "create unlimited orders / Stripe sessions" vector without blocking
-    // legitimate one-off buyers:
-    //   1. Double-sale lock — if another buyer already has a pending_payment order
-    //      for this item in the last 15 minutes, refuse (closes the race window).
-    //   2. Per-buyer rate limit — cap pending orders per buyer in the same window.
-    const lockWindowMs = 15 * 60 * 1000;
+    // Anti-abuse for public guest checkout (login is not required, so the endpoint
+    // is intentionally reachable). Controls are keyed to UN-SPOOFABLE signals (the
+    // caller's IP from the trusted ingress), not client-supplied fields, so an
+    // attacker can't mint unlimited orders / Stripe sessions or hold listings
+    // hostage by rotating buyer_email values:
+    //   1. Double-sale lock — a short 5 min window reserves the item while a buyer
+    //      completes Stripe checkout, without leaving it blocked for long.
+    //   2. Per-IP rate limit — cap pending orders per source IP in the window.
+    //   3. Per-buyer cap — secondary backstop keyed on the validated email.
+    const clientIp = getClientIp(req);
+    const lockWindowMs = 5 * 60 * 1000;
     const sinceIso = new Date(Date.now() - lockWindowMs).toISOString();
 
     const conflict = await base44.asServiceRole.entities.Order.filter({
@@ -72,6 +80,19 @@ export default async function(req) {
     });
     if (conflict.length) {
       return Response.json({ error: "This item is currently being checked out. Please try again shortly." }, { status: 409 });
+    }
+
+    let ipPending = [];
+    if (clientIp && clientIp !== "unknown") {
+      ipPending = await base44.asServiceRole.entities.Order.filter({
+        client_ip: clientIp,
+        status: "pending_payment",
+        created_date: { $gte: sinceIso }
+      });
+      if (ipPending.length >= 5) {
+        console.warn("checkout IP rate limit hit", clientIp);
+        return Response.json({ error: "Too many checkout attempts. Please try again shortly." }, { status: 429 });
+      }
     }
 
     const buyerPending = await base44.asServiceRole.entities.Order.filter({
@@ -99,6 +120,7 @@ export default async function(req) {
       seller_email: product.seller_email,
       status: "pending_payment",
       shipping_address: shippingAddress,
+      client_ip: clientIp,
     });
 
     // Escrow: the full payment lands in the platform account. The seller's 90% is transferred

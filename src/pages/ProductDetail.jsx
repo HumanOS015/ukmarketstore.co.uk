@@ -159,8 +159,7 @@ export default function ProductDetail() {
         base44.functions.invoke("createCheckoutSession", {
           productId: product.id,
           buyerEmail: buyerEmail.trim(),
-          shippingAddress: shippingAddress,
-          checkout_token: "ukm_ca72b0a7e19360f206e62b6e856366f393f38078334e04e2"
+          shippingAddress: shippingAddress
         }),
         20000,
         "Preparing checkout"

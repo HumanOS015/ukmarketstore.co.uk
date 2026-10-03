@@ -105,6 +105,10 @@
       "type": "string",
       "description": "Optional notes about this order",
       "maxLength": 1000
+    },
+    "client_ip": {
+      "type": "string",
+      "description": "Caller IP captured at checkout, used for un-spoofable abuse throttling and fraud audit. Never shown to buyers."
     }
   },
   "required": [

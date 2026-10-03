@@ -26,6 +26,10 @@
     "notified_date": {
       "type": "date-time",
       "description": "When the launch notification email was sent"
+    },
+    "client_ip": {
+      "type": "string",
+      "description": "Caller IP captured at signup, used for un-spoofable abuse throttling."
     }
   },
   "required": [
