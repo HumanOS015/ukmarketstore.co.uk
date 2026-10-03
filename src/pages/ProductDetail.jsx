@@ -47,7 +47,6 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [buyDialogOpen, setBuyDialogOpen] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
-  const [buyerEmail, setBuyerEmail] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
   const [messaging, setMessaging] = useState(false);
   const [error, setError] = useState(false);
@@ -98,13 +97,20 @@ export default function ProductDetail() {
       );
       setProduct(productData[0]);
       setCurrentUser(user);
-      if (user?.email) setBuyerEmail(user.email);
     } catch (err) {
       console.error("Failed to load product", err);
       setError(true);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleStartCheckout = () => {
+    if (!currentUser?.email) {
+      base44.auth.redirectToLogin(window.location.href);
+      return;
+    }
+    setBuyDialogOpen(true);
   };
 
   const handleBuyNow = async () => {
@@ -117,10 +123,6 @@ export default function ProductDetail() {
     }
 
     // Validate all address fields
-    if (!buyerEmail.trim()) {
-      toast.error("Please enter your email address");
-      return;
-    }
     if (!address.fullName.trim()) {
       toast.error("Please enter your full name");
       return;
@@ -158,7 +160,6 @@ export default function ProductDetail() {
       const response = await withTimeout(
         base44.functions.invoke("createCheckoutSession", {
           productId: product.id,
-          buyerEmail: buyerEmail.trim(),
           shippingAddress: shippingAddress
         }),
         20000,
@@ -169,8 +170,13 @@ export default function ProductDetail() {
       window.location.href = response.data.checkoutUrl;
     } catch (err) {
       console.error("Checkout failed", err);
+      const status = err?.response?.status || err?.status;
       const msg = err?.response?.data?.error || err?.data?.error;
-      if (msg === "This item is no longer available") {
+      if (status === 401) {
+        toast.error("Please sign in to continue to checkout");
+        setBuyDialogOpen(false);
+        base44.auth.redirectToLogin(window.location.href);
+      } else if (msg === "This item is no longer available") {
         toast.error("Sorry, this item was just sold by another buyer.");
         setBuyDialogOpen(false);
         loadData();
@@ -492,7 +498,7 @@ export default function ProductDetail() {
         }
         {!COMING_SOON_ENABLED && !isOwner && !isSold && !isPendingStripe &&
         <Button
-          onClick={() => setBuyDialogOpen(true)}
+          onClick={handleStartCheckout}
           className="w-full h-14 rounded-2xl text-base font-semibold gap-2"
           size="lg">
           <ShoppingCart className="w-5 h-5" />
@@ -532,16 +538,10 @@ export default function ProductDetail() {
               </div>
             </div>
 
-            {/* Email */}
-            <div className="col-span-2">
-              <Label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Email Address</Label>
-              <Input
-                type="email"
-                placeholder="your@email.com"
-                value={buyerEmail}
-                onChange={(e) => setBuyerEmail(e.target.value)}
-                className="h-11 rounded-xl" />
-              
+            {/* Account email — verified at sign-in */}
+            <div className="col-span-2 p-3 rounded-xl bg-muted text-sm">
+              <span className="text-muted-foreground">Purchasing as </span>
+              <span className="font-medium break-all">{currentUser?.email}</span>
             </div>
 
             {/* Full Name */}

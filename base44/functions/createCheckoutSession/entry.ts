@@ -22,28 +22,26 @@ export default async function(req) {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
 
-    let { productId, buyerEmail, shippingAddress } = body;
+    let { productId, shippingAddress } = body;
 
-    // Public guest checkout: authentication is optional. If the buyer is logged in and
-    // didn't supply an email, use their verified account email. Inputs are strictly
-    // validated below regardless of auth state.
-    const authenticated = await base44.auth.isAuthenticated().catch(() => false);
-    if (authenticated && !buyerEmail) {
-      const me = await base44.auth.me().catch(() => null);
-      if (me?.email) buyerEmail = me.email;
+    // Checkout requires a signed-in buyer. The buyer's email is taken from the
+    // verified session — never from the request body — so a stranger can't mint
+    // orders or Stripe sessions under an arbitrary address.
+    const me = await base44.auth.me().catch(() => null);
+    if (!me?.email) {
+      return Response.json({ error: "Please sign in to continue to checkout" }, { status: 401 });
     }
+    const buyerEmail = me.email;
 
-    if (!productId || !buyerEmail || !shippingAddress) {
+    if (!productId || !shippingAddress) {
       return Response.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Public, no-login checkout — the endpoint is reachable by anyone, so strictly
-    // validate the inputs to prevent junk orders / abuse (email format, reasonable
-    // length caps, sane product id). This guards the database and Stripe account.
-    const emailOk = typeof buyerEmail === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(buyerEmail) && buyerEmail.length <= 254;
+    // Validate the remaining inputs to prevent junk orders / abuse (sane product
+    // id, reasonable address length). The buyer email is already verified above.
     const addressOk = typeof shippingAddress === "string" && shippingAddress.trim().length >= 6 && shippingAddress.length <= 500;
     const productIdOk = typeof productId === "string" && /^[A-Za-z0-9_-]{1,64}$/.test(productId);
-    if (!emailOk || !addressOk || !productIdOk) {
+    if (!addressOk || !productIdOk) {
       return Response.json({ error: "Invalid request" }, { status: 400 });
     }
 
@@ -60,11 +58,10 @@ export default async function(req) {
       return Response.json({ error: "This seller hasn't set up payments yet" }, { status: 400 });
     }
 
-    // Anti-abuse for public guest checkout (login is not required, so the endpoint
-    // is intentionally reachable). Controls are keyed to UN-SPOOFABLE signals (the
-    // caller's IP from the trusted ingress), not client-supplied fields, so an
-    // attacker can't mint unlimited orders / Stripe sessions or hold listings
-    // hostage by rotating buyer_email values:
+    // Anti-abuse: although checkout now requires a signed-in buyer, the endpoint is
+    // still public, so keep un-spoofable controls keyed to the caller's IP (not
+    // client-supplied fields) to stop a single account/IP minting unlimited orders
+    // or holding listings hostage:
     //   1. Double-sale lock — a short 5 min window reserves the item while a buyer
     //      completes Stripe checkout, without leaving it blocked for long.
     //   2. Per-IP rate limit — cap pending orders per source IP in the window.

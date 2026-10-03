@@ -1,10 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 
-// Coming Soon launch-notification signup. Anonymous visitors (the public app
-// requires no login) leave their email against a specific listing so UKMarketStore
+// Coming Soon launch-notification signup. Requires a signed-in visitor; the
+// verified account email is recorded against a specific listing so UKMarketStore
 // can notify them when the marketplace opens. This path never touches Stripe,
 // escrow, orders, or any payment — it only creates a LaunchSubscriber record.
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Extract the caller's IP from trusted ingress headers for un-spoofable rate
 // limiting on this public, no-login endpoint.
@@ -24,18 +23,17 @@ export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
-    const rawEmail = typeof body?.email === "string" ? body.email : "";
+    // Signup requires a signed-in user. The email is taken from the verified
+    // session — never the request body — so strangers can't fill the database
+    // with arbitrary addresses.
+    const me = await base44.auth.me().catch(() => null);
+    if (!me?.email) {
+      return Response.json({ error: "Please sign in to subscribe" }, { status: 401 });
+    }
+    const email = me.email.toLowerCase();
     const productId = typeof body?.productId === "string" ? body.productId.trim() : "";
     const productTitle = typeof body?.productTitle === "string" ? body.productTitle.trim().slice(0, 200) : "";
 
-    // Validate + normalise the email (trim, lowercase) so duplicate detection works.
-    const email = rawEmail.trim().toLowerCase();
-    if (!email) {
-      return Response.json({ error: "Please enter your email address" }, { status: 400 });
-    }
-    if (!EMAIL_RE.test(email) || email.length > 320) {
-      return Response.json({ error: "Please enter a valid email address" }, { status: 400 });
-    }
     if (!productId) {
       return Response.json({ error: "Listing not found" }, { status: 400 });
     }
