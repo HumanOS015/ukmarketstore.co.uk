@@ -58,7 +58,7 @@ export default function Layout() {
 
             alt="UKMarketStore logo"
             className="w-9 h-9 md:w-10 md:h-10 rounded-lg object-contain opacity-100"
-            fetchpriority="high" />
+            fetchPriority="high" />
             
             <span className="font-bold tracking-tight text-base md:text-lg">UKMarketStore</span>
           </Link>
