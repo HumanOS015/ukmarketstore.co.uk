@@ -25,7 +25,8 @@ import {
   RefreshCw,
   Truck,
   Share2,
-  Heart } from
+  Heart,
+  Bell } from
 "lucide-react";
 import { toast } from "sonner";
 import { useWishlist } from "@/lib/WishlistContext";
@@ -36,6 +37,8 @@ import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import SimilarItems from "@/components/product/SimilarItems";
 import RecentlyViewed from "@/components/product/RecentlyViewed";
 import SellerCard from "@/components/product/SellerCard";
+import { COMING_SOON_ENABLED } from "@/lib/comingSoon";
+import GetNotifiedDialog from "@/components/GetNotifiedDialog";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -49,6 +52,7 @@ export default function ProductDetail() {
   const [messaging, setMessaging] = useState(false);
   const [error, setError] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
+  const [notifyDialogOpen, setNotifyDialogOpen] = useState(false);
   const { isSaved, toggle } = useWishlist();
   const { record } = useRecentlyViewed();
 
@@ -477,15 +481,23 @@ export default function ProductDetail() {
             <p className="text-xs text-amber-700 mt-1">This listing is saved but not live yet. Connect Stripe payouts to make it available to buyers.</p>
           </div>
         }
-        {!isOwner && !isSold && !isPendingStripe &&
+        {COMING_SOON_ENABLED && !isOwner && !isSold && !isPendingStripe &&
+        <Button
+          onClick={() => setNotifyDialogOpen(true)}
+          className="w-full h-14 rounded-2xl text-base font-semibold gap-2"
+          size="lg">
+          <Bell className="w-5 h-5" />
+          GET NOTIFIED
+        </Button>
+        }
+        {!COMING_SOON_ENABLED && !isOwner && !isSold && !isPendingStripe &&
         <Button
           onClick={() => setBuyDialogOpen(true)}
           className="w-full h-14 rounded-2xl text-base font-semibold gap-2"
           size="lg">
-          
-            <ShoppingCart className="w-5 h-5" />
-            Buy Now — £{product.price?.toFixed(2)}
-          </Button>
+          <ShoppingCart className="w-5 h-5" />
+          Buy Now — £{product.price?.toFixed(2)}
+        </Button>
         }
 
         {isOwner && !isSold &&
@@ -666,6 +678,12 @@ export default function ProductDetail() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <GetNotifiedDialog
+        open={notifyDialogOpen}
+        onOpenChange={setNotifyDialogOpen}
+        product={product}
+      />
 
       {product &&
       <div className="px-4 pt-2 pb-8 space-y-8">

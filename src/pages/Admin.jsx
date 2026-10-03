@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Trash2, Ban, CheckCircle, Shield, Users, Package, ShoppingBag, RotateCcw, BarChart3 } from "lucide-react";
+import { Loader2, Trash2, Ban, CheckCircle, Shield, Users, Package, ShoppingBag, RotateCcw, BarChart3, Bell } from "lucide-react";
 import { toast } from "sonner";
 import moment from "moment";
 import AnalyticsTab from "@/components/admin/AnalyticsTab";
@@ -15,6 +15,7 @@ export default function Admin() {
   const [products, setProducts] = useState([]);
   const [users, setUsers] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [subscribers, setSubscribers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refundingId, setRefundingId] = useState(null);
 
@@ -33,14 +34,16 @@ export default function Admin() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [allProducts, allUsers, allOrders] = await Promise.all([
+      const [allProducts, allUsers, allOrders, allSubs] = await Promise.all([
         base44.entities.Product.list("-created_date", 500),
         base44.entities.User.list("-created_date", 500),
         base44.entities.Order.list("-created_date", 500),
+        base44.entities.LaunchSubscriber.list("-created_date", 500),
       ]);
       setProducts(allProducts);
       setUsers(allUsers);
       setOrders(allOrders);
+      setSubscribers(allSubs);
     } catch (err) {
       console.error("Admin load failed", err);
       toast.error("Failed to load admin data");
@@ -157,6 +160,15 @@ export default function Admin() {
           <BarChart3 className="w-4 h-4" />
           Analytics
         </button>
+        <button
+          onClick={() => setTab("subscribers")}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+            tab === "subscribers" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+          }`}
+        >
+          <Bell className="w-4 h-4" />
+          Subscribers ({subscribers.length})
+        </button>
       </div>
 
       {tab === "listings" ? (
@@ -234,6 +246,39 @@ export default function Admin() {
         </div>
       ) : tab === "analytics" ? (
         <AnalyticsTab orders={orders} products={products} users={users} />
+      ) : tab === "subscribers" ? (
+        <div className="space-y-2">
+          {subscribers.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">No subscribers yet.</p>
+          ) : (
+            subscribers.map((s) => (
+              <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Bell className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm truncate">{s.email}</p>
+                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                    <span className="text-xs text-muted-foreground truncate">
+                      {s.product_title || s.product_id}
+                    </span>
+                    <Badge variant={s.status === "notified" ? "default" : "secondary"} className="text-[10px]">
+                      {s.status}
+                    </Badge>
+                    <span className="text-[10px] text-muted-foreground">
+                      {moment(s.created_date).format("DD MMM YYYY")}
+                    </span>
+                    {s.notified_date && (
+                      <span className="text-[10px] text-muted-foreground">
+                        Notified {moment(s.notified_date).format("DD MMM YYYY")}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       ) : (
         <div className="space-y-2">
           {orders.length === 0 ? (

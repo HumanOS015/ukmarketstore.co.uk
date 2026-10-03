@@ -1,0 +1,57 @@
+{
+  "name": "LaunchSubscriber",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "description": "Subscriber email address, stored lowercase for dedupe"
+    },
+    "product_id": {
+      "type": "string",
+      "description": "Listing the subscriber wants to be notified about"
+    },
+    "product_title": {
+      "type": "string",
+      "description": "Listing title snapshot"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "notified"
+      ],
+      "default": "pending",
+      "description": "Whether the launch notification has been sent yet"
+    },
+    "notified_date": {
+      "type": "date-time",
+      "description": "When the launch notification email was sent"
+    }
+  },
+  "required": [
+    "email",
+    "product_id"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
