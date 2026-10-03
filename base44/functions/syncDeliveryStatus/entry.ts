@@ -60,30 +60,11 @@ async function getRoyalMailStatus(trackingNumber) {
   return { configured: true, status: findStatus(data) || "unknown", raw: data };
 }
 
-async function getEvriStatus(trackingNumber) {
-  // Evri's public site confirms tracking and delivered events, but this app does not
-  // assume an undocumented public API. If UKMarketStore has an Evri business/API
-  // endpoint, store it in these Base44 secrets and the adapter will use it.
-  const urlTemplate = secrets.get("EVRI_TRACKING_API_URL");
-  const apiKey = secrets.get("EVRI_TRACKING_API_KEY");
-  if (!urlTemplate || !apiKey) return { configured: false };
-
-  const url = urlTemplate.replace("{trackingNumber}", encodeURIComponent(trackingNumber));
-  const response = await fetch(url, {
-    headers: {
-      "Accept": "application/json",
-      "Authorization": `Bearer ${apiKey}`,
-      "X-API-Key": apiKey
-    }
-  });
-
-  if (!response.ok) {
-    const body = await response.text().catch(() => "");
-    throw new Error(`Evri tracking API returned ${response.status}: ${body.slice(0, 300)}`);
-  }
-
-  const data = await response.json();
-  return { configured: true, status: findStatus(data) || "unknown", raw: data };
+async function getEvriStatus(_trackingNumber) {
+  // Evri automated tracking is disabled until the business/API credentials are
+  // approved. To re-enable: register EVRI_TRACKING_API_URL and EVRI_TRACKING_API_KEY
+  // in the app dashboard (Settings → Secrets), then restore the adapter below.
+  return { configured: false };
 }
 
 async function releaseDelivered(base44, order) {
@@ -129,11 +110,12 @@ export default async function(req) {
     // supply a single order/tracking update when authenticated with DELIVERY_WEBHOOK_TOKEN.
     const user = await base44.auth.me().catch(() => null);
     const isAdmin = user?.role === "admin";
+    // Only the scheduled/internal caller (admin or ESCROW_RELEASE_TOKEN) may run
+    // bulk polling. Courier-webhook single-order updates can be re-enabled by
+    // registering DELIVERY_WEBHOOK_TOKEN and restoring the webhook_token check.
     const internalToken = secrets.get("ESCROW_RELEASE_TOKEN");
-    const webhookToken = secrets.get("DELIVERY_WEBHOOK_TOKEN");
     const authorised = isAdmin ||
-      (typeof body.internal_token === "string" && body.internal_token === internalToken) ||
-      (typeof body.webhook_token === "string" && body.webhook_token === webhookToken);
+      (typeof body.internal_token === "string" && body.internal_token === internalToken);
 
     if (!authorised) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
