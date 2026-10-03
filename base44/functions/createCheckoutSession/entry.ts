@@ -12,8 +12,8 @@ export default async function(req) {
     // Rejects raw/anonymous calls to this public URL. Checkout returns 401
     // until CHECKOUT_CLIENT_TOKEN is set (Settings → Secrets) to the exact
     // value embedded in the checkout page.
-    const expectedToken = secrets.get("CHECKOUT_CLIENT_TOKEN");
-    if (typeof body.checkout_token !== "string" || body.checkout_token !== expectedToken) {
+    const expectedToken = (secrets.get("CHECKOUT_CLIENT_TOKEN") || "").trim();
+    if (typeof body.checkout_token !== "string" || body.checkout_token.trim() !== expectedToken) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
