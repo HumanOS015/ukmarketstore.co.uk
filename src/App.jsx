@@ -22,6 +22,9 @@ import Wishlist from './pages/Wishlist';
 import SellerStorefront from './pages/SellerStorefront';
 import SellerMessages from './pages/SellerMessages';
 import Returns from './pages/Returns';
+import Account from './pages/mobile/Account';
+import Categories from './pages/mobile/Categories';
+import MobileSearch from './pages/mobile/Search';
 import Category from './pages/Category';
 import Notifications from './pages/Notifications';
 import { WishlistProvider } from '@/lib/WishlistContext';
@@ -84,6 +87,9 @@ const AuthenticatedApp = () => {
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/returns" element={<Returns />} />
         <Route path="/category/:category" element={<Category />} />
+        <Route path="/account" element={<Account />} />
+        <Route path="/categories" element={<Categories />} />
+        <Route path="/search" element={<MobileSearch />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>
     </Routes>

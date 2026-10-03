@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard, Ban, Heart, MessageCircle, Bell } from "lucide-react";
 import CookieConsent from "./CookieConsent";
+import MobileTabBar from "./mobile/MobileTabBar";
 import { base44 } from "@/api/base44Client";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/AuthContext";
@@ -49,7 +50,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top Header */}
-      <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border">
+      <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border" style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <img src="https://media.base44.com/images/public/69cdac0e3dd4898d79118860/dd93ae03f_Copilot_20260912_230059.png"
@@ -124,8 +125,8 @@ export default function Layout() {
         </div>
       </footer>
 
-      {/* Bottom Nav — always fixed */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-t border-border">
+      {/* Bottom Nav — desktop only (mobile uses MobileTabBar) */}
+      <nav className="hidden md:block fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-t border-border">
         <div className="flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
           {/* Left two items */}
           {navItems.slice(0, 2).map(({ to, icon: Icon, label }) => {
@@ -172,6 +173,9 @@ export default function Layout() {
           })}
         </div>
       </nav>
+
+      {/* Mobile bottom tab bar */}
+      <MobileTabBar />
 
       <CookieConsent />
     </div>);
