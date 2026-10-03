@@ -44,6 +44,34 @@ export default async function(req) {
       return Response.json({ error: "This seller hasn't set up payments yet" }, { status: 400 });
     }
 
+    // Anti-abuse for public guest checkout (login is not required by this app, so
+    // the endpoint is intentionally reachable). These checks neutralise the
+    // "create unlimited orders / Stripe sessions" vector without blocking
+    // legitimate one-off buyers:
+    //   1. Double-sale lock — if another buyer already has a pending_payment order
+    //      for this item in the last 15 minutes, refuse (closes the race window).
+    //   2. Per-buyer rate limit — cap pending orders per buyer in the same window.
+    const lockWindowMs = 15 * 60 * 1000;
+    const sinceIso = new Date(Date.now() - lockWindowMs).toISOString();
+
+    const conflict = await base44.asServiceRole.entities.Order.filter({
+      product_id: product.id,
+      status: "pending_payment",
+      created_date: { $gte: sinceIso }
+    });
+    if (conflict.length) {
+      return Response.json({ error: "This item is currently being checked out. Please try again shortly." }, { status: 409 });
+    }
+
+    const buyerPending = await base44.asServiceRole.entities.Order.filter({
+      buyer_email: buyerEmail,
+      status: "pending_payment",
+      created_date: { $gte: sinceIso }
+    });
+    if (buyerPending.length >= 5) {
+      return Response.json({ error: "You have too many pending orders. Please complete one before starting another." }, { status: 429 });
+    }
+
     // Create a pending order
     const price = product.price;
     const commission = parseFloat((price * 0.1).toFixed(2));
