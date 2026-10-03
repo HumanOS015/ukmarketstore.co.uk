@@ -21,7 +21,7 @@ function TabItem({ to, icon: Icon, label, active }) {
       active ? "text-primary" : "text-muted-foreground"}`
       }>
       
-      <Icon className={`w-6 h-6 ml-1 ${active ? "stroke-[2.5]" : ""}`} />
+      <Icon className={`w-6 h-6 ${active ? "stroke-[2.5]" : ""}`} />
       <span className="text-[11px] font-medium">{label}</span>
     </Link>);
 
@@ -47,13 +47,13 @@ export default function MobileTabBar() {
           className="flex-1 flex flex-col items-center justify-end gap-1 pb-1.5 active:scale-95 transition-transform">
           
           <div
-            className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg ml-24 ${
+            className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg ${
             isActive("/sell") ? "bg-primary/90" : "bg-primary"}`
             }>
             
             <PlusCircle className="w-8 h-8 text-white stroke-[2]" />
           </div>
-          <span className="text-[11px] font-medium text-primary ml-24">Sell</span>
+          <span className="text-[11px] font-medium text-primary pr-1">Sell</span>
         </Link>
 
         <TabItem {...TABS[1]} active={isActive(TABS[1].to)} />
