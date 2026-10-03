@@ -52,43 +52,46 @@ export default function Layout() {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top Header */}
       <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3 md:px-4 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <img src="https://media.base44.com/images/public/69cdac0e3dd4898d79118860/dd93ae03f_Copilot_20260912_230059.png"
 
             alt="UKMarketStore logo"
-            className="w-10 h-10 rounded-lg object-contain opacity-100"
+            className="w-9 h-9 md:w-10 md:h-10 rounded-lg object-contain opacity-100"
             fetchpriority="high" />
             
-            <span className="font-bold tracking-tight text-lg">UKMarketStore</span>
+            <span className="font-bold tracking-tight text-base md:text-lg">UKMarketStore</span>
           </Link>
-          <div className="flex items-center gap-4">
-            <Link to="/messages" className="flex items-center justify-center text-muted-foreground hover:text-primary transition-colors" aria-label="Messages">
+          <div className="flex items-center gap-1 md:gap-4">
+            <Link to="/messages" aria-label="Messages" className="flex items-center justify-center h-9 w-9 md:h-auto md:w-auto shrink-0 rounded-lg text-muted-foreground hover:text-primary transition-colors">
               <MessageCircle className="w-4 h-4" />
             </Link>
-            <Link to="/notifications" className="relative flex items-center justify-center text-muted-foreground hover:text-primary transition-colors" aria-label="Notifications">
+            <Link to="/notifications" aria-label="Notifications" className="relative flex items-center justify-center h-9 w-9 md:h-auto md:w-auto shrink-0 rounded-lg text-muted-foreground hover:text-primary transition-colors">
               <Bell className="w-4 h-4" />
               {unreadNotifications > 0 && <span className="absolute -top-2 -right-2 min-w-4 h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">{unreadNotifications > 99 ? "99+" : unreadNotifications}</span>}
             </Link>
             <Link
               to="/wishlist"
-              className="flex items-center justify-center text-muted-foreground hover:text-primary transition-colors">
+              aria-label="Saved"
+              className="flex items-center justify-center h-9 w-9 md:h-auto md:w-auto shrink-0 rounded-lg text-muted-foreground hover:text-primary transition-colors">
               
               <Heart className="w-4 h-4" />
             </Link>
             <Link
               to="/buyer-protection"
-              className="flex items-center gap-1.5 text-xs font-medium hover:text-primary transition-colors mx-1 text-[hsl(var(--muted-foreground))] pl-20">
+              aria-label="Buyer Protection"
+              className="flex items-center justify-center md:justify-start gap-1.5 text-xs font-medium hover:text-primary transition-colors h-9 w-9 md:h-auto md:w-auto md:mx-1 md:pl-20 shrink-0 rounded-lg text-[hsl(var(--muted-foreground))]">
               
-              <Shield className="w-3.5 h-3.5 text-[hsl(var(--chart-3))]" />
-              Buyer Protection
+              <Shield className="w-4 h-4 md:w-3.5 md:h-3.5 text-[hsl(var(--chart-3))]" />
+              <span className="hidden md:inline">Buyer Protection</span>
             </Link>
             <Link
               to="/terms"
-              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors pr-1">
+              aria-label="Terms"
+              className="flex items-center justify-center md:justify-start gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors h-9 w-9 md:h-auto md:w-auto md:pr-1 shrink-0 rounded-lg">
 
-              <FileText className="w-3.5 h-3.5 text-[hsl(var(--primary))]" />
-              Terms
+              <FileText className="w-4 h-4 md:w-3.5 md:h-3.5 text-[hsl(var(--primary))]" />
+              <span className="hidden md:inline">Terms</span>
             </Link>
             {user?.role === "admin" &&
             <Link
@@ -96,7 +99,7 @@ export default function Layout() {
               className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors">
               
                 <Shield className="w-3.5 h-3.5" />
-                Admin
+                <span className="hidden md:inline">Admin</span>
               </Link>
             }
           </div>
