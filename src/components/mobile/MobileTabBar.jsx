@@ -1,33 +1,32 @@
-import { Link, useLocation } from "react-router-dom";
+import { useTabMemory } from "@/lib/TabMemoryContext";
 import { Home, Search, LayoutGrid, PlusCircle, User } from "lucide-react";
 
 const leftTabs = [
-  { to: "/", icon: Home, label: "Home" },
-  { to: "/search", icon: Search, label: "Search" },
+  { key: "home", icon: Home, label: "Home" },
+  { key: "search", icon: Search, label: "Search" },
 ];
 
 const rightTabs = [
-  { to: "/categories", icon: LayoutGrid, label: "Categories" },
-  { to: "/account", icon: User, label: "Account" },
+  { key: "categories", icon: LayoutGrid, label: "Categories" },
+  { key: "account", icon: User, label: "Account" },
 ];
 
 export default function MobileTabBar() {
-  const location = useLocation();
-  const isActive = (to) =>
-    to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
+  const { activeTab, switchTab } = useTabMemory();
 
-  const Tab = ({ to, icon: Icon, label }) => {
-    const active = isActive(to);
+  const Tab = ({ tab, icon: Icon, label }) => {
+    const active = activeTab === tab;
     return (
-      <Link
-        to={to}
+      <button
+        type="button"
+        onClick={() => switchTab(tab)}
         className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all ${
           active ? "text-primary" : "text-muted-foreground"
         }`}
       >
         <Icon className={`w-5 h-5 ${active ? "stroke-[2.5]" : ""}`} />
         <span className="text-[10px] font-medium">{label}</span>
-      </Link>
+      </button>
     );
   };
 
@@ -38,23 +37,27 @@ export default function MobileTabBar() {
     >
       <div className="flex items-center justify-around h-16 px-2 max-w-md mx-auto">
         {leftTabs.map((t) => (
-          <Tab key={t.to} {...t} />
+          <Tab key={t.key} {...t} />
         ))}
 
         {/* Centre Sell button */}
-        <Link to="/sell" className="flex flex-col items-center gap-1 -mt-5">
+        <button
+          type="button"
+          onClick={() => switchTab("sell")}
+          className="flex flex-col items-center gap-1 -mt-5"
+        >
           <div
             className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-transform active:scale-95 ${
-              location.pathname === "/sell" ? "bg-primary/90" : "bg-primary"
+              activeTab === "sell" ? "bg-primary/90" : "bg-primary"
             }`}
           >
             <PlusCircle className="w-7 h-7 text-white stroke-[2]" />
           </div>
           <span className="text-[10px] font-medium text-primary">Sell</span>
-        </Link>
+        </button>
 
         {rightTabs.map((t) => (
-          <Tab key={t.to} {...t} />
+          <Tab key={t.key} {...t} />
         ))}
       </div>
     </nav>

@@ -1,13 +1,7 @@
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ResponsiveSelect } from "@/components/ui/responsive-select";
 import { useState } from "react";
 
 const CATEGORIES = [
@@ -61,18 +55,13 @@ export default function SearchBar({ onSearch, onCategoryChange, searchValue, cat
 
       {showFilters && (
         <div className="flex gap-2 animate-in slide-in-from-top-2 duration-200">
-          <Select value={categoryValue} onValueChange={onCategoryChange}>
-            <SelectTrigger className="h-10 rounded-xl bg-card">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              {CATEGORIES.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <ResponsiveSelect
+            value={categoryValue}
+            onValueChange={onCategoryChange}
+            options={CATEGORIES}
+            placeholder="Category"
+            triggerClassName="h-10 rounded-xl bg-card"
+          />
         </div>
       )}
     </div>

@@ -1,5 +1,7 @@
 import { Toaster } from "@/components/ui/toaster"
+import { lazy, Suspense } from "react";
 import { ThemeProvider } from "next-themes";
+import { TabMemoryProvider } from "@/lib/TabMemoryContext";
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
@@ -7,29 +9,36 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Layout from './components/Layout';
-import Home from './pages/Home';
-import Sell from './pages/Sell';
-import ProductDetail from './pages/ProductDetail';
-import Orders from './pages/Orders';
-import Profile from './pages/Profile';
-import BuyerProtection from './pages/BuyerProtection';
-import TermsAndConditions from './pages/TermsAndConditions';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import SellerDashboard from './pages/SellerDashboard';
-import About from './pages/About';
-import BuyerProtectionAssistant from './pages/BuyerProtectionAssistant';
-import Admin from './pages/Admin';
-import Wishlist from './pages/Wishlist';
-import SellerStorefront from './pages/SellerStorefront';
-import SellerMessages from './pages/SellerMessages';
-import Returns from './pages/Returns';
-import Account from './pages/mobile/Account';
-import Categories from './pages/mobile/Categories';
-import MobileSearch from './pages/mobile/Search';
-import Category from './pages/Category';
-import Notifications from './pages/Notifications';
-import { WishlistProvider } from '@/lib/WishlistContext';
-import OAuthConsent from './pages/OAuthConsent';
+import { WishlistProvider } from "@/lib/WishlistContext";
+
+const PageFallback = (
+  <div className="flex items-center justify-center py-20">
+    <div className="w-6 h-6 border-4 border-muted border-t-primary rounded-full animate-spin" />
+  </div>
+);
+
+const Home = lazy(() => import("./pages/Home"));
+const Sell = lazy(() => import("./pages/Sell"));
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+const Orders = lazy(() => import("./pages/Orders"));
+const Profile = lazy(() => import("./pages/Profile"));
+const BuyerProtection = lazy(() => import("./pages/BuyerProtection"));
+const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
+const About = lazy(() => import("./pages/About"));
+const BuyerProtectionAssistant = lazy(() => import("./pages/BuyerProtectionAssistant"));
+const Admin = lazy(() => import("./pages/Admin"));
+const Wishlist = lazy(() => import("./pages/Wishlist"));
+const SellerStorefront = lazy(() => import("./pages/SellerStorefront"));
+const SellerMessages = lazy(() => import("./pages/SellerMessages"));
+const Returns = lazy(() => import("./pages/Returns"));
+const Account = lazy(() => import("./pages/mobile/Account"));
+const Categories = lazy(() => import("./pages/mobile/Categories"));
+const MobileSearch = lazy(() => import("./pages/mobile/Search"));
+const Category = lazy(() => import("./pages/Category"));
+const Notifications = lazy(() => import("./pages/Notifications"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -40,7 +49,7 @@ const AuthenticatedApp = () => {
   if (window.location.pathname === "/oauth/consent") {
     return (
       <Routes>
-        <Route path="/oauth/consent" element={<OAuthConsent />} />
+        <Route path="/oauth/consent" element={<Suspense fallback={PageFallback}><OAuthConsent /></Suspense>} />
       </Routes>
     );
   }
@@ -68,8 +77,9 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <WishlistProvider>
-    <Routes>
-      <Route element={<Layout />}>
+      <TabMemoryProvider>
+      <Routes>
+        <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
         <Route path="/sell" element={<Sell />} />
         <Route path="/product/:id" element={<ProductDetail />} />
@@ -93,7 +103,8 @@ const AuthenticatedApp = () => {
         <Route path="/search" element={<MobileSearch />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>
-    </Routes>
+        </Routes>
+      </TabMemoryProvider>
     </WishlistProvider>
   );
 };

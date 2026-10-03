@@ -4,7 +4,7 @@ import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard,
 import CookieConsent from "./CookieConsent";
 import MobileTabBar from "./mobile/MobileTabBar";
 import { base44 } from "@/api/base44Client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useAuth } from "@/lib/AuthContext";
 
 const navItems = [
@@ -113,7 +113,9 @@ export default function Layout() {
             exit={{ opacity: 0, x: -16 }}
             transition={{ duration: 0.2, ease: "easeInOut" }}
           >
-            <Outlet />
+            <Suspense fallback={<div className="flex items-center justify-center py-20"><div className="w-6 h-6 border-4 border-muted border-t-primary rounded-full animate-spin" /></div>}>
+              <Outlet />
+            </Suspense>
           </motion.div>
         </AnimatePresence>
       </main>
