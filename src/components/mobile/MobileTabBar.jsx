@@ -21,7 +21,7 @@ function TabItem({ to, icon: Icon, label, active }) {
       active ? "text-primary" : "text-muted-foreground"}`
       }>
       
-      <Icon className={`w-6 h-6 ${active ? "stroke-[2.5]" : ""}`} />
+      <Icon className={`w-6 h-6 ml-1 ${active ? "stroke-[2.5]" : ""}`} />
       <span className="text-[11px] font-medium">{label}</span>
     </Link>);
 
