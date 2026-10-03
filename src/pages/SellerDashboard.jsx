@@ -9,7 +9,9 @@ import { toast } from "sonner";
 import { withTimeout } from "@/lib/withTimeout";
 import PayoutConnect from "@/components/PayoutConnect";
 
-const CARRIERS = ["Royal Mail", "Evri"];
+// Evri API access is pending business-account approval. Sellers are limited to
+// Royal Mail temporarily so every parcel gets full automatic tracking + auto-release.
+const CARRIERS = ["Royal Mail"];
 
 const STATUS_COLORS = {
   paid: "bg-yellow-100 text-yellow-700",
@@ -260,6 +262,7 @@ export default function SellerDashboard() {
                     </button>
                 )}
                 </div>
+                <p className="text-[11px] text-muted-foreground mt-1.5">Evri is coming soon — Royal Mail only for now.</p>
               </div>
 
               <div>
