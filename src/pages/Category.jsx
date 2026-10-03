@@ -43,11 +43,12 @@ export default function Category() {
     setLoading(true);
     setError(false);
     try {
-      const data = await withTimeout(
-        base44.entities.Product.filter({ status: "active", category: decoded }, "-created_date", 100),
+      const res = await withTimeout(
+        base44.entities.Product.filter({ status: "active", category: decoded }, { sort: "-created_date", limit: 100 }),
         15000,
         "Loading category"
       );
+      const data = Array.isArray(res) ? res : (res.items || []);
       setProducts(data);
     } catch (e) {
       console.error("Failed to load category", e);

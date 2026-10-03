@@ -27,7 +27,8 @@ export default function Search() {
     setLoading(true);
     setError(false);
     try {
-      const data = await base44.entities.Product.filter({ status: "active" }, "-created_date", 100);
+      const res = await base44.entities.Product.filter({ status: "active" }, { sort: "-created_date", limit: 100 });
+      const data = Array.isArray(res) ? res : (res.items || []);
       setProducts(data);
     } catch (e) {
       console.error("Search load failed", e);

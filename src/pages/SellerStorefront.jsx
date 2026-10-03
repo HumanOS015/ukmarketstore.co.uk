@@ -19,10 +19,12 @@ export default function SellerStorefront() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [prods, revs] = await Promise.all([
-        withTimeout(base44.entities.Product.filter({ seller_email: email, status: "active" }, "-created_date", 100), 15000, "Loading listings"),
-        base44.entities.Review.filter({ seller_email: email }, "-created_date", 100).catch(() => []),
+      const [prodRes, revRes] = await Promise.all([
+        withTimeout(base44.entities.Product.filter({ seller_email: email, status: "active" }, { sort: "-created_date", limit: 100 }), 15000, "Loading listings"),
+        base44.entities.Review.filter({ seller_email: email }, { sort: "-created_date", limit: 100 }).catch(() => []),
       ]);
+      const prods = Array.isArray(prodRes) ? prodRes : (prodRes.items || []);
+      const revs = Array.isArray(revRes) ? revRes : (revRes.items || []);
       setProducts(prods);
       setReviews(revs);
     } catch (err) {

@@ -26,11 +26,12 @@ export default function Wishlist() {
     }
     setLoading(true);
     try {
-      const all = await withTimeout(
-        base44.entities.Product.filter({ status: "active" }, "-created_date", 500),
+      const res = await withTimeout(
+        base44.entities.Product.filter({ status: "active" }, { sort: "-created_date", limit: 500 }),
         15000,
         "Loading wishlist"
       );
+      const all = Array.isArray(res) ? res : (res.items || []);
       const ids = new Set(wishlistIds);
       setProducts(all.filter((p) => ids.has(p.id)));
     } catch (err) {

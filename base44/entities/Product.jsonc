@@ -97,6 +97,7 @@
     "status"
   ],
   "rls": {
+    "read": {},
     "create": {
       "data.seller_email": "{{user.email}}"
     },

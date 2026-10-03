@@ -49,11 +49,12 @@ export default function Home() {
     setLoading(true);
     setError(false);
     try {
-      const data = await withTimeout(
-        base44.entities.Product.filter({ status: "active" }, "-created_date", 100),
+      const res = await withTimeout(
+        base44.entities.Product.filter({ status: "active" }, { sort: "-created_date", limit: 100 }),
         15000,
         "Loading listings"
       );
+      const data = Array.isArray(res) ? res : (res.items || []);
       setProducts(data);
     } catch (err) {
       console.error("Failed to load products", err);

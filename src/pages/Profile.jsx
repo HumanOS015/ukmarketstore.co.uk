@@ -44,11 +44,12 @@ export default function Profile() {
     try {
       const me = await withTimeout(base44.auth.me(), 15000, "Loading profile");
       setUser(me);
-      const listings = await withTimeout(
-        base44.entities.Product.filter({ seller_email: me.email }, "-created_date", 50),
+      const listRes = await withTimeout(
+        base44.entities.Product.filter({ seller_email: me.email }, { sort: "-created_date", limit: 50 }),
         15000,
         "Loading listings"
       );
+      const listings = Array.isArray(listRes) ? listRes : (listRes.items || []);
       setMyListings(listings);
     } catch (err) {
       console.error("Failed to load profile", err);
