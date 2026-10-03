@@ -6,6 +6,17 @@ export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
+
+    // Caller verification for public guest checkout: a shared secret
+    // (CHECKOUT_CLIENT_TOKEN) that only the app's own checkout page sends.
+    // Rejects raw/anonymous calls to this public URL. Checkout returns 401
+    // until CHECKOUT_CLIENT_TOKEN is set (Settings → Secrets) to the exact
+    // value embedded in the checkout page.
+    const expectedToken = secrets.get("CHECKOUT_CLIENT_TOKEN");
+    if (typeof body.checkout_token !== "string" || body.checkout_token !== expectedToken) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     let { productId, buyerEmail, shippingAddress } = body;
 
     // Public guest checkout: authentication is optional. If the buyer is logged in and
