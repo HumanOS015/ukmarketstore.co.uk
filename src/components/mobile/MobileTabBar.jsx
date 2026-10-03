@@ -47,7 +47,7 @@ export default function MobileTabBar() {
           className="flex-1 flex flex-col items-center justify-end gap-1 pb-1.5 active:scale-95 transition-transform">
           
           <div
-            className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg ${
+            className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg ml-24 ${
             isActive("/sell") ? "bg-primary/90" : "bg-primary"}`
             }>
             
