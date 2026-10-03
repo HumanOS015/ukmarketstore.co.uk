@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import ProductCard from "../components/ProductCard";
 import SearchBar from "../components/SearchBar";
+import ComingSoonBanner from "../components/ComingSoonBanner";
 import { Loader2, PackageOpen, AlertCircle, RefreshCw, Bell, X } from "lucide-react";
 import { toast } from "sonner";
 import { withTimeout } from "@/lib/withTimeout";
@@ -128,13 +129,16 @@ export default function Home() {
   return (
     <div className="max-w-7xl mx-auto px-4 md:pl-20 py-4">
       {/* Hero */}
-      <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-          Discover <span className="text-primary">UK</span> Deals
-        </h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Buy & sell across the United Kingdom
-        </p>
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] items-center gap-4 md:gap-6 mb-6">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+            Discover <span className="text-primary">UK</span> Deals
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Buy & sell across the United Kingdom
+          </p>
+        </div>
+        <ComingSoonBanner />
       </div>
 
       {/* Category chips */}
