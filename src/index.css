@@ -82,7 +82,26 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html, body {
+    overscroll-behavior: none;
+  }
   body {
     @apply bg-background text-foreground font-inter;
+  }
+  /* Native-app feel: no text selection on UI chrome (buttons, icons, nav/tabs).
+     Product detail body text stays selectable since it's plain content, not chrome. */
+  button, nav, [role="button"], [role="tab"], svg {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }

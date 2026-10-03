@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import ProductCard from "../components/ProductCard";
 import SearchBar from "../components/SearchBar";
 import ComingSoonBanner from "../components/ComingSoonBanner";
@@ -61,6 +62,9 @@ export default function Home() {
       setLoading(false);
     }
   };
+
+  const feedRef = useRef(null);
+  const { pullDistance, refreshing: ptrRefreshing } = usePullToRefresh(feedRef, loadProducts);
 
   const filtered = products.filter((p) => {
     const matchSearch =
@@ -127,7 +131,21 @@ export default function Home() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 md:pl-20 py-4">
+    <div ref={feedRef} className="max-w-7xl mx-auto px-4 md:pl-20 py-4">
+      {/* Pull-to-refresh indicator */}
+      <div
+        className="flex items-center justify-center overflow-hidden"
+        style={{ height: pullDistance }}
+      >
+        <Loader2
+          className={`w-5 h-5 text-primary ${ptrRefreshing ? "animate-spin" : ""}`}
+          style={{
+            transform: `rotate(${pullDistance * 3}deg)`,
+            opacity: Math.min(pullDistance / 70, 1),
+          }}
+        />
+      </div>
+
       {/* Hero */}
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] items-center gap-4 md:gap-6 mb-6">
         <div>
@@ -142,7 +160,7 @@ export default function Home() {
       </div>
 
       {/* Category chips */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-4 -mx-4 px-4">
+      <div className="no-scrollbar flex gap-2 overflow-x-auto pb-2 mb-4 -mx-4 px-4">
         {CATEGORIES.map((c) => (
           <Link
             key={c}
@@ -166,7 +184,7 @@ export default function Home() {
 
       {/* Saved searches */}
       {user?.email && savedSearches.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-2 mb-4 -mx-4 px-4">
+        <div className="no-scrollbar flex gap-2 overflow-x-auto pb-2 mb-4 -mx-4 px-4">
           {savedSearches.map((s) => (
             <div
               key={s.id}

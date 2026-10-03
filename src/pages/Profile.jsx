@@ -6,6 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, User, Mail, LogOut, Plus, Trash2, AlertCircle, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/AuthContext";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { withTimeout } from "@/lib/withTimeout";
 import ProductCard from "../components/ProductCard";
 
@@ -15,6 +19,20 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const { navigateToLogin } = useAuth();
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      await base44.functions.invoke("deleteAccount", {});
+      toast.success("Your account data has been removed");
+      base44.auth.logout();
+    } catch (err) {
+      console.error("Account deletion failed", err);
+      toast.error("Couldn't delete your account. Please try again.");
+      setDeleting(false);
+    }
+  };
 
   useEffect(() => {
     loadProfile();
@@ -168,6 +186,40 @@ export default function Profile() {
           ))}
         </div>
       )}
+
+      {/* Danger Zone */}
+      <div className="mt-8 border-t border-border pt-6">
+        <h2 className="text-lg font-semibold mb-1">Danger Zone</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Permanently remove your listings, saved items, searches and reviews, then sign out.
+        </p>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" className="gap-2 rounded-xl h-11">
+              <Trash2 className="w-4 h-4" />
+              Delete Account
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete account?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This removes your listings, saved items, saved searches, reviews and notifications. This action cannot be undone. You'll be signed out afterwards.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteAccount}
+                disabled={deleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleting ? "Deleting…" : "Yes, delete"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </div>
   );
 }

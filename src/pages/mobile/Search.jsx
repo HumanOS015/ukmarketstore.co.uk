@@ -85,7 +85,7 @@ export default function Search() {
         )}
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-3 -mx-4 px-4">
+      <div className="no-scrollbar flex gap-2 overflow-x-auto pb-2 mb-3 -mx-4 px-4">
         {CATEGORIES.map((c) => (
           <button
             key={c}

@@ -1,4 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard, Ban, Heart, MessageCircle, Bell } from "lucide-react";
 import CookieConsent from "./CookieConsent";
 import MobileTabBar from "./mobile/MobileTabBar";
@@ -104,7 +105,17 @@ export default function Layout() {
 
       {/* Main Content */}
       <main className="flex-1 pb-24">
-        <Outlet />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -16 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+          >
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Footer */}

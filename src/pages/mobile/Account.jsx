@@ -1,9 +1,17 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
 import { useAuth } from "@/lib/AuthContext";
 import {
   ShoppingBag, Heart, MessageCircle, Bell, LayoutDashboard, User as UserIcon,
   Shield, RotateCcw, LifeBuoy, FileText, Lock, LogOut, ChevronRight, ShieldCheck,
+  Trash2,
 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const LOGO =
   "https://media.base44.com/images/public/69cdac0e3dd4898d79118860/dd93ae03f_Copilot_20260912_230059.png";
@@ -24,6 +32,20 @@ const sections = [
 
 export default function Account() {
   const { user, isAuthenticated, navigateToLogin, logout } = useAuth();
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      await base44.functions.invoke("deleteAccount", {});
+      toast.success("Your account data has been removed");
+      logout();
+    } catch (err) {
+      console.error("Account deletion failed", err);
+      toast.error("Couldn't delete your account. Please try again.");
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="px-4 pt-4 pb-6">
@@ -101,6 +123,37 @@ export default function Account() {
           <LogOut className="w-4 h-4" />
           Sign Out
         </button>
+      )}
+
+      {isAuthenticated && (
+        <div className="mt-4">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button className="w-full flex items-center justify-center gap-2 h-12 rounded-2xl border border-destructive/30 text-sm font-medium text-destructive hover:bg-destructive/5 transition-colors">
+                <Trash2 className="w-4 h-4" />
+                Delete Account
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete account?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This removes your listings, saved items, saved searches, reviews and notifications. This cannot be undone. You'll be signed out afterwards.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeleteAccount}
+                  disabled={deleting}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {deleting ? "Deleting…" : "Yes, delete"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       )}
 
       <p className="text-center text-[10px] text-muted-foreground mt-5">
