@@ -32,6 +32,12 @@ export function TabMemoryProvider({ children }) {
   const lastPath = useRef({ ...TAB_ROOTS });
   const scrollMemory = useRef({});
 
+  // Keep the active tab in sync with the URL, even when navigation happens via
+  // <Link> (the mobile tab bar now navigates with <Link> rather than switchTab).
+  useEffect(() => {
+    setActiveTab(tabForPath(location.pathname));
+  }, [location.pathname]);
+
   // Remember the current path for the active tab; restore scroll on mobile only
   // (desktop keeps its existing scroll-on-navigation behaviour).
   useEffect(() => {
