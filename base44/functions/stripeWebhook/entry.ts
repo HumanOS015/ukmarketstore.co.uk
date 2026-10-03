@@ -128,6 +128,22 @@ export default async function(req) {
               details_submitted: acct.details_submitted || false,
             });
           }
+
+          // The seller just finished onboarding — activate any listings they
+          // saved before payouts were connected so they go live immediately.
+          if (acct.charges_enabled) {
+            try {
+              const pendingListings = await base44.asServiceRole.entities.Product.filter({
+                seller_email: email,
+                status: "pending_stripe",
+              });
+              for (const listing of pendingListings) {
+                await base44.asServiceRole.entities.Product.update(listing.id, { status: "active" });
+              }
+            } catch (activationError) {
+              console.error("Failed to activate pending listings on account.updated", activationError);
+            }
+          }
         }
         break;
       }
