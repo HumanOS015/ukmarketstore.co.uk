@@ -39,6 +39,8 @@ const MobileSearch = lazy(() => import("./pages/mobile/Search"));
 const Category = lazy(() => import("./pages/Category"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const OrderDetail = lazy(() => import("./pages/OrderDetail"));
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -84,6 +86,7 @@ const AuthenticatedApp = () => {
         <Route path="/sell" element={<Sell />} />
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/orders" element={<Orders />} />
+        <Route path="/order/:id" element={<OrderDetail />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/buyer-protection" element={<BuyerProtection />} />
         <Route path="/terms" element={<TermsAndConditions />} />
@@ -103,6 +106,7 @@ const AuthenticatedApp = () => {
         <Route path="/search" element={<MobileSearch />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>
+        <Route path="/welcome" element={<Onboarding />} />
         </Routes>
       </TabMemoryProvider>
     </WishlistProvider>

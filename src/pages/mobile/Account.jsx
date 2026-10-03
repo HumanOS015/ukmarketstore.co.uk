@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/AuthContext";
 import {
   ShoppingBag, Heart, MessageCircle, Bell, LayoutDashboard, User as UserIcon,
   Shield, RotateCcw, LifeBuoy, FileText, Lock, LogOut, ChevronRight, ShieldCheck,
-  Trash2,
+  Trash2, Sparkles,
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -17,6 +17,7 @@ const LOGO =
   "https://media.base44.com/images/public/69cdac0e3dd4898d79118860/dd93ae03f_Copilot_20260912_230059.png";
 
 const sections = [
+  { to: "/welcome", icon: Sparkles, label: "How It Works", desc: "Take a quick tour" },
   { to: "/orders", icon: ShoppingBag, label: "My Orders", desc: "Track purchases & sales" },
   { to: "/wishlist", icon: Heart, label: "Saved Listings" },
   { to: "/messages", icon: MessageCircle, label: "Messages" },

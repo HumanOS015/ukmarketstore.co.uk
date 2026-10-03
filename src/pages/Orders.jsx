@@ -31,7 +31,7 @@ function OrderCard({ order, onConfirm, confirming, onReview, reviewed, onDispute
   return (
     <div>
       <Link
-        to={`/product/${order.product_id}`}
+        to={`/order/${order.id}`}
         className="flex gap-3 p-3 rounded-xl bg-card border border-border hover:shadow-md transition-all"
       >
         {order.product_image && (
