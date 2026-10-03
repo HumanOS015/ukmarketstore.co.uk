@@ -64,6 +64,21 @@
           "data.seller_email": "{{user.email}}"
         }
       ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.buyer_email": "{{user.email}}"
+        },
+        {
+          "data.seller_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
     }
   }
 }

@@ -25,6 +25,9 @@
     "body"
   ],
   "rls": {
+    "create": {
+      "data.sender_email": "{{user.email}}"
+    },
     "read": {
       "$or": [
         {
@@ -35,8 +38,35 @@
         }
       ]
     },
-    "create": {
-      "data.sender_email": "{{user.email}}"
+    "update": {
+      "$or": [
+        {
+          "data.sender_email": "{{user.email}}"
+        },
+        {
+          "data.recipient_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.sender_email": "{{user.email}}"
+        },
+        {
+          "data.recipient_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
     }
   }
 }
