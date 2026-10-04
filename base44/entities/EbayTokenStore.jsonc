@@ -1,0 +1,84 @@
+{
+  "name": "EbayTokenStore",
+  "type": "object",
+  "properties": {
+    "seller_email": {
+      "type": "string",
+      "description": "UKMS seller email this eBay token belongs to"
+    },
+    "state": {
+      "type": "string",
+      "description": "OAuth state nonce used to bind the authorization-code callback to the seller who started it"
+    },
+    "access_token": {
+      "type": "string",
+      "description": "eBay user access token. Server-side only; never returned to any frontend, admin UI, or API response."
+    },
+    "refresh_token": {
+      "type": "string",
+      "description": "eBay refresh token. Server-side only; never returned to any frontend, admin UI, or API response."
+    },
+    "token_expiry": {
+      "type": "date-time",
+      "description": "When the access token expires"
+    },
+    "refresh_token_expiry": {
+      "type": "date-time",
+      "description": "When the refresh token expires"
+    },
+    "ebay_user_id": {
+      "type": "string",
+      "description": "eBay seller account reference (username or user id) retrieved after OAuth"
+    },
+    "scope": {
+      "type": "string",
+      "description": "OAuth scopes granted"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "expired",
+        "revoked",
+        "error"
+      ],
+      "default": "pending",
+      "description": "Token/connection lifecycle status"
+    },
+    "last_refresh": {
+      "type": "date-time",
+      "description": "Last successful token refresh timestamp"
+    },
+    "last_error": {
+      "type": "string",
+      "description": "Last token refresh/connection error message"
+    }
+  },
+  "required": [
+    "seller_email",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
