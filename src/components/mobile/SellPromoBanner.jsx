@@ -16,11 +16,11 @@ export default function SellPromoBanner() {
   return (
     <Link
       to="/sell"
-      className="md:hidden shrink-0 w-[190px] rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 px-2.5 py-2.5 shadow-md active:scale-[0.99] transition-transform"
+      className="md:hidden shrink-0 w-[150px] rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 px-2 py-1.5 shadow active:scale-[0.99] transition-transform"
     >
-      <ul className="space-y-1">
+      <ul className="space-y-0.5">
         {PERKS.map((perk) => (
-          <li key={perk} className="flex gap-1.5 text-white text-[10px] leading-tight">
+          <li key={perk} className="flex gap-1 text-white text-[8.5px] leading-[1.15]">
             <span className="shrink-0">✅</span>
             <span>{perk}</span>
           </li>
