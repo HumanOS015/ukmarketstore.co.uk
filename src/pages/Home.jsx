@@ -150,7 +150,7 @@ export default function Home() {
 
       {/* Hero */}
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] items-center gap-4 md:gap-6 mb-6">
-        <div className="flex items-center gap-3 md:block">
+        <div className="flex items-start gap-3 md:block">
           <div className="min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
               Discover <span className="text-primary">UK</span> Deals
