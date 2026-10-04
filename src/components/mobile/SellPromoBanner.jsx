@@ -15,7 +15,7 @@ const PERKS = [
 
 export default function SellPromoBanner() {
   return (
-    <div className="md:hidden rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 shadow-md px-4 py-4">
+    <div className="md:hidden rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 shadow-md pt-4 pr-4 pb-4 pl-4">
       <h2 className="text-base font-extrabold tracking-tight text-white leading-tight">
         SELL ON UKMARKETSTORE FOR FREE
       </h2>
