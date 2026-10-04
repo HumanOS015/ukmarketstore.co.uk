@@ -4,6 +4,7 @@ import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import ProductCard from "../components/ProductCard";
 import SearchBar from "../components/SearchBar";
 import ComingSoonBanner from "../components/ComingSoonBanner";
+import SellPromoBanner from "../components/mobile/SellPromoBanner";
 import { Loader2, PackageOpen, AlertCircle, RefreshCw, Bell, X } from "lucide-react";
 import { toast } from "sonner";
 import { withTimeout } from "@/lib/withTimeout";
@@ -146,6 +147,9 @@ export default function Home() {
           }} />
         
       </div>
+
+      {/* Mobile-only seller promo — sits in the empty space above the hero heading */}
+      <SellPromoBanner />
 
       {/* Hero */}
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] items-center gap-4 md:gap-6 mb-6">
