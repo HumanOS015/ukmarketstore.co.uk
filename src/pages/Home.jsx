@@ -3,7 +3,6 @@ import { base44 } from "@/api/base44Client";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import ProductCard from "../components/ProductCard";
 import SearchBar from "../components/SearchBar";
-import ComingSoonBanner from "../components/ComingSoonBanner";
 import SellPromoBanner from "../components/mobile/SellPromoBanner";
 import { Loader2, PackageOpen, AlertCircle, RefreshCw, Bell, X } from "lucide-react";
 import { toast } from "sonner";
@@ -162,7 +161,6 @@ export default function Home() {
           {/* Mobile-only compact seller promo, to the right of the heading */}
           <SellPromoBanner />
         </div>
-        <ComingSoonBanner />
       </div>
 
       {/* Category chips */}
