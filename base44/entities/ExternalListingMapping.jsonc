@@ -1,0 +1,132 @@
+{
+  "name": "ExternalListingMapping",
+  "type": "object",
+  "properties": {
+    "ukms_product_id": {
+      "type": "string",
+      "description": "The UKMarketStore product/inventory item this maps to"
+    },
+    "seller_email": {
+      "type": "string",
+      "description": "Seller email who owns the mapped UKMS listing"
+    },
+    "marketplace": {
+      "type": "string",
+      "enum": [
+        "eBay",
+        "Amazon",
+        "Vinted",
+        "Other"
+      ],
+      "description": "External marketplace the listing lives on"
+    },
+    "external_listing_id": {
+      "type": "string",
+      "description": "Stable external marketplace listing/item ID"
+    },
+    "external_sku": {
+      "type": "string",
+      "description": "External marketplace SKU where available"
+    },
+    "external_seller_id": {
+      "type": "string",
+      "description": "External marketplace seller/account ID, where available"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this mapping is active"
+    },
+    "mapping_confidence": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "high",
+        "medium",
+        "low",
+        "unverified"
+      ],
+      "default": "manual",
+      "description": "Confidence in the mapping. Manual mappings are created explicitly by the seller and never auto-guessed."
+    },
+    "sync_status": {
+      "type": "string",
+      "enum": [
+        "not_connected",
+        "pending_external_sync",
+        "synced",
+        "failed_external_sync"
+      ],
+      "default": "not_connected",
+      "description": "Synchronisation status for this external listing"
+    },
+    "last_sync_time": {
+      "type": "date-time",
+      "description": "Last sync attempt timestamp"
+    },
+    "last_successful_sync_time": {
+      "type": "date-time",
+      "description": "Last successful sync timestamp"
+    },
+    "sync_error_message": {
+      "type": "string",
+      "description": "Last sync error message, if any"
+    }
+  },
+  "required": [
+    "ukms_product_id",
+    "seller_email",
+    "marketplace",
+    "external_listing_id"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.seller_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "data.seller_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.seller_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.seller_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

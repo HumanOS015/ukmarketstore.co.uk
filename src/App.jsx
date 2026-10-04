@@ -26,6 +26,7 @@ const BuyerProtection = lazy(() => import("./pages/BuyerProtection"));
 const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
+const SellerInventory = lazy(() => import("./pages/SellerInventory"));
 const About = lazy(() => import("./pages/About"));
 const BuyerProtectionAssistant = lazy(() => import("./pages/BuyerProtectionAssistant"));
 const Admin = lazy(() => import("./pages/Admin"));
@@ -92,6 +93,7 @@ const AuthenticatedApp = () => {
         <Route path="/terms" element={<TermsAndConditions />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/seller-dashboard" element={<SellerDashboard />} />
+        <Route path="/seller-inventory" element={<SellerInventory />} />
         <Route path="/about" element={<About />} />
         <Route path="/buyer-protection-assistant" element={<BuyerProtectionAssistant />} />
         <Route path="/admin" element={<Admin />} />

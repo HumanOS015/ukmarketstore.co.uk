@@ -1,0 +1,122 @@
+{
+  "name": "MarketplaceConnection",
+  "type": "object",
+  "properties": {
+    "seller_email": {
+      "type": "string",
+      "description": "Seller email who owns this connection"
+    },
+    "marketplace": {
+      "type": "string",
+      "enum": [
+        "eBay",
+        "Amazon",
+        "Vinted",
+        "Other"
+      ],
+      "description": "External marketplace"
+    },
+    "connection_status": {
+      "type": "string",
+      "enum": [
+        "not_connected",
+        "connected",
+        "sync_error",
+        "disabled"
+      ],
+      "default": "not_connected",
+      "description": "Current connection status"
+    },
+    "authorization_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "authorized",
+        "revoked",
+        "expired"
+      ],
+      "default": "pending",
+      "description": "OAuth authorisation status. Raw access tokens are NEVER stored in this entity; only metadata is kept."
+    },
+    "seller_user_ref": {
+      "type": "string",
+      "description": "External marketplace seller/account reference (public identifier only, never a password or token)."
+    },
+    "token_expires_at": {
+      "type": "date-time",
+      "description": "When the marketplace access token expires, where applicable. The token itself is stored in a secure secret store, not here."
+    },
+    "last_connection_test": {
+      "type": "date-time",
+      "description": "Last successful connection test timestamp"
+    },
+    "last_sync": {
+      "type": "date-time",
+      "description": "Last synchronisation timestamp"
+    },
+    "connection_error": {
+      "type": "string",
+      "description": "Last connection error message, if any"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this connection is enabled for inventory sync"
+    }
+  },
+  "required": [
+    "seller_email",
+    "marketplace",
+    "connection_status"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.seller_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "data.seller_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.seller_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.seller_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

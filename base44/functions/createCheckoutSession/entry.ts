@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { secrets } from 'base44:runtime';
 import { APP_URL, STRIPE_VERSION } from "../../shared/stripe.ts";
+import { isPurchasable } from "../../shared/inventory.ts";
 
 // Extract the caller's IP from trusted ingress headers. Used for un-spoofable
 // rate limiting on the public checkout path — a client-supplied buyer_email can
@@ -51,6 +52,14 @@ export default async function(req) {
       return Response.json({ error: "This item is no longer available" }, { status: 400 });
     }
     const product = products[0];
+
+    // Multi-Marketplace Inventory Protection: final server-side availability
+    // gate. A listing that is sold, sold-elsewhere, sync-locked, or out of stock
+    // must never be purchasable, regardless of the frontend button state. This
+    // runs on every checkout attempt so two buyers cannot buy the same item.
+    if (!isPurchasable(product)) {
+      return Response.json({ error: "This item is no longer available" }, { status: 400 });
+    }
 
     // The seller must have a connected Stripe account so we can pay them when escrow releases
     const payoutAccount = (await base44.asServiceRole.entities.PayoutAccount.filter({ seller_email: product.seller_email }))[0];

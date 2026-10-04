@@ -1,0 +1,128 @@
+{
+  "name": "InventoryAuditEvent",
+  "type": "object",
+  "properties": {
+    "seller_email": {
+      "type": "string",
+      "description": "Seller involved in the event (or 'unknown' for unmatched external events)"
+    },
+    "product_id": {
+      "type": "string",
+      "description": "UKMS listing/inventory item affected, when applicable"
+    },
+    "marketplace": {
+      "type": "string",
+      "enum": [
+        "eBay",
+        "Amazon",
+        "Vinted",
+        "Other"
+      ],
+      "description": "External marketplace involved, when applicable"
+    },
+    "external_listing_id": {
+      "type": "string",
+      "description": "External listing/item ID, when applicable"
+    },
+    "external_order_ref": {
+      "type": "string",
+      "description": "External order reference, when applicable"
+    },
+    "external_event_id": {
+      "type": "string",
+      "description": "Unique event ID from the external marketplace, used for idempotency"
+    },
+    "event_fingerprint": {
+      "type": "string",
+      "description": "Derived fingerprint (marketplace|external_listing_id|external_order_ref) for deduplication"
+    },
+    "order_id": {
+      "type": "string",
+      "description": "UKMS order ID, when the event relates to a UKMS sale"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "SOLD_ELSEWHERE",
+        "MAPPING_CREATED",
+        "MAPPING_REMOVED",
+        "PENDING_EXTERNAL_SYNC",
+        "SYNCED",
+        "FAILED_EXTERNAL_SYNC",
+        "NOT_CONNECTED",
+        "UNMATCHED_EXTERNAL_EVENT",
+        "AVAILABILITY_BLOCKED",
+        "MANUAL_OVERRIDE",
+        "CONNECTION_TEST"
+      ],
+      "description": "Type of inventory protection event"
+    },
+    "previous_status": {
+      "type": "string",
+      "description": "Previous inventory/listing status before the event"
+    },
+    "new_status": {
+      "type": "string",
+      "description": "New inventory/listing status after the event"
+    },
+    "processing_result": {
+      "type": "string",
+      "enum": [
+        "success",
+        "failure",
+        "skipped",
+        "idempotent"
+      ],
+      "default": "success",
+      "description": "Outcome of processing the event"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Error details, when processing_result is failure"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "manual",
+        "simulation",
+        "webhook"
+      ],
+      "default": "auto",
+      "description": "What triggered the event"
+    }
+  },
+  "required": [
+    "seller_email",
+    "event_type"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.seller_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

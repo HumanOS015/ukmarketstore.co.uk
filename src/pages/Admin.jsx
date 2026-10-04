@@ -7,6 +7,8 @@ import { Loader2, Trash2, Ban, CheckCircle, Shield, Users, Package, ShoppingBag,
 import { toast } from "sonner";
 import moment from "moment";
 import AnalyticsTab from "@/components/admin/AnalyticsTab";
+import InventoryMonitor from "@/components/admin/InventoryMonitor";
+import { ShieldCheck } from "lucide-react";
 
 export default function Admin() {
   const { user } = useAuth();
@@ -169,6 +171,15 @@ export default function Admin() {
           <Bell className="w-4 h-4" />
           Subscribers ({subscribers.length})
         </button>
+        <button
+          onClick={() => setTab("inventory")}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+            tab === "inventory" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+          }`}
+        >
+          <ShieldCheck className="w-4 h-4" />
+          Inventory
+        </button>
       </div>
 
       {tab === "listings" ? (
@@ -246,6 +257,8 @@ export default function Admin() {
         </div>
       ) : tab === "analytics" ? (
         <AnalyticsTab orders={orders} products={products} users={users} />
+      ) : tab === "inventory" ? (
+        <InventoryMonitor />
       ) : tab === "subscribers" ? (
         <div className="space-y-2">
           {subscribers.length === 0 ? (

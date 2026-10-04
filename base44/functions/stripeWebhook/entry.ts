@@ -82,6 +82,20 @@ export default async function(req) {
             await base44.asServiceRole.entities.Product.update(productId, { status: "sold" });
           }
 
+          // Multi-Marketplace Inventory Protection: a UKMS sale must propagate to
+          // any connected external marketplace listings so the same physical item
+          // can't be sold twice. Non-blocking — never blocks the webhook response,
+          // and never makes real external API calls (only records pending state).
+          if (productId) {
+            base44.asServiceRole.functions.invoke("processUkmsSale", {
+              productId,
+              orderId,
+              internal_token: secrets.get("ESCROW_RELEASE_TOKEN")
+            }).catch((e) => {
+              console.error("processUkmsSale failed", e);
+            });
+          }
+
           // Notify seller + buyer (non-blocking)
           base44.asServiceRole.functions.invoke("orderNotification", { orderId, event: "placed", internal_token: secrets.get("ESCROW_RELEASE_TOKEN") }).catch(() => {});
         }

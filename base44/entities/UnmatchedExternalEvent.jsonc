@@ -1,0 +1,80 @@
+{
+  "name": "UnmatchedExternalEvent",
+  "type": "object",
+  "properties": {
+    "seller_email": {
+      "type": "string",
+      "description": "Seller email if identifiable from the event, otherwise null"
+    },
+    "marketplace": {
+      "type": "string",
+      "enum": [
+        "eBay",
+        "Amazon",
+        "Vinted",
+        "Other"
+      ],
+      "description": "External marketplace that emitted the event"
+    },
+    "external_listing_id": {
+      "type": "string",
+      "description": "External listing/item ID that could not be matched"
+    },
+    "external_order_ref": {
+      "type": "string",
+      "description": "External order reference, when available"
+    },
+    "external_event_id": {
+      "type": "string",
+      "description": "Unique event ID from the external marketplace"
+    },
+    "external_sku": {
+      "type": "string",
+      "description": "External SKU, when available"
+    },
+    "event_payload": {
+      "type": "string",
+      "description": "Sanitised event payload for manual review (no credentials or PII)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "unmatched",
+        "resolved",
+        "ignored"
+      ],
+      "default": "unmatched",
+      "description": "Resolution status of the unmatched event"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Why the event could not be matched"
+    }
+  },
+  "required": [
+    "marketplace",
+    "external_listing_id"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -85,6 +85,86 @@
     "estimated_delivery": {
       "type": "string",
       "description": "Estimated delivery time"
+    },
+    "inventory_ref": {
+      "type": "string",
+      "description": "Unique internal inventory/stock reference for multi-marketplace sync. Optional; generated/assigned when a listing enters the inventory protection system."
+    },
+    "sku": {
+      "type": "string",
+      "description": "Seller-defined stock keeping unit, used as a stable identifier for external listing matching."
+    },
+    "quantity": {
+      "type": "number",
+      "default": 1,
+      "description": "Total physical quantity of this listing. Single-item listings are 1."
+    },
+    "available_quantity": {
+      "type": "number",
+      "default": 1,
+      "description": "Quantity still available to sell across all marketplaces. Set to 0 when the item sells anywhere."
+    },
+    "inventory_sync_status": {
+      "type": "string",
+      "enum": [
+        "not_connected",
+        "pending_external_sync",
+        "synced",
+        "failed_external_sync"
+      ],
+      "default": "not_connected",
+      "description": "Current state of this listing's inventory synchronisation with external marketplaces."
+    },
+    "last_sync_time": {
+      "type": "date-time",
+      "description": "Timestamp of the last synchronisation attempt (success or failure)."
+    },
+    "last_successful_sync_time": {
+      "type": "date-time",
+      "description": "Timestamp of the last successful synchronisation."
+    },
+    "sync_error_state": {
+      "type": "string",
+      "enum": [
+        "none",
+        "error",
+        "unmatched"
+      ],
+      "default": "none",
+      "description": "Synchronisation error state for this listing."
+    },
+    "sync_error_message": {
+      "type": "string",
+      "description": "Human-readable synchronisation error message, if any."
+    },
+    "sold_elsewhere": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when this physical item was sold on an external marketplace, triggering inventory protection."
+    },
+    "sold_elsewhere_marketplace": {
+      "type": "string",
+      "enum": [
+        "eBay",
+        "Amazon",
+        "Vinted",
+        "Other"
+      ],
+      "description": "External marketplace where this item sold, when sold_elsewhere is true."
+    },
+    "sold_elsewhere_timestamp": {
+      "type": "date-time",
+      "description": "When the external sale was detected/recorded."
+    },
+    "sync_locked": {
+      "type": "boolean",
+      "default": false,
+      "description": "Soft inventory lock held while an availability mutation is in progress. While true the listing is not purchasable."
+    },
+    "manual_override": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when a seller has manually overridden the inventory state (e.g. forced availability)."
     }
   },
   "required": [

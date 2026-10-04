@@ -8,6 +8,7 @@ import { Package, Truck, ArrowLeft, PlusCircle, CheckCircle2, AlertCircle, Refre
 import { toast } from "sonner";
 import { withTimeout } from "@/lib/withTimeout";
 import PayoutConnect from "@/components/PayoutConnect";
+import MarketplaceConnections from "@/components/MarketplaceConnections";
 
 // Evri API access is pending business-account approval. Sellers are limited to
 // Royal Mail temporarily so every parcel gets full automatic tracking + auto-release.
@@ -165,6 +166,8 @@ export default function SellerDashboard() {
       </div>
 
       <PayoutConnect user={user} />
+
+      <MarketplaceConnections />
 
       {/* Earnings */}
       <div className="grid grid-cols-2 gap-3 mb-6">
