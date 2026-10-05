@@ -8,7 +8,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription
 } from "@/components/ui/dialog";
 import {
-  ArrowLeft, Loader2, AlertCircle, Link2, Store, Tag, ShieldCheck
+  ArrowLeft, Loader2, AlertCircle, Link2, Store, Tag, ShieldCheck, RefreshCw
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -31,6 +31,7 @@ export default function SellerInventory() {
   const [linkDialog, setLinkDialog] = useState(null);
   const [linkForm, setLinkForm] = useState({ marketplace: "eBay", external_listing_id: "", external_sku: "" });
   const [busy, setBusy] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -77,6 +78,20 @@ export default function SellerInventory() {
     }
     setBusy(true);
     try {
+      if (linkForm.marketplace === "eBay") {
+        const verify = await base44.functions.invoke("ebayVerifyListing", {
+          itemId: linkForm.external_listing_id.trim()
+        });
+        if (!verify.data?.verified) {
+          toast.error(
+            verify.data?.reason
+              ? `eBay verification failed: ${verify.data.reason}`
+              : "Couldn't verify this eBay listing belongs to your account"
+          );
+          setBusy(false);
+          return;
+        }
+      }
       const res = await base44.functions.invoke("connectExternalListing", {
         productId: linkDialog.id,
         marketplace: linkForm.marketplace,
@@ -95,6 +110,42 @@ export default function SellerInventory() {
       toast.error(e?.response?.data?.error || "Couldn't link listing");
     } finally {
       setBusy(false);
+    }
+  };
+
+  const handleSyncEbay = async () => {
+    setSyncing(true);
+    try {
+      const res = await base44.functions.invoke("ebaySyncNow", {});
+      if (res.data?.status === "synced") {
+        toast.success(`eBay sync complete — ${res.data?.results?.length || 0} listing(s) checked`);
+      } else if (res.data?.status === "reauth_required") {
+        toast.error("eBay reauthorisation required — please reconnect your eBay account");
+      } else if (res.data?.status === "not_connected") {
+        toast.error("eBay is not connected");
+      } else {
+        toast.error(res.data?.error || "eBay sync failed");
+      }
+      load();
+    } catch (e) {
+      toast.error(e?.response?.data?.error || "eBay sync failed");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleConnectEbay = async () => {
+    try {
+      const res = await base44.functions.invoke("ebayOAuthStart", {});
+      if (!res.data?.url) {
+        toast.error(res.data?.error || "eBay not configured");
+        return;
+      }
+      const isFramed = window.self !== window.top;
+      if (isFramed) window.open(res.data.url, "_blank");
+      else window.location.href = res.data.url;
+    } catch (e) {
+      toast.error("Couldn't start eBay connection");
     }
   };
 
@@ -162,9 +213,55 @@ export default function SellerInventory() {
             );
           })}
         </div>
+        {/* eBay connection management */}
+        {(() => {
+          const ebay = data?.ebay || {};
+          const ebayState = data?.connections?.eBay || "not_connected";
+          return (
+            <div className="mt-3 rounded-xl border border-border p-3">
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div>
+                  <p className="text-xs font-semibold">eBay</p>
+                  <p className="text-[10px] text-muted-foreground capitalize">
+                    {ebayState.replace("_", " ")}
+                    {ebay.environment ? ` · ${ebay.environment}` : ""}
+                    {!ebay.configured ? " · not configured" : ""}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  {ebayState === "connected" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl gap-1.5 h-9"
+                      disabled={syncing}
+                      onClick={handleSyncEbay}
+                    >
+                      {syncing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                      Sync now
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    className="rounded-xl h-9"
+                    disabled={!ebay.configured || syncing || ebayState === "connected"}
+                    onClick={handleConnectEbay}
+                  >
+                    {ebayState === "connected" ? "Reconnect" : "Connect eBay"}
+                  </Button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-muted-foreground">
+                <span>Linked listings: {ebay.linked_listings ?? 0}</span>
+                {ebay.last_sync && <span>Last sync: {new Date(ebay.last_sync).toLocaleString()}</span>}
+                {ebay.connection_error && <span className="text-red-600">{ebay.connection_error}</span>}
+              </div>
+            </div>
+          );
+        })()}
+
         <p className="text-[11px] text-muted-foreground mt-3">
-          Automatic sync needs an authorised official marketplace integration (not yet connected).
-          Vinted uses a manual "Sold Elsewhere" fallback — no scraping or password automation.
+          Automatic sync needs an authorised official marketplace integration. Vinted uses a manual "Sold Elsewhere" fallback — no scraping or password automation.
         </p>
       </div>
 

@@ -20,7 +20,34 @@ export default async function(req) {
     const { productId, orderId } = body;
     if (!productId) return Response.json({ error: "Missing productId" }, { status: 400 });
 
-    const result = await queueExternalSyncForUkmsSale(base44.asServiceRole, { productId, orderId });
+    const svc = base44.asServiceRole;
+    const result = await queueExternalSyncForUkmsSale(svc, { productId, orderId });
+
+    // For connected eBay mappings, apply the real eBay inventory update (set
+    // quantity to 0) via the eBay function. Failures are audited inside
+    // ebayApplyExternalSync; this path never blocks the UKMS sale response.
+    try {
+      const product = await svc.entities.Product.filter({ id: productId });
+      if (product && product.length > 0) {
+        const ebayMappings = await svc.entities.ExternalListingMapping.filter(
+          { ukms_product_id: productId, marketplace: "eBay", active: true }, "-created_date", 50
+        );
+        await Promise.allSettled(ebayMappings.map(async (m) => {
+          const conn = await svc.entities.MarketplaceConnection.filter(
+            { seller_email: product[0].seller_email, marketplace: "eBay", enabled: true, connection_status: "connected" },
+            "-created_date", 1
+          );
+          if (conn && conn.length > 0) {
+            await base44.functions.invoke("ebayApplyExternalSync", {
+              mappingId: m.id, internal_token: token
+            }).catch(() => {});
+          }
+        }));
+      }
+    } catch (e) {
+      console.error("processUkmsSale ebay apply error", e);
+    }
+
     return Response.json(result);
   } catch (error) {
     console.error("processUkmsSale error", error);

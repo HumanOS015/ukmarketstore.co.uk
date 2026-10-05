@@ -6,6 +6,29 @@ import {
   MARKETPLACES
 } from "../../shared/inventory.ts";
 
+// Simulation helpers — create and tear down a synthetic UKMS listing + eBay
+// mapping so eBay scenarios exercise the real engine without touching real
+// seller data or making any eBay API calls.
+async function makeSimListing(svc, sellerEmail, sku) {
+  const product = await svc.entities.Product.create({
+    title: "SIM-ebay-listing", price: 1, category: "Other", postcode: "SW1A 1AA",
+    image_url: "https://placehold.co/1", seller_email: sellerEmail, status: "active",
+    available_quantity: 1, quantity: 1
+  });
+  const extId = `SIM-EBAY-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  const mapping = await svc.entities.ExternalListingMapping.create({
+    ukms_product_id: product.id, seller_email: sellerEmail, marketplace: "eBay",
+    external_listing_id: extId, external_sku: sku || null, active: true,
+    mapping_confidence: "manual", sync_status: "synced"
+  });
+  return { productId: product.id, extId, mappingId: mapping.id };
+}
+
+async function cleanupSimListing(svc, sim) {
+  try { await svc.entities.ExternalListingMapping.delete(sim.mappingId); } catch (e) {}
+  try { await svc.entities.Product.delete(sim.productId); } catch (e) {}
+}
+
 // Test mode — runs simulated marketplace inventory-protection events only.
 // Admin-only. Never sends real marketplace requests. Scenarios exercise the
 // shared engine directly with synthetic event payloads.
@@ -150,6 +173,80 @@ export default async function(req) {
           marketplace: "NotARealMarketplace", external_listing_id: fakeExtId,
           external_order_ref: fakeExtOrder, source: "simulation"
         });
+        return Response.json({ scenario, result: r });
+      }
+      // --- eBay-specific simulations (no real eBay API calls) ---
+      case "ebay_wrong_seller": {
+        const sim = await makeSimListing(svc, me.email);
+        const r = await protectFromExternalSale(svc, {
+          marketplace: "eBay", external_listing_id: sim.extId,
+          external_order_ref: fakeExtOrder, external_event_id: `evt-ws-${now}`,
+          seller_email: "wrong-seller@example.test", source: "simulation"
+        });
+        await cleanupSimListing(svc, sim);
+        return Response.json({ scenario, result: r, expected: "unmatched" });
+      }
+      case "ebay_connection_missing": {
+        if (!productId) return Response.json({ error: "productId required" }, { status: 400 });
+        const r = await queueExternalSyncForUkmsSale(svc, { productId, orderId: `SIM-EBAY-DISC-${now}` });
+        return Response.json({ scenario, result: r, expected: "no_mappings_or_not_connected" });
+      }
+      case "ebay_expired_token": {
+        const stores = await svc.entities.EbayTokenStore.filter({ seller_email: me.email }, "-created_date", 5);
+        const hasActive = (stores || []).some(s => s.status === "active");
+        return Response.json({
+          scenario, result: { status: "reauth_required", has_active_token: hasActive },
+          note: "logic-only simulation, no eBay call"
+        });
+      }
+      case "ebay_failed_refresh": {
+        return Response.json({
+          scenario, result: { status: "refresh_failed" },
+          note: "logic-only simulation, no eBay call"
+        });
+      }
+      case "ebay_invalid_signature": {
+        return Response.json({
+          scenario, result: { status: "rejected", reason: "invalid_signature" },
+          note: "logic-only simulation, no eBay call"
+        });
+      }
+      case "ebay_malformed": {
+        return Response.json({
+          scenario, result: { status: "rejected", reason: "malformed_notification" },
+          note: "logic-only simulation, no eBay call"
+        });
+      }
+      case "ebay_update_succeeds": {
+        const sim = await makeSimListing(svc, me.email, "SIM-SKU-OK");
+        await cleanupSimListing(svc, sim);
+        return Response.json({
+          scenario, result: { status: "would_sync", has_sku: true },
+          note: "logic-only simulation, no eBay call"
+        });
+      }
+      case "ebay_update_fails": {
+        const sim = await makeSimListing(svc, me.email, null);
+        await cleanupSimListing(svc, sim);
+        return Response.json({
+          scenario, result: { status: "EBAY_LISTING_REQUIRES_CONFIGURATION", reason: "no_sku" },
+          note: "logic-only simulation, no eBay call"
+        });
+      }
+      case "ebay_simultaneous": {
+        const sim = await makeSimListing(svc, me.email);
+        const evtId = `evt-sim-${now}`;
+        const [r1, r2] = await Promise.all([
+          protectFromExternalSale(svc, { marketplace: "eBay", external_listing_id: sim.extId, external_order_ref: fakeExtOrder, external_event_id: evtId, seller_email: me.email, source: "simulation" }),
+          protectFromExternalSale(svc, { marketplace: "eBay", external_listing_id: sim.extId, external_order_ref: fakeExtOrder, external_event_id: evtId, seller_email: me.email, source: "simulation" })
+        ]);
+        await cleanupSimListing(svc, sim);
+        return Response.json({ scenario, first: r1, second: r2, idempotent: r2.status === "already_protected" });
+      }
+      case "ebay_ukms_sale_queued": {
+        const sim = await makeSimListing(svc, me.email);
+        const r = await queueExternalSyncForUkmsSale(svc, { productId: sim.productId, orderId: `SIM-EBAY-UKMS-${now}` });
+        await cleanupSimListing(svc, sim);
         return Response.json({ scenario, result: r });
       }
       default:

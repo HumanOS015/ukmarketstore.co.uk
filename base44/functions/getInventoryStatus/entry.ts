@@ -1,4 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
+import { secrets } from 'base44:runtime';
+import { getEbayConfig } from "../../shared/ebay.ts";
 
 // Role-aware inventory protection status. Returns marketplace connection
 // status, mapping/sync state, and (for admins) monitoring stats plus recent
@@ -11,6 +13,7 @@ export default async function(req) {
     if (!me?.email) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
     const svc = base44.asServiceRole;
+    const ebayCfg = getEbayConfig(secrets);
     const isAdmin = me.role === "admin";
 
     if (isAdmin) {
@@ -43,6 +46,8 @@ export default async function(req) {
           sold_elsewhere_events: soldElsewhere.length,
           unmatched_events: unmatched.length
         },
+        ebay_configured: !!ebayCfg,
+        ebay_environment: ebayCfg?.environment || null,
         audit: audit.slice(0, 50),
         unmatched: unmatched.slice(0, 50)
       });
@@ -61,9 +66,18 @@ export default async function(req) {
       statusByMarketplace[m] = conn ? conn.connection_status : "not_connected";
     }
 
+    const ebayConn = connections.find(c => c.marketplace === "eBay");
     return Response.json({
       role: "seller",
       connections: statusByMarketplace,
+      ebay: {
+        configured: !!ebayCfg,
+        environment: ebayCfg?.environment || null,
+        connection_status: ebayConn?.connection_status || "not_connected",
+        last_sync: ebayConn?.last_sync || null,
+        connection_error: ebayConn?.connection_error || null,
+        linked_listings: mappings.filter(m => m.marketplace === "eBay" && m.active).length
+      },
       mappings: mappings.map(m => ({
         id: m.id,
         product_id: m.ukms_product_id,
