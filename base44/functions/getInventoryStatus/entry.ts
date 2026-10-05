@@ -15,8 +15,9 @@ export default async function(req) {
     const svc = base44.asServiceRole;
     const ebayCfg = getEbayConfig(secrets);
     const isAdmin = me.role === "admin";
+    const { view } = await req.json();
 
-    if (isAdmin) {
+    if (isAdmin && view !== "seller") {
       const [connections, mappings, audit, unmatched, protectedListings, soldElsewhere] = await Promise.all([
         svc.entities.MarketplaceConnection.list("-created_date", 500),
         svc.entities.ExternalListingMapping.list("-created_date", 500),

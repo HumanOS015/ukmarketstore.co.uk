@@ -15,7 +15,7 @@ export default function MarketplaceConnections() {
   const load = async () => {
     setLoading(true);
     try {
-      const res = await base44.functions.invoke("getInventoryStatus", {});
+      const res = await base44.functions.invoke("getInventoryStatus", { view: "seller" });
       setStatus(res.data);
     } catch (e) {
       // Silent — secondary feature, dashboard must still render.

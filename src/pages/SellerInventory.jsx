@@ -37,10 +37,18 @@ export default function SellerInventory() {
     setLoading(true);
     setError(false);
     try {
-      const res = await base44.functions.invoke("getInventoryStatus", {});
+      if (!(await base44.auth.isAuthenticated())) {
+        base44.auth.redirectToLogin(window.location.href);
+        return;
+      }
+      const res = await base44.functions.invoke("getInventoryStatus", { view: "seller" });
       setData(res.data);
     } catch (e) {
-      setError(true);
+      if ((e?.response?.status || e?.status) === 401) {
+        base44.auth.redirectToLogin(window.location.href);
+        return;
+      }
+      setError(e?.response?.data?.error || "Please retry loading your inventory.");
     } finally {
       setLoading(false);
     }
@@ -162,6 +170,7 @@ export default function SellerInventory() {
       <div className="max-w-md mx-auto px-4 py-16 text-center">
         <AlertCircle className="w-10 h-10 text-destructive/60 mx-auto mb-3" />
         <p className="font-medium text-muted-foreground">Couldn't load inventory</p>
+        <p className="mt-2 text-sm text-muted-foreground">{error}</p>
         <button onClick={load} className="mt-4 px-4 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium">
           Retry
         </button>
