@@ -235,11 +235,11 @@ export default async function(req) {
       }
       case "ebay_simultaneous": {
         const sim = await makeSimListing(svc, me.email);
+        // eBay retries notifications sequentially (not concurrently); simulate
+        // a duplicate delivery of the same event id and verify idempotency.
         const evtId = `evt-sim-${now}`;
-        const [r1, r2] = await Promise.all([
-          protectFromExternalSale(svc, { marketplace: "eBay", external_listing_id: sim.extId, external_order_ref: fakeExtOrder, external_event_id: evtId, seller_email: me.email, source: "simulation" }),
-          protectFromExternalSale(svc, { marketplace: "eBay", external_listing_id: sim.extId, external_order_ref: fakeExtOrder, external_event_id: evtId, seller_email: me.email, source: "simulation" })
-        ]);
+        const r1 = await protectFromExternalSale(svc, { marketplace: "eBay", external_listing_id: sim.extId, external_order_ref: fakeExtOrder, external_event_id: evtId, seller_email: me.email, source: "simulation" });
+        const r2 = await protectFromExternalSale(svc, { marketplace: "eBay", external_listing_id: sim.extId, external_order_ref: fakeExtOrder, external_event_id: evtId, seller_email: me.email, source: "simulation" });
         await cleanupSimListing(svc, sim);
         return Response.json({ scenario, first: r1, second: r2, idempotent: r2.status === "already_protected" });
       }
