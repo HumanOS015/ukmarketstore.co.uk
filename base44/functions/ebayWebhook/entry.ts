@@ -5,6 +5,13 @@ import {
 } from "../../shared/ebay.ts";
 import { protectFromExternalSale } from "../../shared/inventory.ts";
 
+// Canonical eBay notification endpoint. This is the exact URL registered with
+// eBay and used for BOTH challenge-response paths (GET ?challenge_code and POST
+// body {challengeCode}). Kept as a single source of truth so a misconfigured
+// EBAY_NOTIFICATION_ENDPOINT secret can never make the POST-body challenge
+// compute a different challengeResponse than the GET challenge.
+const EBAY_WEBHOOK_ENDPOINT = "https://ukmarketstore.base44.app/functions/ebayWebhook";
+
 // eBay notification webhook (official eBay Notification API).
 // 1) Answers the eBay endpoint challenge during destination verification.
 // 2) Validates the x-ebay-signature (ECDSA, public key fetched by kid).
@@ -31,7 +38,6 @@ export default async function(req) {
         // Secret missing — do not invent or generate a token. Stop safely.
         return Response.json({ error: "verification_token_not_configured" }, { status: 503 });
       }
-      const EBAY_WEBHOOK_ENDPOINT = "https://ukmarketstore.base44.app/functions/ebayWebhook";
       const challengeResponseValue = await challengeResponse(
         verificationToken, challengeCode, EBAY_WEBHOOK_ENDPOINT
       );
@@ -54,7 +60,7 @@ export default async function(req) {
     try {
       const parsed = rawBody ? JSON.parse(rawBody) : null;
       if (parsed && typeof parsed.challengeCode === "string" && !req.headers.get("x-ebay-signature")) {
-        const response = await challengeResponse(cfg.verificationToken, parsed.challengeCode, cfg.notificationEndpoint);
+        const response = await challengeResponse(cfg.verificationToken, parsed.challengeCode, EBAY_WEBHOOK_ENDPOINT);
         return Response.json({ challengeResponse: response });
       }
     } catch (e) {

@@ -170,31 +170,6 @@ export async function verifyEbayListingOwnership(cfg, accessToken, itemId, expec
   return { verified: ok, seller, reason: ok ? "ok" : "seller_mismatch" };
 }
 
-// Update an eBay Inventory API item's available quantity (non-destructive).
-// Only works for listings managed via the eBay Inventory API (SKU required).
-export async function updateEbayInventoryQuantity(cfg, accessToken, sku, quantity) {
-  if (!sku) return { ok: false, reason: "EBAY_LISTING_REQUIRES_CONFIGURATION", status: "no_sku" };
-  const params = new URLSearchParams({
-    availability: JSON.stringify({ shipToLocationAvailability: { quantity } })
-  });
-  const res = await fetch(
-    `${cfg.apiBase}/sell/inventory/v1/inventory_item/${encodeURIComponent(sku)}/update_quantity`,
-    {
-      method: "PUT",
-      headers: {
-        "Authorization": `Bearer ${accessToken}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ availability: { shipToLocationAvailability: { quantity } } })
-    }
-  );
-  if (res.ok) return { ok: true, status: "synced" };
-  const err = await res.json().catch(() => ({}));
-  const code = err?.errors?.[0]?.errorId || res.status;
-  // 4xx/5xx — listing may be incompatible with the Inventory API.
-  return { ok: false, reason: "EBAY_LISTING_REQUIRES_CONFIGURATION", status: `ebay_error_${code}`, error: err?.errors?.[0]?.message || "" };
-}
-
 // Fetch an eBay order's line items (official Fulfillment API).
 export async function getEbayOrder(cfg, accessToken, orderId) {
   const res = await fetch(`${cfg.apiBase}/sell/fulfillment/v1/order/${encodeURIComponent(orderId)}`, {
