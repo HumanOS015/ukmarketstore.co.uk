@@ -40,27 +40,18 @@ export default async function(req) {
       { seller_email: me.email, marketplace: "eBay", active: true }, "-created_date", 100
     );
 
+    // ONE-WAY: this is a read-only connection health check. It verifies each
+    // linked eBay listing still belongs to the connected seller and reports
+    // status. It NEVER pushes inventory changes to eBay (the eBay integration
+    // is inbound-only — eBay sales reduce UKMS stock, never the reverse).
     const results = [];
     const now = new Date().toISOString();
     for (const m of mappings) {
-      // Verify the listing still belongs to the seller.
       const verify = await verifyEbayListingOwnership(cfg, token, m.external_listing_id, conns[0].seller_user_ref);
-      if (!verify.verified) {
-        await svc.entities.ExternalListingMapping.update(m.id, {
-          sync_status: "failed_external_sync",
-          sync_error_message: verify.reason || "verification_failed",
-          last_sync_time: now
-        }).catch(() => {});
-        results.push({ mapping_id: m.id, item_id: m.external_listing_id, status: "failed", reason: verify.reason });
-        continue;
-      }
-
-      // Apply the external sync (delegates to ebayApplyExternalSync).
-      const r = await base44.functions.invoke("ebayApplyExternalSync", {
-        mappingId: m.id,
-        internal_token: secrets.get("ESCROW_RELEASE_TOKEN")
-      }).catch((e) => ({ data: { status: "failed", reason: e.message } }));
-      results.push({ mapping_id: m.id, item_id: m.external_listing_id, status: r?.data?.status || "failed", reason: r?.data?.reason });
+      results.push({
+        mapping_id: m.id, item_id: m.external_listing_id,
+        verified: verify.verified, seller: verify.seller || null, reason: verify.reason || null
+      });
     }
 
     await svc.entities.MarketplaceConnection.update(conns[0].id, {
@@ -68,7 +59,7 @@ export default async function(req) {
     }).catch(() => {});
 
     return Response.json({
-      status: "synced",
+      status: "checked",
       linked_listings: mappings.length,
       results
     });

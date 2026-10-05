@@ -4,6 +4,10 @@
 // locking and idempotency rules are identical across every entry point.
 // Pure functions only — the service-role base44 client is passed in by each
 // caller (backend functions never share module-level SDK clients).
+//
+// The eBay integration is ONE-WAY: eBay → UKMS only. eBay sales reduce UKMS
+// stock; UKMS never pushes inventory changes back to eBay. The outbound
+// queue helper (queueExternalSyncForUkmsSale) skips eBay mappings entirely.
 
 export const MARKETPLACES = ["eBay", "Amazon", "Vinted", "Other"];
 
@@ -52,13 +56,19 @@ export async function alreadyProtected(svc, { product_id, fingerprint, external_
   return !!(existing && existing.length > 0);
 }
 
-// Core protection: mark a UKMS listing unavailable because it sold on an
-// external marketplace. Idempotent — repeat notifications for the same sale
-// perform no action and create no duplicates.
+// Core protection: reduce a UKMS listing's available quantity (or mark it
+// fully sold) because it sold on an external marketplace. ONE-WAY: only ever
+// mutates the UKMS product, never the external listing. Idempotent — repeat
+// notifications for the same sale perform no action and create no duplicates.
+// Partial-quantity safe: when quantity_sold < available quantity, the UKMS
+// listing's available quantity is reduced by exactly quantity_sold and the
+// listing stays active/purchasable; only when stock reaches 0 is the listing
+// marked sold and made non-purchasable.
 export async function protectFromExternalSale(svc, params) {
   const {
     marketplace, external_listing_id, external_order_ref,
-    external_event_id, external_sku, seller_email, source = "auto"
+    external_event_id, external_sku, seller_email, source = "auto",
+    quantity_sold
   } = params;
 
   if (!MARKETPLACES.includes(marketplace)) return { status: "invalid_marketplace" };
@@ -99,11 +109,18 @@ export async function protectFromExternalSale(svc, params) {
   if (await alreadyProtected(svc, { product_id: productId, fingerprint, external_event_id })) {
     return { status: "already_protected", product_id: productId };
   }
+  // Already fully sold — nothing to reduce.
   if (product.status === "sold" || product.sold_elsewhere === true) {
     return { status: "already_protected", product_id: productId };
   }
 
-  // 5. Acquire a soft sync lock while we mutate availability.
+  // 5. Compute the quantity delta (partial-quantity safe).
+  const availableQty = Number(product.available_quantity ?? product.quantity ?? 1) || 0;
+  const soldQty = Number(quantity_sold) > 0 ? Number(quantity_sold) : 1;
+  const newQty = Math.max(0, availableQty - soldQty);
+  const fullySold = newQty <= 0;
+
+  // 6. Acquire a soft sync lock while we mutate availability.
   const previousStatus = product.status;
   try {
     await svc.entities.Product.update(productId, { sync_locked: true });
@@ -112,23 +129,28 @@ export async function protectFromExternalSale(svc, params) {
   }
 
   try {
-    // 6. Change UKMS availability to unavailable / sold elsewhere.
+    // 7. Reduce UKMS availability. ONE-WAY: only the UKMS product changes.
     const now = new Date().toISOString();
-    await svc.entities.Product.update(productId, {
-      status: "sold",
-      sold_elsewhere: true,
-      sold_elsewhere_marketplace: marketplace,
-      sold_elsewhere_timestamp: now,
-      available_quantity: 0,
+    const update = {
+      available_quantity: newQty,
       sync_locked: false,
       inventory_sync_status: SYNC_STATUS.SYNCED,
       last_sync_time: now,
       last_successful_sync_time: now,
       sync_error_state: "none",
       sync_error_message: ""
-    });
+    };
+    let newStatus = previousStatus;
+    if (fullySold) {
+      update.status = "sold";
+      update.sold_elsewhere = true;
+      update.sold_elsewhere_marketplace = marketplace;
+      update.sold_elsewhere_timestamp = now;
+      newStatus = "sold";
+    }
+    await svc.entities.Product.update(productId, update);
 
-    // 7. Audit record.
+    // 8. Audit record — origin is the external marketplace (eBay).
     await svc.entities.InventoryAuditEvent.create({
       seller_email: product.seller_email,
       product_id: productId,
@@ -136,12 +158,20 @@ export async function protectFromExternalSale(svc, params) {
       event_fingerprint: fingerprint,
       event_type: "SOLD_ELSEWHERE",
       previous_status: previousStatus,
-      new_status: "sold",
+      new_status: newStatus,
       processing_result: "success",
       source
     });
 
-    return { status: "protected", product_id: productId, mapping_id: mapping.id };
+    return {
+      status: fullySold ? "protected" : "quantity_reduced",
+      product_id: productId,
+      mapping_id: mapping.id,
+      quantity_sold: soldQty,
+      previous_available_quantity: availableQty,
+      new_available_quantity: newQty,
+      fully_sold: fullySold
+    };
   } catch (e) {
     await svc.entities.Product.update(productId, { sync_locked: false }).catch(() => {});
     await svc.entities.InventoryAuditEvent.create({
@@ -157,10 +187,12 @@ export async function protectFromExternalSale(svc, params) {
   }
 }
 
-// Reverse direction: a UKMS sale just completed. Find any connected external
-// listings and queue an external inventory update. Does NOT make real external
-// API calls — only records the intended sync state. When no authorised
-// connection exists, records NOT_CONNECTED.
+// Reverse direction: a UKMS sale just completed. Record the intended sync
+// state for connected NON-eBay external listings only. This is a ONE-WAY
+// integration: UKMS never pushes inventory changes back to eBay (eBay is
+// inbound-only — eBay sales reduce UKMS stock, never the reverse). For eBay
+// mappings we record NOT_CONNECTED and skip any outbound queueing. Does NOT
+// make real external API calls — only records intended sync state.
 export async function queueExternalSyncForUkmsSale(svc, { productId, orderId }) {
   const products = await svc.entities.Product.filter({ id: productId });
   if (!products || products.length === 0) return { status: "product_missing" };
@@ -178,7 +210,23 @@ export async function queueExternalSyncForUkmsSale(svc, { productId, orderId }) 
   }
 
   let anyPending = false;
+  let ebaySkipped = 0;
   for (const mapping of mappings) {
+    // ONE-WAY: never queue outbound eBay inventory updates.
+    if (mapping.marketplace === "eBay") {
+      ebaySkipped++;
+      await svc.entities.ExternalListingMapping.update(mapping.id, {
+        sync_status: SYNC_STATUS.NOT_CONNECTED, last_sync_time: new Date().toISOString()
+      }).catch(() => {});
+      await svc.entities.InventoryAuditEvent.create({
+        seller_email: product.seller_email, product_id: productId,
+        marketplace: "eBay", external_listing_id: mapping.external_listing_id,
+        order_id: orderId, event_type: "NOT_CONNECTED",
+        processing_result: "skipped", source: "webhook",
+        error_message: "ebay_sync_is_one_way"
+      }).catch(() => {});
+      continue;
+    }
     const connections = await svc.entities.MarketplaceConnection.filter(
       { seller_email: product.seller_email, marketplace: mapping.marketplace, enabled: true },
       "-created_date", 1
@@ -214,5 +262,5 @@ export async function queueExternalSyncForUkmsSale(svc, { productId, orderId }) 
   await svc.entities.Product.update(productId, {
     inventory_sync_status: newStatus, last_sync_time: new Date().toISOString()
   }).catch(() => {});
-  return { status: "queued", mappings: mappings.length };
+  return { status: "queued", mappings: mappings.length, ebay_skipped: ebaySkipped };
 }

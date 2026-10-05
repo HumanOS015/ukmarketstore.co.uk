@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { secrets } from 'base44:runtime';
-import { getEbayConfig, getValidAccessToken, updateEbayInventoryQuantity } from "../../shared/ebay.ts";
+// eBay helpers no longer imported — outbound eBay inventory sync is disabled
+// (the eBay integration is ONE-WAY: eBay → UKMS only).
 
 // Applies the UKMS-sale → eBay protection for a single eBay mapping: sets the
 // corresponding eBay Inventory API item quantity to 0 (non-destructive). Called
@@ -28,55 +29,22 @@ export default async function(req) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const cfg = getEbayConfig(secrets);
-    if (!cfg) return Response.json({ error: "eBay not configured" }, { status: 503 });
-
-    let accessToken;
-    try {
-      accessToken = await getValidAccessToken(svc, cfg, mapping.seller_email);
-    } catch (e) {
-      await svc.entities.ExternalListingMapping.update(mapping.id, {
-        sync_status: "failed_external_sync",
-        sync_error_message: `token_unavailable: ${e.message}`,
-        last_sync_time: new Date().toISOString()
-      }).catch(() => {});
-      await svc.entities.InventoryAuditEvent.create({
-        seller_email: mapping.seller_email, product_id: mapping.ukms_product_id,
-        marketplace: "eBay", external_listing_id: mapping.external_listing_id,
-        event_type: "FAILED_EXTERNAL_SYNC", processing_result: "failure",
-        source: "auto", error_message: `token_unavailable: ${e.message}`
-      }).catch(() => {});
-      return Response.json({ status: "token_unavailable" }, { status: 200 });
-    }
-
-    const result = await updateEbayInventoryQuantity(cfg, accessToken, mapping.external_sku, 0);
-    const now = new Date().toISOString();
-    if (result.ok) {
-      await svc.entities.ExternalListingMapping.update(mapping.id, {
-        sync_status: "synced", last_sync_time: now, last_successful_sync_time: now,
-        sync_error_message: null
-      }).catch(() => {});
-      await svc.entities.InventoryAuditEvent.create({
-        seller_email: mapping.seller_email, product_id: mapping.ukms_product_id,
-        marketplace: "eBay", external_listing_id: mapping.external_listing_id,
-        event_type: "SYNCED", new_status: "synced", processing_result: "success", source: "auto"
-      }).catch(() => {});
-      return Response.json({ status: "synced" });
-    }
-
-    // Failed — could not safely update (e.g. listing not Inventory-API managed).
+    // ONE-WAY: UKMS never pushes inventory changes to eBay. This function is
+    // retained as a defensive guard only — it never makes an eBay inventory
+    // API call. The eBay integration is inbound-only: eBay sales reduce UKMS
+    // stock; UKMS sales never modify eBay listings, payouts, or payments.
     await svc.entities.ExternalListingMapping.update(mapping.id, {
-      sync_status: "failed_external_sync",
-      sync_error_message: result.reason || result.status || "ebay_update_failed",
-      last_sync_time: now
+      sync_status: "not_connected",
+      sync_error_message: "ebay_sync_is_one_way",
+      last_sync_time: new Date().toISOString()
     }).catch(() => {});
     await svc.entities.InventoryAuditEvent.create({
       seller_email: mapping.seller_email, product_id: mapping.ukms_product_id,
       marketplace: "eBay", external_listing_id: mapping.external_listing_id,
-      event_type: "FAILED_EXTERNAL_SYNC", processing_result: "failure",
-      source: "auto", error_message: result.reason || result.status || "ebay_update_failed"
+      event_type: "NOT_CONNECTED", processing_result: "skipped", source: "auto",
+      error_message: "ebay_sync_is_one_way"
     }).catch(() => {});
-    return Response.json({ status: "failed", reason: result.reason || result.status });
+    return Response.json({ status: "disabled_one_way", reason: "ebay_sync_is_one_way" });
   } catch (error) {
     console.error("ebayApplyExternalSync error", error);
     return Response.json({ error: error.message }, { status: 500 });

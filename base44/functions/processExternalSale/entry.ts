@@ -19,13 +19,13 @@ export default async function(req) {
 
     const {
       marketplace, external_listing_id, external_order_ref,
-      external_event_id, external_sku, seller_email, source
+      external_event_id, external_sku, seller_email, source, quantity_sold
     } = body;
 
     const result = await protectFromExternalSale(base44.asServiceRole, {
       marketplace, external_listing_id, external_order_ref,
       external_event_id, external_sku, seller_email,
-      source: source || "auto"
+      quantity_sold, source: source || "auto"
     });
 
     return Response.json(result);

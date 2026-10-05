@@ -117,8 +117,8 @@ export default function SellerInventory() {
     setSyncing(true);
     try {
       const res = await base44.functions.invoke("ebaySyncNow", {});
-      if (res.data?.status === "synced") {
-        toast.success(`eBay sync complete — ${res.data?.results?.length || 0} listing(s) checked`);
+      if (res.data?.status === "checked") {
+        toast.success(`eBay connection checked — ${res.data?.results?.length || 0} listing(s) verified`);
       } else if (res.data?.status === "reauth_required") {
         toast.error("eBay reauthorisation required — please reconnect your eBay account");
       } else if (res.data?.status === "not_connected") {
@@ -238,7 +238,7 @@ export default function SellerInventory() {
                       onClick={handleSyncEbay}
                     >
                       {syncing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                      Sync now
+                      Check connection
                     </Button>
                   )}
                   <Button
@@ -261,7 +261,7 @@ export default function SellerInventory() {
         })()}
 
         <p className="text-[11px] text-muted-foreground mt-3">
-          Automatic sync needs an authorised official marketplace integration. Vinted uses a manual "Sold Elsewhere" fallback — no scraping or password automation.
+          eBay is connected as an <span className="font-medium">inventory &amp; sale detection</span> connection — eBay sales automatically reduce your UKMarketStore stock. UKMarketStore never creates or edits eBay listings, and never touches eBay payouts or payments. Vinted uses a manual "Sold Elsewhere" fallback.
         </p>
       </div>
 

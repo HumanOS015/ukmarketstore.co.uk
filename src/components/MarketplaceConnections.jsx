@@ -130,8 +130,9 @@ export default function MarketplaceConnections() {
           </div>
 
           <p className="text-[11px] text-muted-foreground mb-3">
-            Automatic sync requires an authorised official marketplace integration. Vinted uses
-            a manual "Sold Elsewhere" fallback — no scraping or password automation.
+            eBay is connected as an <span className="font-medium">inventory &amp; sale detection</span> connection —
+            eBay sales automatically reduce your UKMarketStore stock. UKMarketStore never creates or edits eBay
+            listings, and never touches eBay payouts or payments. Vinted uses a manual "Sold Elsewhere" fallback.
           </p>
           <Link
             to="/seller-inventory"

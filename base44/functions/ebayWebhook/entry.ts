@@ -203,6 +203,7 @@ export default async function(req) {
         external_event_id: notificationId,
         external_sku: li.sku,
         seller_email: sellerEmail,
+        quantity_sold: li.quantity,
         source: "webhook"
       });
     }
