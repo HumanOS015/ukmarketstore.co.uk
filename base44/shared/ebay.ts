@@ -94,6 +94,30 @@ export async function refreshAccessToken(cfg, refreshToken) {
   };
 }
 
+// Fetch an eBay application token (client_credentials grant). Required to
+// call the Notification API getPublicKey endpoint, which is authenticated.
+// Server-side only; never exposed to any frontend.
+export async function getEbayAppToken(cfg) {
+  const scope = cfg.environment === "sandbox"
+    ? "https://api.sandbox.ebay.com/oauth/api_scope"
+    : "https://api.ebay.com/oauth/api_scope";
+  const params = new URLSearchParams({
+    grant_type: "client_credentials",
+    scope
+  });
+  const res = await fetch(cfg.tokenUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Authorization": basicAuth(cfg)
+    },
+    body: params
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error_description || data?.error || "app_token_failed");
+  return data.access_token;
+}
+
 // Retrieve the authorised seller identity via the official eBay Identity API.
 // Best-effort: returns the username/userId when available.
 export async function getEbayUser(cfg, accessToken) {
@@ -188,22 +212,34 @@ export async function getEbayOrder(cfg, accessToken, orderId) {
 
 // --- eBay notification signature verification (official Notification API) ---
 
+// Format a PEM public key by inserting newlines after the BEGIN marker and
+// before the END marker. eBay returns the key as a single unbroken string.
+function formatPemKey(key) {
+  return key
+    .replace(/-----BEGIN PUBLIC KEY-----/, "-----BEGIN PUBLIC KEY-----\n")
+    .replace(/-----END PUBLIC KEY-----/, "\n-----END PUBLIC KEY-----");
+}
+
+// Fetch eBay's public key for a given key ID (kid). The getPublicKey endpoint
+// is authenticated — requires an OAuth application token (client_credentials).
+// Returns { key, algorithm, digest } from eBay's response.
 async function fetchPublicKey(cfg, kid) {
-  const res = await fetch(`${cfg.publicKeyUrl}/${encodeURIComponent(kid)}`);
+  let token;
+  try {
+    token = await getEbayAppToken(cfg);
+  } catch (e) {
+    return null;
+  }
+  const res = await fetch(`${cfg.publicKeyUrl}/${encodeURIComponent(kid)}`, {
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json"
+    }
+  });
   if (!res.ok) return null;
   const data = await res.json().catch(() => ({}));
-  // eBay returns the public key; support common shapes defensively.
-  const pem = data.publicKeyPem || data.publicKey || data.key || null;
-  if (typeof pem === "string" && pem.includes("BEGIN PUBLIC KEY")) {
-    const b64 = pem.replace(/-----[^-]+-----/g, "").replace(/\s/g, "");
-    const der = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-    return der;
-  }
-  if (data.x && data.y) {
-    // JWK — import directly handled by caller via a separate path.
-    return { jwk: { kty: "EC", crv: "P-256", x: data.x, y: data.y } };
-  }
-  return null;
+  if (!data.key) return null;
+  return data;
 }
 
 export async function verifyEbaySignature(cfg, rawBody, signatureHeader) {
@@ -216,31 +252,42 @@ export async function verifyEbaySignature(cfg, rawBody, signatureHeader) {
   }
   const kid = sig.kid;
   if (!kid) return { ok: false, reason: "no_kid" };
-  const keyMaterial = await fetchPublicKey(cfg, kid);
-  if (!keyMaterial) return { ok: false, reason: "public_key_unavailable" };
+  const keyData = await fetchPublicKey(cfg, kid);
+  if (!keyData || !keyData.key) return { ok: false, reason: "public_key_unavailable" };
+
+  // eBay signs JSON.stringify(message), not the raw request body — re-stringify
+  // the parsed JSON so the byte sequence matches what eBay signed.
+  let canonicalBody;
+  try {
+    canonicalBody = JSON.stringify(JSON.parse(rawBody));
+  } catch (e) {
+    return { ok: false, reason: "malformed_body" };
+  }
+
+  // Determine the hash from eBay's key response (default SHA-1 per eBay SDK).
+  const digest = (keyData.digest || "SHA1").toUpperCase();
+  const hash = digest === "SHA256" ? "SHA-256" : "SHA-1";
+
+  // Extract DER bytes from the PEM key.
+  const pem = formatPemKey(keyData.key);
+  const b64 = pem.replace(/-----[^-]+-----/g, "").replace(/\s/g, "");
+  const der = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
 
   let cryptoKey;
   try {
-    if (keyMaterial.jwk) {
-      cryptoKey = await crypto.subtle.importKey(
-        "jwk", keyMaterial.jwk,
-        { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]
-      );
-    } else {
-      cryptoKey = await crypto.subtle.importKey(
-        "spki", keyMaterial,
-        { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]
-      );
-    }
+    cryptoKey = await crypto.subtle.importKey(
+      "spki", der,
+      { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]
+    );
   } catch (e) {
     return { ok: false, reason: "key_import_failed" };
   }
 
   const sigBytes = Uint8Array.from(atob(sig.signature), (c) => c.charCodeAt(0));
-  const bodyBytes = new TextEncoder().encode(rawBody);
+  const bodyBytes = new TextEncoder().encode(canonicalBody);
   try {
     const valid = await crypto.subtle.verify(
-      { name: "ECDSA", hash: "SHA-256" }, cryptoKey, sigBytes, bodyBytes
+      { name: "ECDSA", hash }, cryptoKey, sigBytes, bodyBytes
     );
     return { ok: valid, reason: valid ? "ok" : "signature_mismatch" };
   } catch (e) {

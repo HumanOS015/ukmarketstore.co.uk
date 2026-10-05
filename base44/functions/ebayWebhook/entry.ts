@@ -72,7 +72,7 @@ export default async function(req) {
     const verification = await verifyEbaySignature(cfg, rawBody, signatureHeader);
     if (!verification.ok) {
       console.warn("eBay webhook rejected:", verification.reason);
-      return Response.json({ error: "invalid_signature" }, { status: 412 });
+      return Response.json({ error: "invalid_signature", reason: verification.reason }, { status: 412 });
     }
 
     // --- Parse notification ---
