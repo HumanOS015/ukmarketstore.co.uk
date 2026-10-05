@@ -23,7 +23,7 @@ export default async function(req) {
     // (no query string, no trailing slash, no other hostname). The verification
     // token is never exposed or logged. This branch is independent of the full
     // eBay OAuth config so the challenge works even before RuName/OAuth setup.
-    const challengeUrl = new URL(req.url);
+    const challengeUrl = new URL(req.url, "https://ukmarketstore.base44.app");
     const challengeCode = challengeUrl.searchParams.get("challenge_code");
     if (req.method === "GET" && challengeCode) {
       const verificationToken = secrets.get("EBAY_NOTIFICATION_VERIFICATION_TOKEN");
