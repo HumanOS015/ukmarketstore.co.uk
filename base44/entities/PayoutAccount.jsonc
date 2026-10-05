@@ -24,6 +24,11 @@
       "type": "boolean",
       "default": false,
       "description": "Whether onboarding details have been submitted"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional notes about this payout account"
     }
   },
   "required": [

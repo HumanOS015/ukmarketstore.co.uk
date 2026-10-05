@@ -9,6 +9,11 @@
     "buyer_email": {
       "type": "string",
       "description": "Buyer email"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional notes about this wishlist item"
     }
   },
   "required": [

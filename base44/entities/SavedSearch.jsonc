@@ -18,6 +18,11 @@
       "type": "string",
       "format": "date-time",
       "description": "ISO timestamp of the last digest email sent for this search"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional notes about this saved search"
     }
   },
   "required": [
