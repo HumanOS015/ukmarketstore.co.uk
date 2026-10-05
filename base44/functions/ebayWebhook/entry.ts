@@ -13,6 +13,34 @@ import { protectFromExternalSale } from "../../shared/inventory.ts";
 // Never trusts an unsigned or malformed notification. Never guesses a match.
 export default async function(req) {
   try {
+    // --- eBay Marketplace Account Deletion endpoint challenge (GET) ---
+    // eBay verifies the destination with:
+    //   GET https://ukmarketstore.base44.app/functions/ebayWebhook?challenge_code=<code>
+    // Response: 200 application/json
+    //   { "challengeResponse": "<lowercase hex SHA-256>" }
+    // where challengeResponse = SHA-256(challengeCode + verificationToken + endpoint)
+    // and endpoint is EXACTLY https://ukmarketstore.base44.app/functions/ebayWebhook
+    // (no query string, no trailing slash, no other hostname). The verification
+    // token is never exposed or logged. This branch is independent of the full
+    // eBay OAuth config so the challenge works even before RuName/OAuth setup.
+    const challengeUrl = new URL(req.url);
+    const challengeCode = challengeUrl.searchParams.get("challenge_code");
+    if (req.method === "GET" && challengeCode) {
+      const verificationToken = secrets.get("EBAY_NOTIFICATION_VERIFICATION_TOKEN");
+      if (!verificationToken) {
+        // Secret missing — do not invent or generate a token. Stop safely.
+        return Response.json({ error: "verification_token_not_configured" }, { status: 503 });
+      }
+      const EBAY_WEBHOOK_ENDPOINT = "https://ukmarketstore.base44.app/functions/ebayWebhook";
+      const challengeResponseValue = await challengeResponse(
+        verificationToken, challengeCode, EBAY_WEBHOOK_ENDPOINT
+      );
+      return new Response(JSON.stringify({ challengeResponse: challengeResponseValue }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
     const base44 = createClientFromRequest(req);
     const cfg = getEbayConfig(secrets);
     if (!cfg || !cfg.verificationToken || !cfg.notificationEndpoint) {
@@ -51,6 +79,20 @@ export default async function(req) {
     }
 
     const svc = base44.asServiceRole;
+
+    // --- Marketplace Account Deletion notification ---
+    // Valid signature already verified above. Acknowledge immediately without
+    // treating it as a sale: no inventory, Stripe, escrow, or payout changes.
+    // No user-data deletion workflow exists yet. The eBay user data that COULD
+    // be deleted is the seller's EbayTokenStore record and MarketplaceConnection
+    // row(s); that is reported here, not performed (no destructive change).
+    const topic = notification?.topic || notification?.metadata?.topic || null;
+    if (topic === "MARKETPLACE_ACCOUNT_DELETION") {
+      return Response.json(
+        { status: "acknowledged", topic: "MARKETPLACE_ACCOUNT_DELETION" },
+        { status: 200 }
+      );
+    }
 
     // Identify the eBay account + order. eBay notification metadata shapes vary;
     // extract defensively and fetch authoritative order detail via Fulfillment API.
