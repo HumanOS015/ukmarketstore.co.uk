@@ -37,6 +37,7 @@ import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import SimilarItems from "@/components/product/SimilarItems";
 import RecentlyViewed from "@/components/product/RecentlyViewed";
 import SellerCard from "@/components/product/SellerCard";
+import TrustBadge from "@/components/product/TrustBadge";
 import { COMING_SOON_ENABLED } from "@/lib/comingSoon";
 import GetNotifiedDialog from "@/components/GetNotifiedDialog";
 
@@ -487,6 +488,8 @@ export default function ProductDetail() {
             <p className="text-xs text-amber-700 mt-1">This listing is saved but not live yet. Connect Stripe payouts to make it available to buyers.</p>
           </div>
         }
+        {!isOwner && !isSold && !isPendingStripe && <TrustBadge />}
+
         {COMING_SOON_ENABLED && !isOwner && !isSold && !isPendingStripe &&
         <Button
           onClick={() => setNotifyDialogOpen(true)}
