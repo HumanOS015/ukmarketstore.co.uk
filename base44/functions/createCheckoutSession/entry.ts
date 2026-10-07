@@ -3,20 +3,7 @@ import { secrets } from 'base44:runtime';
 import { APP_URL, STRIPE_VERSION } from "../../shared/stripe.ts";
 import { isPurchasable } from "../../shared/inventory.ts";
 
-// Extract the caller's IP from trusted ingress headers. Used for un-spoofable
-// rate limiting on the public checkout path — a client-supplied buyer_email can
-// be rotated freely, so it is not a safe throttle key.
-function getClientIp(req) {
-  const get = req?.headers?.get?.bind(req.headers);
-  const real = get?.("x-real-ip");
-  if (real) return real.trim();
-  const fwd = get?.("x-forwarded-for");
-  if (fwd) {
-    const first = fwd.split(",")[0]?.trim();
-    if (first) return first;
-  }
-  return "unknown";
-}
+import { getClientIp } from "../../shared/clientIp.ts";
 
 export default async function(req) {
   try {
@@ -79,55 +66,87 @@ export default async function(req) {
     const lockWindowMs = 5 * 60 * 1000;
     const sinceIso = new Date(Date.now() - lockWindowMs).toISOString();
 
-    const conflict = await base44.asServiceRole.entities.Order.filter({
-      product_id: product.id,
-      status: "pending_payment",
-      created_date: { $gte: sinceIso }
-    });
-    if (conflict.length) {
+    // Atomic double-sale lock: claim sync_locked so only one checkout at a
+    // time can run the conflict check + pending-order create for this
+    // listing. The lock is held only for the critical section — once the
+    // pending order exists it provides the 5-minute reservation (with
+    // auto-expiry), so the lock is released immediately after. This closes
+    // the check-then-create race that let two concurrent buyers both pass the
+    // conflict filter and both create pending orders for one item.
+    const claim = await base44.asServiceRole.entities.Product.updateMany(
+      { id: product.id, sync_locked: { $ne: true } },
+      { $set: { sync_locked: true } }
+    ).catch(() => ({ updated: 0 }));
+    if (!claim || claim.updated !== 1) {
       return Response.json({ error: "This item is currently being checked out. Please try again shortly." }, { status: 409 });
     }
+    const releaseLock = () => base44.asServiceRole.entities.Product.updateMany(
+      { id: product.id, sync_locked: true },
+      { $set: { sync_locked: false } }
+    ).catch(() => {});
 
-    let ipPending = [];
-    if (clientIp && clientIp !== "unknown") {
-      ipPending = await base44.asServiceRole.entities.Order.filter({
-        client_ip: clientIp,
+    let order;
+    try {
+      const conflict = await base44.asServiceRole.entities.Order.filter({
+        product_id: product.id,
         status: "pending_payment",
         created_date: { $gte: sinceIso }
       });
-      if (ipPending.length >= 5) {
-        console.warn("checkout IP rate limit hit", clientIp);
-        return Response.json({ error: "Too many checkout attempts. Please try again shortly." }, { status: 429 });
+      if (conflict.length) {
+        await releaseLock();
+        return Response.json({ error: "This item is currently being checked out. Please try again shortly." }, { status: 409 });
       }
+
+      let ipPending = [];
+      if (clientIp && clientIp !== "unknown") {
+        ipPending = await base44.asServiceRole.entities.Order.filter({
+          client_ip: clientIp,
+          status: "pending_payment",
+          created_date: { $gte: sinceIso }
+        });
+        if (ipPending.length >= 5) {
+          await releaseLock();
+          console.warn("checkout IP rate limit hit", clientIp);
+          return Response.json({ error: "Too many checkout attempts. Please try again shortly." }, { status: 429 });
+        }
+      }
+
+      const buyerPending = await base44.asServiceRole.entities.Order.filter({
+        buyer_email: buyerEmail,
+        status: "pending_payment",
+        created_date: { $gte: sinceIso }
+      });
+      if (buyerPending.length >= 5) {
+        await releaseLock();
+        return Response.json({ error: "You have too many pending orders. Please complete one before starting another." }, { status: 429 });
+      }
+
+      // Create a pending order
+      const price = product.price;
+      const commission = parseFloat((price * 0.1).toFixed(2));
+      const sellerPayout = parseFloat((price - commission).toFixed(2));
+
+      order = await base44.asServiceRole.entities.Order.create({
+        product_id: product.id,
+        product_title: product.title,
+        product_image: product.image_url,
+        price,
+        commission,
+        seller_payout: sellerPayout,
+        buyer_email: buyerEmail,
+        seller_email: product.seller_email,
+        status: "pending_payment",
+        shipping_address: shippingAddress,
+        client_ip: clientIp,
+      });
+    } catch (e) {
+      await releaseLock();
+      throw e;
     }
 
-    const buyerPending = await base44.asServiceRole.entities.Order.filter({
-      buyer_email: buyerEmail,
-      status: "pending_payment",
-      created_date: { $gte: sinceIso }
-    });
-    if (buyerPending.length >= 5) {
-      return Response.json({ error: "You have too many pending orders. Please complete one before starting another." }, { status: 429 });
-    }
-
-    // Create a pending order
-    const price = product.price;
-    const commission = parseFloat((price * 0.1).toFixed(2));
-    const sellerPayout = parseFloat((price - commission).toFixed(2));
-
-    const order = await base44.asServiceRole.entities.Order.create({
-      product_id: product.id,
-      product_title: product.title,
-      product_image: product.image_url,
-      price,
-      commission,
-      seller_payout: sellerPayout,
-      buyer_email: buyerEmail,
-      seller_email: product.seller_email,
-      status: "pending_payment",
-      shipping_address: shippingAddress,
-      client_ip: clientIp,
-    });
+    // The pending order now guards the reservation (5-min auto-expiry via the
+    // conflict check above), so release the brief checkout lock.
+    await releaseLock();
 
     // Escrow: the full payment lands in the platform account. The seller's 90% is transferred
     // later (on delivery confirmation or after 14 days) — NOT at checkout.

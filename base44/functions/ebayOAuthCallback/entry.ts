@@ -29,6 +29,25 @@ export default async function(req) {
     const record = pending[0];
     const sellerEmail = record.seller_email;
 
+    // State nonce must be used within 10 minutes — a leaked state is useless
+    // after it expires. Stale pending records are marked expired so they can't
+    // be replayed.
+    const stateAgeMs = record.created_date ? Date.now() - new Date(record.created_date).getTime() : Infinity;
+    if (stateAgeMs > 10 * 60 * 1000) {
+      await svc.entities.EbayTokenStore.update(record.id, { status: "expired" }).catch(() => {});
+      return Response.redirect(`${appUrl}/seller-inventory?ebay=state_expired`, 302);
+    }
+
+    // The callback must be completed by the same seller who started the flow —
+    // their browser session carries the auth cookie eBay redirected back with.
+    // This prevents an attacker who obtains a leaked state from binding their
+    // own eBay identity to the victim seller's connection.
+    const me = await base44.auth.me().catch(() => null);
+    if (!me?.email || me.email !== sellerEmail) {
+      await svc.entities.EbayTokenStore.update(record.id, { status: "expired" }).catch(() => {});
+      return Response.redirect(`${appUrl}/seller-inventory?ebay=auth_mismatch`, 302);
+    }
+
     const cfg = getEbayConfig(secrets);
     if (!cfg) {
       return Response.redirect(`${appUrl}/seller-inventory?ebay=not_configured`, 302);

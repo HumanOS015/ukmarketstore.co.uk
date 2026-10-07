@@ -5,19 +5,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 // can notify them when the marketplace opens. This path never touches Stripe,
 // escrow, orders, or any payment — it only creates a LaunchSubscriber record.
 
-// Extract the caller's IP from trusted ingress headers for un-spoofable rate
-// limiting on this public, no-login endpoint.
-function getClientIp(req) {
-  const get = req?.headers?.get?.bind(req.headers);
-  const real = get?.("x-real-ip");
-  if (real) return real.trim();
-  const fwd = get?.("x-forwarded-for");
-  if (fwd) {
-    const first = fwd.split(",")[0]?.trim();
-    if (first) return first;
-  }
-  return "unknown";
-}
+import { getClientIp } from "../../shared/clientIp.ts";
 
 export default async function(req) {
   try {
