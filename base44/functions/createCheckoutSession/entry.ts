@@ -155,7 +155,7 @@ export default async function(req) {
     params.append("line_items[0][quantity]", "1");
     params.append("line_items[0][price_data][currency]", "gbp");
     params.append("line_items[0][price_data][product_data][name]", product.title);
-    params.append("line_items[0][price_data][unit_amount]", String(Math.round(price * 100)));
+    params.append("line_items[0][price_data][unit_amount]", String(Math.round(product.price * 100)));
     params.append("customer_email", buyerEmail);
     params.append("metadata[order_id]", order.id);
     params.append("metadata[product_id]", product.id);
