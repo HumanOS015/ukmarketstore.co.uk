@@ -32,7 +32,7 @@ const sections = [
   },
   {
     title: "8. Contact Us",
-    content: `If you have any questions about returns or cancellations, please contact us at support@ukmarketstore.co.uk and include your order number and details of the issue.`,
+    content: `If you have any questions about returns or cancellations, please contact us at UKMarketStore1@mail.com and include your order number and details of the issue.`,
   },
 ];
 
