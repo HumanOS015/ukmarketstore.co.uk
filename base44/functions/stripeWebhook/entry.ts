@@ -68,6 +68,44 @@ export default async function(req) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
+
+        // Basket checkout: one session, multiple orders (one per line item).
+        // Each order records its size/colour/quantity; stock is reduced per order
+        // and the listing is marked sold only when it reaches zero.
+        if (session.metadata?.order_ids) {
+          let orderIds = [];
+          try { orderIds = JSON.parse(session.metadata.order_ids); } catch { orderIds = []; }
+          for (const orderId of orderIds) {
+            const order = (await base44.asServiceRole.entities.Order.filter({ id: orderId }))[0];
+            if (!order) continue;
+            await base44.asServiceRole.entities.Order.update(orderId, {
+              status: "paid",
+              payment_intent_id: session.payment_intent || null,
+            });
+            const qty = Number(order.quantity) || 1;
+            const product = (await base44.asServiceRole.entities.Product.filter({ id: order.product_id }))[0];
+            if (product) {
+              const current = typeof product.available_quantity === "number"
+                ? product.available_quantity
+                : (product.quantity || 1);
+              const newQty = Math.max(0, current - qty);
+              await base44.asServiceRole.entities.Product.update(product.id, {
+                available_quantity: newQty,
+                status: newQty <= 0 ? "sold" : product.status,
+              });
+            }
+            base44.asServiceRole.functions.invoke("processUkmsSale", {
+              productId: order.product_id, orderId,
+              internal_token: secrets.get("ESCROW_RELEASE_TOKEN")
+            }).catch((e) => console.error("processUkmsSale failed", e));
+            base44.asServiceRole.functions.invoke("orderNotification", {
+              orderId, event: "placed", internal_token: secrets.get("ESCROW_RELEASE_TOKEN")
+            }).catch(() => {});
+          }
+          break;
+        }
+
+        // Existing single-item checkout path (unchanged)
         const orderId = session.metadata?.order_id;
         const productId = session.metadata?.product_id;
 

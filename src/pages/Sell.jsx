@@ -10,6 +10,7 @@ import { Camera, Loader2, PoundSterling, CheckCircle2, X, ArrowLeft, CreditCard 
 import { toast } from "sonner";
 import { withTimeout } from "@/lib/withTimeout";
 import PayoutConnect from "@/components/PayoutConnect";
+import VariationEditor from "@/components/product/VariationEditor";
 
 const CATEGORIES = [
   "Electronics", "Fashion", "Home & Garden", "Sports", "Toys",
@@ -37,6 +38,12 @@ export default function Sell() {
     postcode: "",
     fulfilment_method: "Tracked UK Delivery",
     estimated_delivery: "",
+    quantity: "1",
+    size_enabled: false,
+    size_type: "clothing",
+    sizes: [],
+    colour_enabled: false,
+    colours: [],
   });
   const [payoutReady, setPayoutReady] = useState(null); // null = checking, false = not connected, true = connected
   const [pendingProduct, setPendingProduct] = useState(null);
@@ -159,6 +166,13 @@ export default function Sell() {
           seller_email: user.email,
           seller_name: user.full_name || user.email,
           status: payoutReady ? "active" : "pending_stripe",
+          quantity: parseInt(form.quantity) || 1,
+          available_quantity: parseInt(form.quantity) || 1,
+          size_enabled: form.size_enabled,
+          size_type: form.size_enabled ? form.size_type : null,
+          sizes: form.size_enabled ? form.sizes : [],
+          colour_enabled: form.colour_enabled,
+          colours: form.colour_enabled ? form.colours : [],
         }),
         15000,
         "Saving listing"
@@ -215,7 +229,7 @@ export default function Sell() {
         <h2 className="text-2xl font-bold mb-2">Ad Posted!</h2>
         <p className="text-muted-foreground mb-6">Your listing is now live and visible to buyers across the UK.</p>
         <div className="flex gap-3">
-          <Button variant="outline" className="rounded-xl" onClick={() => { setSuccess(false); setForm({ title: "", description: "", price: "", category: "", condition: "", postcode: "", fulfilment_method: "Tracked UK Delivery", estimated_delivery: "" }); setImageUrl(""); setAdditionalImages([]); }}>
+          <Button variant="outline" className="rounded-xl" onClick={() => { setSuccess(false); setForm({ title: "", description: "", price: "", category: "", condition: "", postcode: "", fulfilment_method: "Tracked UK Delivery", estimated_delivery: "", quantity: "1", size_enabled: false, size_type: "clothing", sizes: [], colour_enabled: false, colours: [] }); setImageUrl(""); setAdditionalImages([]); }}>
             Post Another
           </Button>
           <Button className="rounded-xl" onClick={() => navigate("/")}>
@@ -345,6 +359,24 @@ export default function Sell() {
           </p>
         </div>
 
+        {/* Quantity */}
+        <div>
+          <Label htmlFor="quantity" className="text-sm font-medium">Quantity available</Label>
+          <Input
+            id="quantity"
+            type="number"
+            min="1"
+            step="1"
+            placeholder="1"
+            value={form.quantity}
+            onChange={(e) => update("quantity", e.target.value)}
+            className="mt-1.5 h-11 rounded-xl"
+          />
+          <p className="text-[11px] text-muted-foreground mt-1">
+            How many of this item do you have? Buyers can purchase up to this amount.
+          </p>
+        </div>
+
         {/* Category & Condition */}
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -399,6 +431,9 @@ export default function Sell() {
             className="mt-1.5 h-11 rounded-xl uppercase"
           />
         </div>
+
+        {/* Variations */}
+        <VariationEditor form={form} update={update} />
 
         <Button
           type="submit"

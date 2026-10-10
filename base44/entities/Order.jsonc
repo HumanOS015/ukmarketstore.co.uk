@@ -109,6 +109,19 @@
     "client_ip": {
       "type": "string",
       "description": "Caller IP captured at checkout, used for un-spoofable abuse throttling and fraud audit. Never shown to buyers."
+    },
+    "size": {
+      "type": "string",
+      "description": "Selected size variation, when the listing offered sizes."
+    },
+    "colour": {
+      "type": "string",
+      "description": "Selected colour variation, when the listing offered colours."
+    },
+    "quantity": {
+      "type": "number",
+      "default": 1,
+      "description": "Quantity purchased for this variation."
     }
   },
   "required": [

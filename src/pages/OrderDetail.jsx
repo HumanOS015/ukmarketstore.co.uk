@@ -213,6 +213,15 @@ export default function OrderDetail() {
         {order.product_image && <img src={order.product_image} alt={order.product_title} className="w-16 h-16 rounded-xl object-cover shrink-0" />}
         <div className="flex-1 min-w-0 self-center">
           <p className="text-sm font-medium truncate">{order.product_title}</p>
+          {(order.size || order.colour || (order.quantity && order.quantity > 1)) && (
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {[
+                order.size && `Size: ${order.size}`,
+                order.colour && `Colour: ${order.colour}`,
+                order.quantity > 1 && `Qty: ${order.quantity}`,
+              ].filter(Boolean).join(" · ")}
+            </p>
+          )}
           <p className="text-primary font-bold text-sm">£{order.price?.toFixed(2)}</p>
         </div>
         <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0 self-center" />
@@ -252,8 +261,14 @@ export default function OrderDetail() {
           <CreditCard className="w-4 h-4 text-primary" />
           <p className="text-sm font-semibold">Payment</p>
         </div>
+        {order.quantity > 1 && (
+          <div className="flex justify-between text-sm py-1">
+            <span className="text-muted-foreground">Quantity</span>
+            <span>{order.quantity}</span>
+          </div>
+        )}
         <div className="flex justify-between text-sm py-1">
-          <span className="text-muted-foreground">Item price</span>
+          <span className="text-muted-foreground">{order.quantity > 1 ? "Line total" : "Item price"}</span>
           <span>£{order.price?.toFixed(2)}</span>
         </div>
         {isBuyer ? (

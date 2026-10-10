@@ -1,11 +1,12 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard, Ban, Heart, MessageCircle, Bell } from "lucide-react";
+import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard, Ban, Heart, MessageCircle, Bell, ShoppingCart } from "lucide-react";
 import CookieConsent from "./CookieConsent";
 import MobileTabBar from "./mobile/MobileTabBar";
 import { base44 } from "@/api/base44Client";
 import { useEffect, useState, Suspense } from "react";
 import { useAuth } from "@/lib/AuthContext";
+import { useCart } from "@/lib/CartContext";
 
 const navItems = [
 { to: "/", icon: Home, label: "Home" },
@@ -17,6 +18,7 @@ const navItems = [
 export default function Layout() {
   const location = useLocation();
   const { user } = useAuth();
+  const { count: basketCount } = useCart();
   const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   useEffect(() => {
@@ -69,6 +71,13 @@ export default function Layout() {
             <Link to="/notifications" aria-label="Notifications" className="relative flex items-center justify-center h-9 w-9 md:h-auto md:w-auto shrink-0 rounded-lg text-muted-foreground hover:text-primary transition-colors">
               <Bell className="w-4 h-4" />
               {unreadNotifications > 0 && <span className="absolute -top-2 -right-2 min-w-4 h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">{unreadNotifications > 99 ? "99+" : unreadNotifications}</span>}
+            </Link>
+            <Link
+              to="/basket"
+              aria-label="Basket"
+              className="relative flex items-center justify-center h-9 w-9 md:h-auto md:w-auto shrink-0 rounded-lg text-muted-foreground hover:text-primary transition-colors">
+              <ShoppingCart className="w-4 h-4" />
+              {basketCount > 0 && <span className="absolute -top-2 -right-2 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">{basketCount > 99 ? "99+" : basketCount}</span>}
             </Link>
             <Link
               to="/wishlist"

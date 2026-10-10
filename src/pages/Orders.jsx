@@ -43,6 +43,15 @@ function OrderCard({ order, onConfirm, confirming, onReview, reviewed, onDispute
         )}
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">{order.product_title}</p>
+          {(order.size || order.colour || (order.quantity && order.quantity > 1)) && (
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              {[
+                order.size && `Size: ${order.size}`,
+                order.colour && `Colour: ${order.colour}`,
+                order.quantity > 1 && `Qty: ${order.quantity}`,
+              ].filter(Boolean).join(" · ")}
+            </p>
+          )}
           <p className="text-primary font-bold text-sm">£{order.price?.toFixed(2)}</p>
           <div className="flex items-center gap-2 mt-1">
             <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[order.status] || "bg-muted text-muted-foreground"}`}>

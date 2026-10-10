@@ -10,6 +10,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Layout from './components/Layout';
 import { WishlistProvider } from "@/lib/WishlistContext";
+import { CartProvider } from "@/lib/CartContext";
 
 const PageFallback = (
   <div className="flex items-center justify-center py-20">
@@ -42,6 +43,7 @@ const Notifications = lazy(() => import("./pages/Notifications"));
 const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const OrderDetail = lazy(() => import("./pages/OrderDetail"));
+const Basket = lazy(() => import("./pages/Basket"));
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -80,6 +82,7 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <WishlistProvider>
+      <CartProvider>
       <TabMemoryProvider>
       <Routes>
         <Route element={<Layout />}>
@@ -106,11 +109,13 @@ const AuthenticatedApp = () => {
         <Route path="/account" element={<Account />} />
         <Route path="/categories" element={<Categories />} />
         <Route path="/search" element={<MobileSearch />} />
+        <Route path="/basket" element={<Basket />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>
         <Route path="/welcome" element={<Suspense fallback={PageFallback}><Onboarding /></Suspense>} />
         </Routes>
       </TabMemoryProvider>
+      </CartProvider>
     </WishlistProvider>
   );
 };

@@ -38,7 +38,12 @@ export async function transferToSeller(base44, order) {
     return { ok: false, reason: "Payment has not succeeded" };
   }
   const expectedAmount = Math.round(Number(order.price) * 100);
-  if (Number(pi.amount_received) !== expectedAmount) {
+  // A basket checkout's PaymentIntent covers multiple orders, so its total is
+  // >= this order's price rather than an exact match. Order creation is
+  // admin-only (service role), so accepting "PI covers at least this order"
+  // is safe: a forged order can't exist, and a real payment of at least the
+  // order amount must have succeeded for the transfer to run.
+  if (Number(pi.amount_received) < expectedAmount) {
     console.error("Escrow amount mismatch for order", order.id, "got", pi.amount_received, "expected", expectedAmount);
     return { ok: false, reason: "Payment amount mismatch" };
   }

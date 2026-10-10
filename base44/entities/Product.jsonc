@@ -165,6 +165,63 @@
       "type": "boolean",
       "default": false,
       "description": "True when a seller has manually overridden the inventory state (e.g. forced availability)."
+    },
+    "size_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this listing offers size variations that the buyer must select."
+    },
+    "size_type": {
+      "type": "string",
+      "enum": [
+        "clothing",
+        "shoe",
+        "custom"
+      ],
+      "description": "The kind of size options offered, which determines the default size presets shown to the seller."
+    },
+    "sizes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The sizes the seller has configured for this listing, e.g. [\"S\",\"M\",\"L\"]."
+    },
+    "colour_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this listing offers colour variations the buyer may select."
+    },
+    "colours": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Colour names the seller has configured, e.g. [\"Black\",\"Navy\"]."
+    },
+    "variation_stock": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "size": {
+            "type": "string",
+            "description": "Size this stock entry applies to, or empty for size-independent."
+          },
+          "colour": {
+            "type": "string",
+            "description": "Colour this stock entry applies to, or empty for colour-independent."
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Stock available for this specific size/colour combination."
+          }
+        },
+        "required": [
+          "quantity"
+        ]
+      },
+      "description": "Optional per-variation stock. When an entry matches the buyer's selected size+colour it overrides the product-level available_quantity; otherwise the product-level stock is used."
     }
   },
   "required": [

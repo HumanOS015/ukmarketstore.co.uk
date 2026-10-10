@@ -40,6 +40,9 @@ import SellerCard from "@/components/product/SellerCard";
 import TrustBadge from "@/components/product/TrustBadge";
 import { COMING_SOON_ENABLED } from "@/lib/comingSoon";
 import GetNotifiedDialog from "@/components/GetNotifiedDialog";
+import { useCart } from "@/lib/CartContext";
+import VariationSelector from "@/components/product/VariationSelector";
+import { requiresSize, requiresColour, getVariationStock } from "@/lib/variations";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -53,7 +56,11 @@ export default function ProductDetail() {
   const [error, setError] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
   const [notifyDialogOpen, setNotifyDialogOpen] = useState(false);
+  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColour, setSelectedColour] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const { isSaved, toggle } = useWishlist();
+  const { addItem } = useCart();
   const { record } = useRecentlyViewed();
 
   // Address form fields
@@ -91,6 +98,9 @@ export default function ProductDetail() {
     setLoading(true);
     setError(false);
     setActiveImage(0);
+    setSelectedSize("");
+    setSelectedColour("");
+    setQuantity(1);
     try {
       const [productData, user] = await Promise.all([
       withTimeout(base44.entities.Product.filter({ id }, "-created_date", 1), 15000, "Loading listing"),
@@ -233,6 +243,43 @@ export default function ProductDetail() {
       navigator.clipboard.writeText(url);
       toast.success("Link copied to clipboard");
     }
+  };
+
+  const handleAddToBasket = () => {
+    if (!currentUser?.email) {
+      base44.auth.redirectToLogin(window.location.href);
+      return;
+    }
+    if (requiresSize(product) && !selectedSize) {
+      toast.error("Please select a size");
+      return;
+    }
+    if (requiresColour(product) && !selectedColour) {
+      toast.error("Please select a colour");
+      return;
+    }
+    const stock = getVariationStock(product, selectedSize, selectedColour);
+    if (stock <= 0) {
+      toast.error("This variation is out of stock");
+      return;
+    }
+    if (quantity > stock) {
+      toast.error(`Only ${stock} available for this selection`);
+      return;
+    }
+    addItem({
+      productId: product.id,
+      title: product.title,
+      image: product.image_url,
+      price: product.price,
+      sellerEmail: product.seller_email,
+      sellerName: product.seller_name,
+      size: selectedSize || null,
+      colour: selectedColour || null,
+      quantity,
+    });
+    const label = [selectedSize, selectedColour].filter(Boolean).join(" · ");
+    toast.success(`Added to basket${label ? ` · ${label}` : ""}`);
   };
 
   if (loading) {
@@ -500,13 +547,32 @@ export default function ProductDetail() {
         </Button>
         }
         {!COMING_SOON_ENABLED && !isOwner && !isSold && !isPendingStripe &&
-        <Button
-          onClick={handleStartCheckout}
-          className="w-full h-14 rounded-2xl text-base font-semibold gap-2"
-          size="lg">
-          <ShoppingCart className="w-5 h-5" />
-          Buy Now — £{product.price?.toFixed(2)}
-        </Button>
+        <div className="space-y-4">
+          <VariationSelector
+            product={product}
+            size={selectedSize}
+            setSize={setSelectedSize}
+            colour={selectedColour}
+            setColour={setSelectedColour}
+            quantity={quantity}
+            setQuantity={setQuantity}
+          />
+          <Button
+            onClick={handleAddToBasket}
+            className="w-full h-14 rounded-2xl text-base font-semibold gap-2"
+            size="lg">
+            <ShoppingCart className="w-5 h-5" />
+            Add to Basket — £{(product.price * quantity).toFixed(2)}
+          </Button>
+          {!requiresSize(product) && !requiresColour(product) &&
+          <Button
+            onClick={handleStartCheckout}
+            variant="outline"
+            className="w-full h-12 rounded-2xl text-sm font-semibold gap-2">
+            Buy Now
+          </Button>
+          }
+        </div>
         }
 
         {isOwner && !isSold &&
