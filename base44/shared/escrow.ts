@@ -59,8 +59,12 @@ export async function transferToSeller(base44, order) {
   }
   const price = Number(product.price);
   const commission = parseFloat((price * 0.1).toFixed(2));
-  const sellerPayout = parseFloat((price - commission).toFixed(2));
-  const sellerPayoutPence = Math.round(sellerPayout * 100);
+  const sellerPayoutPerUnit = parseFloat((price - commission).toFixed(2));
+  // Basket orders record quantity > 1; the payout must cover every unit, not
+  // just one. order.seller_payout already includes qty, but we re-derive from
+  // the product (untrusted order row) so we must multiply by qty here too.
+  const qty = Number(order.quantity) || 1;
+  const sellerPayoutPence = Math.round(sellerPayoutPerUnit * qty * 100);
 
   const payoutAccount = (await base44.asServiceRole.entities.PayoutAccount.filter({ seller_email: product.seller_email }))[0];
   if (!payoutAccount || !payoutAccount.charges_enabled) {
