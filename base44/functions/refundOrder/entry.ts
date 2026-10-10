@@ -65,6 +65,11 @@ export default async function(req) {
     // Issue the refund in Stripe
     const params = new URLSearchParams();
     params.append("payment_intent", order.payment_intent_id);
+    // Basket orders share one PaymentIntent, so refund only this order line total.
+    // Legacy/single-item checkout keeps its existing full-refund behaviour.
+    if (order.checkout_source === "basket") {
+      params.append("amount", String(Math.round(Number(order.price) * 100)));
+    }
     params.append("metadata[order_id]", order.id);
     params.append("metadata[product_id]", order.product_id || "");
     params.append("metadata[base44_app_id]", secrets.get("BASE44_APP_ID") || "");
@@ -99,27 +104,41 @@ export default async function(req) {
       // legacy orders (no checkout_source) keep the original "reactivate listing"
       // behaviour unchanged.
       if (order.checkout_source === "basket") {
-        const qty = Number(order.quantity) || 1;
-        const product = (await base44.asServiceRole.entities.Product.filter({ id: order.product_id }))[0];
-        if (product) {
-          const current = typeof product.available_quantity === "number"
-            ? product.available_quantity
-            : (product.quantity || 0);
-          const update = {
-            status: "active",
-            available_quantity: current + qty,
-          };
-          if (Array.isArray(product.variation_stock) && product.variation_stock.length) {
-            update.variation_stock = product.variation_stock.map((v) => {
-              if ((v.size || "") === (order.size || "") && (v.colour || "") === (order.colour || "")) {
-                return { ...v, quantity: Number(v.quantity) + qty };
-              }
-              return v;
-            });
+        // Claim restoration atomically so refundOrder and Stripe webhook retries
+        // cannot both increment stock for the same order.
+        const claim = await base44.asServiceRole.entities.Order.updateMany(
+          { id: orderId, refund_stock_restored: { $ne: true } },
+          { $set: { refund_stock_restored: true } }
+        ).catch(() => ({ updated: 0 }));
+        if (claim?.updated === 1) {
+          const qty = Number(order.quantity) || 1;
+          const product = (await base44.asServiceRole.entities.Product.filter({ id: order.product_id }))[0];
+          if (product) {
+            const current = typeof product.available_quantity === "number"
+              ? product.available_quantity
+              : (product.quantity || 0);
+            const update = {
+              status: "active",
+              available_quantity: current + qty,
+            };
+            if (Array.isArray(product.variation_stock) && product.variation_stock.length) {
+              update.variation_stock = product.variation_stock.map((v) => {
+                if ((v.size || "") === (order.size || "") && (v.colour || "") === (order.colour || "")) {
+                  return { ...v, quantity: Number(v.quantity) + qty };
+                }
+                return v;
+              });
+            }
+            try {
+              await base44.asServiceRole.entities.Product.update(order.product_id, update);
+            } catch (stockError) {
+              await base44.asServiceRole.entities.Order.updateMany(
+                { id: orderId, refund_stock_restored: true },
+                { $set: { refund_stock_restored: false } }
+              ).catch(() => {});
+              throw stockError;
+            }
           }
-          await base44.asServiceRole.entities.Product.update(order.product_id, update).catch(() => {});
-        } else {
-          await base44.asServiceRole.entities.Product.update(order.product_id, { status: "active" }).catch(() => {});
         }
       } else {
         await base44.asServiceRole.entities.Product.update(order.product_id, { status: "active" }).catch(() => {});
