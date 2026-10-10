@@ -156,20 +156,80 @@ export default async function(req) {
       }
       case "charge.refunded": {
         const charge = event.data.object;
-        const orderId = charge.metadata?.order_id;
-        const productId = charge.metadata?.product_id;
-        if (orderId) {
-          // If the order was already "refunded", refundOrder already sent the
-          // notification. Only notify when this is a refund issued directly in
-          // Stripe (dashboard) that the platform didn't originate.
-          const existing = (await base44.asServiceRole.entities.Order.filter({ id: orderId }))[0];
-          const wasAlreadyRefunded = existing?.status === "refunded";
-          await base44.asServiceRole.entities.Order.update(orderId, { status: "refunded" });
-          if (productId) {
-            await base44.asServiceRole.entities.Product.update(productId, { status: "active" });
+        const paymentIntentId = typeof charge.payment_intent === "string"
+          ? charge.payment_intent
+          : charge.payment_intent?.id;
+        const refundRows = Array.isArray(charge.refunds?.data) ? charge.refunds.data : [];
+        const refundOrderId = refundRows.map((r) => r.metadata?.order_id).find(Boolean);
+        const relatedOrders = paymentIntentId
+          ? await base44.asServiceRole.entities.Order.filter({ payment_intent_id: paymentIntentId })
+          : [];
+        const fullChargeRefund = Number(charge.amount) > 0 && Number(charge.amount_refunded) >= Number(charge.amount);
+        let targetOrders = [];
+
+        // Admin-issued basket refunds attach order_id to the Refund. A full refund
+        // made directly in Stripe applies to every order line paid by this session.
+        if (fullChargeRefund && relatedOrders.length) {
+          targetOrders = relatedOrders;
+        } else {
+          const explicitOrderId = refundOrderId || charge.metadata?.order_id;
+          if (explicitOrderId) {
+            targetOrders = relatedOrders.filter((o) => o.id === explicitOrderId);
+            if (!targetOrders.length) {
+              const exact = (await base44.asServiceRole.entities.Order.filter({ id: explicitOrderId }))[0];
+              if (exact) targetOrders = [exact];
+            }
+          } else if (relatedOrders.length === 1) {
+            targetOrders = relatedOrders;
+          } else if (relatedOrders.length > 1) {
+            // A partial dashboard refund cannot safely be assigned to one basket
+            // line without refund metadata. Do not guess which stock to restore.
+            console.error("Partial Stripe refund needs order metadata; stock was not changed", paymentIntentId);
+          }
+        }
+
+        for (const order of targetOrders) {
+          const wasAlreadyRefunded = order.status === "refunded";
+          if (order.checkout_source === "basket") {
+            // Shared idempotency marker prevents both this webhook and refundOrder
+            // from restoring the same basket line twice.
+            const claim = await base44.asServiceRole.entities.Order.updateMany(
+              { id: order.id, refund_stock_restored: { $ne: true } },
+              { $set: { refund_stock_restored: true } }
+            ).catch(() => ({ updated: 0 }));
+            if (claim?.updated === 1) {
+              const product = (await base44.asServiceRole.entities.Product.filter({ id: order.product_id }))[0];
+              if (product) {
+                const qty = Number(order.quantity) || 1;
+                const current = typeof product.available_quantity === "number"
+                  ? product.available_quantity
+                  : (product.quantity || 0);
+                const update = { status: "active", available_quantity: current + qty };
+                if (Array.isArray(product.variation_stock) && product.variation_stock.length) {
+                  update.variation_stock = product.variation_stock.map((v) => {
+                    if ((v.size || "") === (order.size || "") && (v.colour || "") === (order.colour || "")) {
+                      return { ...v, quantity: Number(v.quantity) + qty };
+                    }
+                    return v;
+                  });
+                }
+                try {
+                  await base44.asServiceRole.entities.Product.update(product.id, update);
+                } catch (stockError) {
+                  await base44.asServiceRole.entities.Order.updateMany(
+                    { id: order.id, refund_stock_restored: true },
+                    { $set: { refund_stock_restored: false } }
+                  ).catch(() => {});
+                  throw stockError;
+                }
+              }
+            }
+          } else if (order.product_id) {
+            await base44.asServiceRole.entities.Product.update(order.product_id, { status: "active" });
           }
           if (!wasAlreadyRefunded) {
-            base44.asServiceRole.functions.invoke("orderNotification", { orderId, event: "refunded", internal_token: secrets.get("ESCROW_RELEASE_TOKEN") }).catch(() => {});
+            await base44.asServiceRole.entities.Order.update(order.id, { status: "refunded" });
+            base44.asServiceRole.functions.invoke("orderNotification", { orderId: order.id, event: "refunded", internal_token: secrets.get("ESCROW_RELEASE_TOKEN") }).catch(() => {});
           }
         }
         break;
