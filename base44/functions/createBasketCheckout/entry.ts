@@ -162,6 +162,7 @@ export default async function(req) {
           size: li.size,
           colour: li.colour,
           quantity: li.qty,
+          checkout_source: "basket",
         });
         orderIds.push(order.id);
       }

@@ -138,6 +138,7 @@ export default async function(req) {
         status: "pending_payment",
         shipping_address: shippingAddress,
         client_ip: clientIp,
+        checkout_source: "single",
       });
     } catch (e) {
       await releaseLock();

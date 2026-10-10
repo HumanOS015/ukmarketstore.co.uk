@@ -88,10 +88,42 @@ export default async function(req) {
 
     const refund = await res.json();
 
-    // Mark the order refunded and re-activate the listing.
+    // Mark the order refunded. This status is the idempotency gate: the early
+    // return above means a repeated refund request never reaches this point, so
+    // the stock restoration below runs at most once.
     await base44.asServiceRole.entities.Order.update(orderId, { status: "refunded" });
     if (order.product_id) {
-      await base44.asServiceRole.entities.Product.update(order.product_id, { status: "active" }).catch(() => {});
+      // Basket orders had available_quantity (and the matching variation_stock
+      // entry) deducted by the webhook when payment succeeded. Restore exactly
+      // that quantity so the refunded units are sellable again. Single-item and
+      // legacy orders (no checkout_source) keep the original "reactivate listing"
+      // behaviour unchanged.
+      if (order.checkout_source === "basket") {
+        const qty = Number(order.quantity) || 1;
+        const product = (await base44.asServiceRole.entities.Product.filter({ id: order.product_id }))[0];
+        if (product) {
+          const current = typeof product.available_quantity === "number"
+            ? product.available_quantity
+            : (product.quantity || 0);
+          const update = {
+            status: "active",
+            available_quantity: current + qty,
+          };
+          if (Array.isArray(product.variation_stock) && product.variation_stock.length) {
+            update.variation_stock = product.variation_stock.map((v) => {
+              if ((v.size || "") === (order.size || "") && (v.colour || "") === (order.colour || "")) {
+                return { ...v, quantity: Number(v.quantity) + qty };
+              }
+              return v;
+            });
+          }
+          await base44.asServiceRole.entities.Product.update(order.product_id, update).catch(() => {});
+        } else {
+          await base44.asServiceRole.entities.Product.update(order.product_id, { status: "active" }).catch(() => {});
+        }
+      } else {
+        await base44.asServiceRole.entities.Product.update(order.product_id, { status: "active" }).catch(() => {});
+      }
     }
 
     // Notify buyer + seller (non-blocking)

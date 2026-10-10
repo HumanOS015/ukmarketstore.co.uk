@@ -122,6 +122,14 @@
       "type": "number",
       "default": 1,
       "description": "Quantity purchased for this variation."
+    },
+    "checkout_source": {
+      "type": "string",
+      "enum": [
+        "basket",
+        "single"
+      ],
+      "description": "Which checkout flow created this order. Basket orders had available_quantity and variation_stock deducted on payment, so a refund must restore them. Legacy orders without this field keep the original refund behaviour."
     }
   },
   "required": [
