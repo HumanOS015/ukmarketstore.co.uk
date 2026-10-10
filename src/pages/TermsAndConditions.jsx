@@ -99,7 +99,7 @@ export default function TermsAndConditions() {
         <p className="font-medium text-foreground mb-1">Contact Us</p>
         <p>If you have any questions about these Terms and Conditions, please contact us at{" "}
           <a href="mailto:ukmarketstore@hotmail.com" className="text-primary hover:underline">
-            ukmarketstore@hotmail.com
+            ukmarketstore1@gmail.com
           </a>.
         </p>
       </div>
