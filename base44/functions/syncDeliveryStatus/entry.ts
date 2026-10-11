@@ -4,14 +4,6 @@ import { transferToSeller } from "../../shared/escrow.ts";
 
 const ROYAL_MAIL_URL = "https://api.royalmail.net/mailpieces/v2";
 
-function normaliseStatus(value) {
-  const s = String(value || "").toLowerCase();
-  if (s.includes("deliver") || s.includes("collect")) return "delivered";
-  if (s.includes("exception") || s.includes("failed") || s.includes("problem") || s.includes("return")) return "exception";
-  if (s.includes("transit") || s.includes("dispatch") || s.includes("scan") || s.includes("attempt") || s.includes("received") || s.includes("progress")) return "in_transit";
-  return "unknown";
-}
-
 function findStatus(data) {
   // Royal Mail Tracking V2 returns the current summary under mailPieces.summary.
   // Do not recursively scan historical events: an old "delivered" event must
