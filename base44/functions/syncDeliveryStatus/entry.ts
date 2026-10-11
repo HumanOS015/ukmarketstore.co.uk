@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { secrets } from "base44:runtime";
 import { transferToSeller } from "../../shared/escrow.ts";
 
-const ROYAL_MAIL_URL = "https://api.royalmail.net/mailpieces/v3";
+const ROYAL_MAIL_URL = "https://api.royalmail.net/mailpieces/v2";
 
 function normaliseStatus(value) {
   const s = String(value || "").toLowerCase();
@@ -12,27 +12,26 @@ function normaliseStatus(value) {
   return "unknown";
 }
 
-function findStatus(value) {
-  if (!value || typeof value !== "object") return null;
-  const preferred = ["status", "statusDescription", "eventType", "eventDescription", "description", "name"];
-  for (const key of preferred) {
-    if (typeof value[key] === "string") {
-      const status = normaliseStatus(value[key]);
-      if (status !== "unknown") return status;
-    }
+function findStatus(data) {
+  // Royal Mail Tracking V2 returns the current summary under mailPieces.summary.
+  // Do not recursively scan historical events: an old "delivered" event must
+  // never be treated as the parcel's current status and trigger a payout.
+  if (!data || typeof data !== "object") return "unknown";
+  const mailPieces = Array.isArray(data.mailPieces) ? data.mailPieces[0] : data.mailPieces;
+  const summary = mailPieces?.summary;
+  if (!summary || typeof summary !== "object") return "unknown";
+
+  const category = String(summary.statusCategory || "").trim().toLowerCase();
+  if (!category) return "unknown";
+
+  if (category === "delivered") return "delivered";
+  if (category.includes("exception") || category.includes("failed") || category.includes("problem") || category.includes("return")) {
+    return "exception";
   }
-  for (const child of Object.values(value)) {
-    if (Array.isArray(child)) {
-      for (const item of child) {
-        const status = findStatus(item);
-        if (status && status !== "unknown") return status;
-      }
-    } else if (child && typeof child === "object") {
-      const status = findStatus(child);
-      if (status && status !== "unknown") return status;
-    }
+  if (category.includes("transit") || category.includes("progress") || category.includes("delivery office") || category.includes("processing")) {
+    return "in_transit";
   }
-  return null;
+  return "unknown";
 }
 
 async function getRoyalMailStatus(trackingNumber) {
@@ -45,6 +44,7 @@ async function getRoyalMailStatus(trackingNumber) {
     {
       headers: {
         "Accept": "application/json",
+        "X-Accept-RMG-Terms": "yes",
         "X-IBM-Client-Id": clientId,
         "X-IBM-Client-Secret": clientSecret
       }
