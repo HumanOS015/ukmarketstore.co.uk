@@ -109,8 +109,12 @@ export default function Profile() {
     <div className="max-w-2xl mx-auto px-4 md:pl-20 py-6">
       {/* Profile Header */}
       <div className="flex items-center gap-4 mb-8">
-        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-          <User className="w-8 h-8 text-primary" />
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
+          {user?.profile_images?.[0] ? (
+            <img src={user.profile_images[0]} alt="Profile" className="w-full h-full object-cover" />
+          ) : (
+            <User className="w-8 h-8 text-primary" />
+          )}
         </div>
         <div>
           <h1 className="text-xl font-bold">{user?.display_name || user?.full_name || "User"}</h1>
@@ -120,6 +124,19 @@ export default function Profile() {
           </p>
         </div>
       </div>
+
+      {Array.isArray(user?.profile_images) && user.profile_images.length > 1 && (
+        <div className="mb-6">
+          <h2 className="text-sm font-semibold mb-3">Profile photos</h2>
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+            {user.profile_images.slice(0, 5).map((imageUrl, index) => (
+              <div key={imageUrl + index} className="aspect-square rounded-xl overflow-hidden border border-border bg-muted">
+                <img src={imageUrl} alt={"Profile photo " + (index + 1)} className="w-full h-full object-cover" loading="lazy" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 mb-8">
