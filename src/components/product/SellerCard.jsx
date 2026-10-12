@@ -73,11 +73,11 @@ export default function SellerCard({ product, currentUser, onMessage, messaging 
             </div>
             <Link
               to={`/seller/${product?.seller_email}`}
-              className="font-semibold truncate hover:text-primary transition-colors"
+              className="min-w-0 flex-1 font-semibold truncate hover:text-primary transition-colors"
             >
               {sellerName}
             </Link>
-            <Badge variant="secondary" className="gap-1 bg-green-100 text-green-800 border-green-200">
+            <Badge variant="secondary" className="basis-full ml-12 shrink-0 gap-1 bg-green-100 text-green-800 border-green-200 sm:basis-auto sm:ml-0">
               <Shield className="w-3 h-3" />
               Verified seller
             </Badge>
