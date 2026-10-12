@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,9 @@ const UK_POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
 
 export default function Sell() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get("edit");
+  const [editProduct, setEditProduct] = useState(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -58,6 +61,36 @@ export default function Sell() {
           return;
         }
         setCurrentUser(me);
+        if (editId) {
+          const result = await base44.entities.Product.filter({ id: editId }, "-created_date", 1);
+          const product = Array.isArray(result) ? result[0] : result?.items?.[0];
+          if (!product || product.seller_email?.toLowerCase() !== me.email?.toLowerCase()) {
+            toast.error("You can only edit your own listings.");
+            navigate("/profile");
+            return;
+          }
+          setEditProduct(product);
+          setForm({
+            title: product.title || "",
+            description: product.description || "",
+            price: product.price == null ? "" : String(product.price),
+            category: product.category || "",
+            condition: product.condition || "",
+            postcode: product.postcode || "",
+            fulfilment_method: product.fulfilment_method || "Tracked UK Delivery",
+            estimated_delivery: product.estimated_delivery || "",
+            quantity: String(product.quantity ?? product.available_quantity ?? 1),
+            size_enabled: Boolean(product.size_enabled),
+            size_type: product.size_type || "clothing",
+            sizes: Array.isArray(product.sizes) ? product.sizes : [],
+            colour_enabled: Boolean(product.colour_enabled),
+            colours: Array.isArray(product.colours) ? product.colours : [],
+          });
+          setImageUrl(product.image_url || "");
+          setAdditionalImages(Array.isArray(product.additional_images) ? product.additional_images.slice(0, 4) : []);
+          setPayoutReady(true);
+          return;
+        }
         const accounts = await base44.entities.PayoutAccount.filter({ seller_email: me.email });
         setPayoutReady(accounts[0]?.charges_enabled === true);
       } catch (err) {
@@ -66,7 +99,7 @@ export default function Sell() {
       }
     };
     checkPayout();
-  }, []);
+  }, [editId, navigate]);
 
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -151,6 +184,35 @@ export default function Sell() {
     setLoading(true);
     try {
       const user = await withTimeout(base44.auth.me(), 15000, "Verifying account");
+      if (editId) {
+        if (!editProduct || editProduct.seller_email?.toLowerCase() !== user.email?.toLowerCase()) {
+          toast.error("You can only edit your own listings.");
+          navigate("/profile");
+          return;
+        }
+        const updates = {
+          title: form.title.trim(),
+          description: form.description.trim(),
+          price: parseFloat(form.price),
+          category: form.category,
+          condition: form.condition,
+          fulfilment_method: "Tracked UK Delivery",
+          estimated_delivery: form.estimated_delivery || null,
+          postcode: form.postcode.trim().toUpperCase(),
+          image_url: imageUrl,
+          additional_images: additionalImages,
+          quantity: parseInt(form.quantity) || 1,
+          size_enabled: form.size_enabled,
+          size_type: form.size_enabled ? form.size_type : null,
+          sizes: form.size_enabled ? form.sizes : [],
+          colour_enabled: form.colour_enabled,
+          colours: form.colour_enabled ? form.colours : [],
+        };
+        await withTimeout(base44.entities.Product.update(editId, updates), 15000, "Updating listing");
+        toast.success("Listing updated successfully");
+        navigate("/profile");
+        return;
+      }
       const createdProduct = await withTimeout(
         base44.entities.Product.create({
           title: form.title.trim(),
@@ -242,9 +304,9 @@ export default function Sell() {
 
   return (
     <div className="max-w-lg mx-auto px-4 md:pl-20 py-6">
-      <h1 className="text-2xl font-bold tracking-tight mb-1">Create Listing</h1>
+      <h1 className="text-2xl font-bold tracking-tight mb-1">{editId ? "Edit Listing" : "Create Listing"}</h1>
       <p className="text-sm text-muted-foreground mb-6">
-        List your item for sale across the UK
+        {editId ? "Update the details of your listing" : "List your item for sale across the UK"}
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -443,7 +505,7 @@ export default function Sell() {
           {loading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
           ) : (
-            "List Item for Sale"
+            {editId ? "Save Listing Changes" : "List Item for Sale"}
           )}
         </Button>
       </form>
