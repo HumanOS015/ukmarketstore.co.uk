@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { MessageCircle, Shield, Loader2, Star } from "lucide-react";
+import { MessageCircle, Shield, Loader2, Star, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
@@ -9,6 +9,30 @@ export default function SellerCard({ product, currentUser, onMessage, messaging 
   const isOwner = currentUser?.email === product?.seller_email;
   const sellerName = product?.seller_name || "Marketplace Seller";
   const [rating, setRating] = useState(null); // { avg, count } | null while loading
+  const [sellerProfileImage, setSellerProfileImage] = useState("");
+
+  useEffect(() => {
+    if (!product?.seller_email) {
+      setSellerProfileImage("");
+      return;
+    }
+    let active = true;
+    (async () => {
+      try {
+        const res = await base44.entities.User.filter(
+          { email: product.seller_email },
+          { limit: 1 }
+        );
+        const users = Array.isArray(res) ? res : Array.isArray(res?.items) ? res.items : [];
+        if (active) {
+          setSellerProfileImage(users[0]?.profile_images?.[0] || "");
+        }
+      } catch {
+        if (active) setSellerProfileImage("");
+      }
+    })();
+    return () => { active = false; };
+  }, [product?.seller_email]);
 
   useEffect(() => {
     if (!product?.seller_email) return;
@@ -36,12 +60,16 @@ export default function SellerCard({ product, currentUser, onMessage, messaging 
   return (
     <div className="rounded-2xl border border-border bg-card p-4">
       <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-          <Shield className="w-5 h-5 text-primary" />
-        </div>
         <div className="min-w-0 flex-1">
           <p className="text-xs text-muted-foreground mb-1">About the seller</p>
           <div className="flex items-center gap-2 flex-wrap">
+            <div className="w-10 h-10 rounded-full bg-primary/10 overflow-hidden flex items-center justify-center shrink-0 border border-border">
+              {sellerProfileImage ? (
+                <img src={sellerProfileImage} alt={`${sellerName} profile`} className="w-full h-full object-cover" loading="lazy" />
+              ) : (
+                <UserRound className="w-5 h-5 text-primary" />
+              )}
+            </div>
             <Link
               to={`/seller/${product?.seller_email}`}
               className="font-semibold truncate hover:text-primary transition-colors"
