@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, User, Mail, LogOut, Plus, Trash2, AlertCircle, RefreshCw } from "lucide-react";
+import { Loader2, User, Mail, LogOut, Plus, Trash2, AlertCircle, RefreshCw, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/AuthContext";
 import {
@@ -19,6 +19,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const { navigateToLogin } = useAuth();
+  const navigate = useNavigate();
   const [deleting, setDeleting] = useState(false);
 
   const handleDeleteAccount = async () => {
@@ -188,8 +189,25 @@ export default function Profile() {
           {myListings.map((product) => (
             <div key={product.id} className="relative group">
               <ProductCard product={product} />
+              {["active", "pending_stripe"].includes(product.status) && (
+                <button
+                  type="button"
+                  aria-label={`Edit ${product.title || "listing"}`}
+                  title="Edit listing"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigate(`/sell?edit=${encodeURIComponent(product.id)}`);
+                  }}
+                  className="absolute top-2 right-12 z-10 w-8 h-8 rounded-full bg-primary/90 text-primary-foreground flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+              )}
               {product.status === "active" && (
                 <button
+                  type="button"
+                  aria-label={`Remove ${product.title || "listing"}`}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
