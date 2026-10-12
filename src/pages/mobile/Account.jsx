@@ -65,7 +65,7 @@ export default function Account() {
             <UserIcon className="w-6 h-6 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold truncate">{user.full_name || user.email}</p>
+            <p className="font-semibold truncate">{user.display_name || user.full_name || user.email}</p>
             <p className="text-xs text-muted-foreground truncate">{user.email}</p>
             {user.role === "admin" && (
               <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-semibold text-primary">
