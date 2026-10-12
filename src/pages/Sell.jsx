@@ -164,7 +164,7 @@ export default function Sell() {
           image_url: imageUrl,
           additional_images: additionalImages,
           seller_email: user.email,
-          seller_name: user.full_name || user.email,
+          seller_name: user.display_name || user.full_name || user.email,
           status: payoutReady ? "active" : "pending_stripe",
           quantity: parseInt(form.quantity) || 1,
           available_quantity: parseInt(form.quantity) || 1,
