@@ -106,7 +106,14 @@ export default function ProductDetail() {
       withTimeout(base44.entities.Product.filter({ id }, "-created_date", 1), 15000, "Loading listing"),
       base44.auth.me().catch(() => null)]
       );
-      setProduct(productData[0]);
+      // Product.filter may return either an array or an object containing items.
+      // Normalise the response so seller-configured sizes and colours load reliably.
+      const productList = Array.isArray(productData)
+        ? productData
+        : Array.isArray(productData?.items)
+          ? productData.items
+          : [];
+      setProduct(productList[0] || null);
       setCurrentUser(user);
     } catch (err) {
       console.error("Failed to load product", err);
