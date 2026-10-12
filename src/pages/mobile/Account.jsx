@@ -61,8 +61,12 @@ export default function Account() {
 
       {isAuthenticated && user ? (
         <div className="flex items-center gap-3 rounded-2xl bg-card border border-border p-4 mb-5">
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-            <UserIcon className="w-6 h-6 text-primary" />
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
+            {user.profile_images?.[0] ? (
+              <img src={user.profile_images[0]} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <UserIcon className="w-6 h-6 text-primary" />
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold truncate">{user.display_name || user.full_name || user.email}</p>
