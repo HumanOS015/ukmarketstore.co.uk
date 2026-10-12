@@ -1,4 +1,6 @@
 {
+  "name": "User",
+  "type": "object",
   "properties": {
     "role": {
       "type": "string",
@@ -12,11 +14,19 @@
       "type": "boolean",
       "description": "Whether this user is banned from the marketplace",
       "default": false
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Optional public display name chosen by the user",
+      "maxLength": 100
+    },
+    "phone": {
+      "type": "string",
+      "description": "Optional contact phone number provided by the user",
+      "maxLength": 30
     }
   },
   "required": [
     "role"
-  ],
-  "name": "User",
-  "type": "object"
+  ]
 }
