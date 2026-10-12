@@ -505,7 +505,7 @@ export default function Sell() {
           {loading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
           ) : (
-            {editId ? "Save Listing Changes" : "List Item for Sale"}
+            editId ? "Save Listing Changes" : "List Item for Sale"
           )}
         </Button>
       </form>
