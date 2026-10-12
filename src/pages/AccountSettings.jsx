@@ -10,6 +10,8 @@ import { useAuth } from "@/lib/AuthContext";
 
 const MAX_PROFILE_IMAGES = 5;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const SUPPORTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/bmp", "image/avif"]);
+const SUPPORTED_IMAGE_EXTENSIONS = /\.(jpe?g|png|webp|gif|bmp|avif)$/i;
 
 export default function AccountSettings() {
   const { navigateToLogin } = useAuth();
@@ -65,8 +67,12 @@ export default function AccountSettings() {
 
     const validFiles = [];
     for (const file of selectedFiles) {
-      if (!file.type.startsWith("image/")) {
-        toast.error(file.name + " is not an image file.");
+      // Some Windows browsers report an empty MIME type for valid image files,
+      // so also check the filename extension instead of rejecting those files.
+      const isSupportedImage = SUPPORTED_IMAGE_TYPES.has((file.type || "").toLowerCase()) ||
+        (!file.type && SUPPORTED_IMAGE_EXTENSIONS.test(file.name));
+      if (!isSupportedImage) {
+        toast.error(file.name + " is not a supported image. Choose JPG, PNG, WebP, GIF, BMP or AVIF.");
         continue;
       }
       if (file.size > MAX_IMAGE_BYTES) {
@@ -154,7 +160,7 @@ export default function AccountSettings() {
           <div className="space-y-3">
             <div>
               <Label>Profile photos</Label>
-              <p className="text-xs text-muted-foreground mt-1">Add up to 5 images to personalise your profile. Images must be 5 MB or smaller each.</p>
+              <p className="text-xs text-muted-foreground mt-1">Add up to 5 images to personalise your profile. Use JPG, PNG, WebP, GIF, BMP or AVIF files, 5 MB or smaller each.</p>
             </div>
             {profileImages.length > 0 ? (
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
