@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Mail, Save, UserRound, Loader2, Phone } from "lucide-react";
+import { ArrowLeft, Mail, Save, UserRound, Loader2, Phone, ImagePlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -8,12 +8,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/AuthContext";
 
+const MAX_PROFILE_IMAGES = 5;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
 export default function AccountSettings() {
   const { navigateToLogin } = useAuth();
+  const fileInputRef = useRef(null);
   const [displayName, setDisplayName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [profileImages, setProfileImages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -25,6 +31,7 @@ export default function AccountSettings() {
         setDisplayName(currentUser?.display_name || currentUser?.full_name || "");
         setPhone(currentUser?.phone || "");
         setEmail(currentUser?.email || "");
+        setProfileImages(Array.isArray(currentUser?.profile_images) ? currentUser.profile_images.slice(0, MAX_PROFILE_IMAGES) : []);
       } catch (error) {
         console.error("Failed to load account settings", error);
         if (error?.status === 401 || error?.status === 403) {
@@ -40,6 +47,58 @@ export default function AccountSettings() {
     return () => { active = false; };
   }, []);
 
+  const handleImageSelection = async (event) => {
+    const files = Array.from(event.target.files || []);
+    event.target.value = "";
+    if (!files.length) return;
+
+    const slots = MAX_PROFILE_IMAGES - profileImages.length;
+    if (slots <= 0) {
+      toast.error("You can add up to 5 profile images.");
+      return;
+    }
+
+    const selectedFiles = files.slice(0, slots);
+    if (files.length > slots) {
+      toast.message("Only the first " + slots + " image(s) will be uploaded to keep your profile within the 5-image limit.");
+    }
+
+    const validFiles = [];
+    for (const file of selectedFiles) {
+      if (!file.type.startsWith("image/")) {
+        toast.error(file.name + " is not an image file.");
+        continue;
+      }
+      if (file.size > MAX_IMAGE_BYTES) {
+        toast.error(file.name + " is over 5 MB. Choose a smaller image.");
+        continue;
+      }
+      validFiles.push(file);
+    }
+    if (!validFiles.length) return;
+
+    setUploading(true);
+    try {
+      const uploadedUrls = [];
+      for (const file of validFiles) {
+        const result = await base44.integrations.Core.UploadFile({ file });
+        if (result?.file_url) uploadedUrls.push(result.file_url);
+        else throw new Error("The upload did not return an image URL.");
+      }
+      setProfileImages((current) => [...current, ...uploadedUrls].slice(0, MAX_PROFILE_IMAGES));
+      toast.success(uploadedUrls.length === 1 ? "Profile image uploaded. Save changes to keep it." : uploadedUrls.length + " profile images uploaded. Save changes to keep them.");
+    } catch (error) {
+      console.error("Profile image upload failed", error);
+      toast.error("Couldn't upload the profile image(s). Please try again.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeProfileImage = (index) => {
+    setProfileImages((current) => current.filter((_, imageIndex) => imageIndex !== index));
+  };
+
   const handleSave = async (event) => {
     event.preventDefault();
     const cleanedName = displayName.trim();
@@ -47,14 +106,20 @@ export default function AccountSettings() {
       toast.error("Please enter a display name.");
       return;
     }
+    if (profileImages.length > MAX_PROFILE_IMAGES) {
+      toast.error("You can save up to 5 profile images.");
+      return;
+    }
     setSaving(true);
     try {
       const updatedUser = await base44.auth.updateMe({
         display_name: cleanedName,
-        phone: phone.trim()
+        phone: phone.trim(),
+        profile_images: profileImages
       });
       setDisplayName(updatedUser?.display_name || cleanedName);
       setPhone(updatedUser?.phone || phone.trim());
+      setProfileImages(Array.isArray(updatedUser?.profile_images) ? updatedUser.profile_images.slice(0, MAX_PROFILE_IMAGES) : profileImages);
       toast.success("Account details updated successfully.");
     } catch (error) {
       console.error("Failed to update account details", error);
@@ -76,7 +141,7 @@ export default function AccountSettings() {
         </div>
         <div>
           <h1 className="text-2xl font-bold">Account Settings</h1>
-          <p className="text-sm text-muted-foreground">Manage your account details.</p>
+          <p className="text-sm text-muted-foreground">Manage your account details and profile photos.</p>
         </div>
       </div>
 
@@ -85,7 +150,60 @@ export default function AccountSettings() {
           <Loader2 className="w-6 h-6 animate-spin text-primary" />
         </div>
       ) : (
-        <form onSubmit={handleSave} className="rounded-2xl border border-border bg-card p-5 space-y-5">
+        <form onSubmit={handleSave} className="rounded-2xl border border-border bg-card p-5 space-y-6">
+          <div className="space-y-3">
+            <div>
+              <Label>Profile photos</Label>
+              <p className="text-xs text-muted-foreground mt-1">Add up to 5 images to personalise your profile. Images must be 5 MB or smaller each.</p>
+            </div>
+            {profileImages.length > 0 ? (
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                {profileImages.map((imageUrl, index) => (
+                  <div key={imageUrl + index} className="relative aspect-square rounded-xl overflow-hidden border border-border bg-muted">
+                    <img src={imageUrl} alt={"Profile photo " + (index + 1)} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeProfileImage(index)}
+                      disabled={uploading || saving}
+                      aria-label={"Remove profile photo " + (index + 1)}
+                      className="absolute top-1 right-1 flex items-center justify-center w-7 h-7 rounded-full bg-black/70 text-white hover:bg-black disabled:opacity-50"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    {index === 0 && <span className="absolute bottom-0 inset-x-0 bg-black/65 text-white text-[10px] text-center py-1">Main photo</span>}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 rounded-xl border border-dashed border-border p-4">
+                <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center shrink-0">
+                  <UserRound className="w-7 h-7 text-muted-foreground" />
+                </div>
+                <p className="text-sm text-muted-foreground">No profile photos added yet.</p>
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleImageSelection}
+              disabled={uploading || saving || profileImages.length >= MAX_PROFILE_IMAGES}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              className="gap-2 rounded-xl"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading || saving || profileImages.length >= MAX_PROFILE_IMAGES}
+            >
+              {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-4 h-4" />}
+              {uploading ? "Uploading…" : "Add profile photos (" + profileImages.length + "/" + MAX_PROFILE_IMAGES + ")"}
+            </Button>
+            <p className="text-xs text-muted-foreground">Choose your photos, remove any you don't want, then select Save Changes. Your first photo is used as your main profile picture.</p>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="account-display-name">Display name</Label>
             <Input
@@ -125,7 +243,7 @@ export default function AccountSettings() {
             <p className="text-xs text-muted-foreground">Your sign-in email is shown here and cannot be changed on this page.</p>
           </div>
 
-          <Button type="submit" disabled={saving || loading} className="w-full sm:w-auto gap-2 rounded-xl">
+          <Button type="submit" disabled={saving || uploading || loading} className="w-full sm:w-auto gap-2 rounded-xl">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {saving ? "Saving…" : "Save Changes"}
           </Button>
