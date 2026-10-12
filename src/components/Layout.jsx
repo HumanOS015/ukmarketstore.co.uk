@@ -137,7 +137,7 @@ export default function Layout() {
         <div className="max-w-7xl mx-auto px-4 pt-8 pb-20 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex flex-col items-center sm:items-start gap-1">
             <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} UKMarketStore. All rights reserved.</p>
-            <p className="text-xs text-muted-foreground">Trading name: UKMarketStore · Contact: UKMarketStore1@gmail.com</p>
+            <p className="text-xs text-muted-foreground">Trading name: UKMarketStore · Contact: <a href="https://mail.google.com/mail/?view=cm&fs=1&to=ukmarketstore1@gmail.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary hover:underline">UKMarketStore1@gmail.com</a></p>
           
           </div>
           <div className="flex items-center gap-5">
