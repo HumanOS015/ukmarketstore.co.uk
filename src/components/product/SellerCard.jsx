@@ -24,7 +24,7 @@ export default function SellerCard({ product, currentUser, onMessage, messaging 
           "-created_date",
           1
         );
-        const users = Array.isArray(res) ? res : Array.isArray(res?.items) ? res.items : [];
+        const users = Array.isArray(res) ? res : Array.isArray(res?.items) ? res.items : Array.isArray(res?.data) ? res.data : [];
         if (active) {
           setSellerProfileImage(users[0]?.profile_images?.[0] || "");
         }
