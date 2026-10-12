@@ -24,6 +24,14 @@
       "type": "string",
       "description": "Optional contact phone number provided by the user",
       "maxLength": 30
+    },
+    "profile_images": {
+      "type": "array",
+      "description": "Up to five profile photos selected by the account owner",
+      "maxItems": 5,
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": [
