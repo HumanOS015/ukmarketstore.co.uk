@@ -117,13 +117,22 @@ export default function Profile() {
             <User className="w-8 h-8 text-primary" />
           )}
         </div>
-        <div>
+        <div className="min-w-0 flex-1">
           <h1 className="text-xl font-bold">{user?.display_name || user?.full_name || "User"}</h1>
-          <p className="text-sm text-muted-foreground flex items-center gap-1">
-            <Mail className="w-3.5 h-3.5" />
+          <p className="text-sm text-muted-foreground flex items-center gap-1 break-all">
+            <Mail className="w-3.5 h-3.5 shrink-0" />
             {user?.email}
           </p>
         </div>
+        <Link
+          to="/account-settings"
+          className="inline-flex items-center justify-center gap-2 shrink-0 rounded-xl border border-border px-3 py-2 text-sm font-medium hover:bg-muted transition-colors"
+          aria-label="Edit profile"
+          title="Edit profile"
+        >
+          <Pencil className="w-4 h-4" />
+          <span>Edit Profile</span>
+        </Link>
       </div>
 
       {Array.isArray(user?.profile_images) && user.profile_images.length > 1 && (
