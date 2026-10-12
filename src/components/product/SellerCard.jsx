@@ -21,7 +21,8 @@ export default function SellerCard({ product, currentUser, onMessage, messaging 
       try {
         const res = await base44.entities.User.filter(
           { email: product.seller_email },
-          { limit: 1 }
+          "-created_date",
+          1
         );
         const users = Array.isArray(res) ? res : Array.isArray(res?.items) ? res.items : [];
         if (active) {
