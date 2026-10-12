@@ -113,7 +113,7 @@ export default function Profile() {
           <User className="w-8 h-8 text-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">{user?.full_name || "User"}</h1>
+          <h1 className="text-xl font-bold">{user?.display_name || user?.full_name || "User"}</h1>
           <p className="text-sm text-muted-foreground flex items-center gap-1">
             <Mail className="w-3.5 h-3.5" />
             {user?.email}
