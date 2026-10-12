@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/AuthContext";
 import {
   ShoppingBag, Heart, MessageCircle, Bell, LayoutDashboard, User as UserIcon,
   Shield, RotateCcw, LifeBuoy, FileText, Lock, LogOut, ChevronRight, ShieldCheck,
-  Trash2, Sparkles,
+  Trash2, Sparkles, Settings,
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -24,6 +24,7 @@ const sections = [
   { to: "/notifications", icon: Bell, label: "Notifications" },
   { to: "/seller-dashboard", icon: LayoutDashboard, label: "Seller Dashboard" },
   { to: "/profile", icon: UserIcon, label: "Profile" },
+  { to: "/account-settings", icon: Settings, label: "Account Settings", desc: "Edit your account details" },
   { to: "/buyer-protection", icon: Shield, label: "Buyer Protection" },
   { to: "/returns", icon: RotateCcw, label: "Returns & Cancellations" },
   { to: "/buyer-protection-assistant", icon: LifeBuoy, label: "Help & Support" },
