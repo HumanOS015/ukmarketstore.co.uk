@@ -36,6 +36,7 @@ const SellerStorefront = lazy(() => import("./pages/SellerStorefront"));
 const SellerMessages = lazy(() => import("./pages/SellerMessages"));
 const Returns = lazy(() => import("./pages/Returns"));
 const Account = lazy(() => import("./pages/mobile/Account"));
+const AccountSettings = lazy(() => import("./pages/AccountSettings"));
 const Categories = lazy(() => import("./pages/mobile/Categories"));
 const MobileSearch = lazy(() => import("./pages/mobile/Search"));
 const Category = lazy(() => import("./pages/Category"));
@@ -107,6 +108,7 @@ const AuthenticatedApp = () => {
         <Route path="/returns" element={<Returns />} />
         <Route path="/category/:category" element={<Category />} />
         <Route path="/account" element={<Account />} />
+        <Route path="/account-settings" element={<AccountSettings />} />
         <Route path="/categories" element={<Categories />} />
         <Route path="/search" element={<MobileSearch />} />
         <Route path="/basket" element={<Basket />} />
