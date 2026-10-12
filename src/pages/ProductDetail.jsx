@@ -478,6 +478,21 @@ export default function ProductDetail() {
           messaging={messaging} />
         
 
+        {/* Size and colour options */}
+        {!isOwner && !isSold && !isPendingStripe &&
+        <div className="space-y-4">
+          <VariationSelector
+            product={product}
+            size={selectedSize}
+            setSize={setSelectedSize}
+            colour={selectedColour}
+            setColour={setSelectedColour}
+            quantity={quantity}
+            setQuantity={setQuantity}
+          />
+        </div>
+        }
+
         {/* Description */}
         {product.description &&
         <div>
@@ -548,15 +563,6 @@ export default function ProductDetail() {
         }
         {!isOwner && !isSold && !isPendingStripe &&
         <div className="space-y-4">
-          <VariationSelector
-            product={product}
-            size={selectedSize}
-            setSize={setSelectedSize}
-            colour={selectedColour}
-            setColour={setSelectedColour}
-            quantity={quantity}
-            setQuantity={setQuantity}
-          />
           {!COMING_SOON_ENABLED &&
           <>
             <Button
