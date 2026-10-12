@@ -19,14 +19,16 @@ export const SIZE_PRESETS = {
 // Falls back to the product-level available_quantity (then quantity) when no
 // per-variation entry matches, so listings without variation_stock keep working.
 export function getVariationStock(product, size, colour) {
-  if (product?.variation_stock?.length) {
+  if (Array.isArray(product?.variation_stock) && product.variation_stock.length > 0) {
     const match = product.variation_stock.find(
       (v) => (v.size || "") === (size || "") && (v.colour || "") === (colour || "")
     );
-    if (match) return Number(match.quantity) || 0;
+    // With per-variation stock configured, a missing combination is unavailable.
+    return match ? Math.max(0, Number(match.quantity) || 0) : 0;
   }
-  if (typeof product?.available_quantity === "number") return product.available_quantity;
-  if (typeof product?.quantity === "number") return product.quantity;
+  // Older listings only have product-level quantity, so preserve that behaviour.
+  if (typeof product?.available_quantity === "number") return Math.max(0, product.available_quantity);
+  if (typeof product?.quantity === "number") return Math.max(0, product.quantity);
   return 1;
 }
 
