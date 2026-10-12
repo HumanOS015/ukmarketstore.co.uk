@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Mail, Save, UserRound, Loader2 } from "lucide-react";
+import { ArrowLeft, Mail, Save, UserRound, Loader2, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,8 @@ import { useAuth } from "@/lib/AuthContext";
 
 export default function AccountSettings() {
   const { navigateToLogin } = useAuth();
-  const [fullName, setFullName] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -21,7 +22,8 @@ export default function AccountSettings() {
       try {
         const currentUser = await base44.auth.me();
         if (!active) return;
-        setFullName(currentUser?.full_name || "");
+        setDisplayName(currentUser?.display_name || currentUser?.full_name || "");
+        setPhone(currentUser?.phone || "");
         setEmail(currentUser?.email || "");
       } catch (error) {
         console.error("Failed to load account settings", error);
@@ -36,19 +38,23 @@ export default function AccountSettings() {
     };
     loadAccount();
     return () => { active = false; };
-  }, [navigateToLogin]);
+  }, []);
 
   const handleSave = async (event) => {
     event.preventDefault();
-    const cleanedName = fullName.trim();
+    const cleanedName = displayName.trim();
     if (!cleanedName) {
-      toast.error("Please enter your name.");
+      toast.error("Please enter a display name.");
       return;
     }
     setSaving(true);
     try {
-      const updatedUser = await base44.auth.updateMe({ full_name: cleanedName });
-      setFullName(updatedUser?.full_name || cleanedName);
+      const updatedUser = await base44.auth.updateMe({
+        display_name: cleanedName,
+        phone: phone.trim()
+      });
+      setDisplayName(updatedUser?.display_name || cleanedName);
+      setPhone(updatedUser?.phone || phone.trim());
       toast.success("Account details updated successfully.");
     } catch (error) {
       console.error("Failed to update account details", error);
@@ -81,26 +87,42 @@ export default function AccountSettings() {
       ) : (
         <form onSubmit={handleSave} className="rounded-2xl border border-border bg-card p-5 space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="account-full-name">Full name</Label>
+            <Label htmlFor="account-display-name">Display name</Label>
             <Input
-              id="account-full-name"
-              value={fullName}
-              onChange={(event) => setFullName(event.target.value)}
-              autoComplete="name"
+              id="account-display-name"
+              value={displayName}
+              onChange={(event) => setDisplayName(event.target.value)}
+              autoComplete="nickname"
               maxLength={100}
-              placeholder="Enter your full name"
+              placeholder="Enter your display name"
               required
             />
-            <p className="text-xs text-muted-foreground">This name is shown on your account and may be displayed with your seller activity.</p>
+            <p className="text-xs text-muted-foreground">This name is used to identify you on UKMarketStore. Your original sign-in name is not changed.</p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="account-email">Email address</Label>
+            <Label htmlFor="account-phone">Phone number (optional)</Label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                id="account-phone"
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                autoComplete="tel"
+                maxLength={30}
+                placeholder="Enter your phone number"
+                className="pl-9"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="account-email">Sign-in email</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input id="account-email" value={email} readOnly className="pl-9 bg-muted/40" />
             </div>
-            <p className="text-xs text-muted-foreground">Your sign-in email is shown here and is not editable on this page.</p>
+            <p className="text-xs text-muted-foreground">Your sign-in email is shown here and cannot be changed on this page.</p>
           </div>
 
           <Button type="submit" disabled={saving || loading} className="w-full sm:w-auto gap-2 rounded-xl">
