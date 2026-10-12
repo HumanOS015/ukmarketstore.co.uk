@@ -16,8 +16,6 @@ export default function VariationSelector({
   const needColour = requiresColour(product);
   const sizes = Array.isArray(product?.sizes) ? product.sizes : [];
   const colours = Array.isArray(product?.colours) ? product.colours : [];
-  const hasVariationStock = Array.isArray(product?.variation_stock) && product.variation_stock.length > 0;
-
   const getSizeStock = (candidateSize) => {
     if (!needColour) return getVariationStock(product, candidateSize, "");
     if (colour) return getVariationStock(product, candidateSize, colour);
@@ -67,7 +65,7 @@ export default function VariationSelector({
               const available = getSizeStock(s) > 0;
               return (
                 <option key={s} value={s} disabled={!available}>
-                  {s}{hasVariationStock && !available ? " — Out of stock" : ""}
+                  {s}{!available ? " — Out of stock" : ""}
                 </option>
               );
             })}
@@ -91,7 +89,7 @@ export default function VariationSelector({
               const available = getColourStock(c) > 0;
               return (
                 <option key={c} value={c} disabled={!available}>
-                  {c}{hasVariationStock && !available ? " — Out of stock" : ""}
+                  {c}{!available ? " — Out of stock" : ""}
                 </option>
               );
             })}
