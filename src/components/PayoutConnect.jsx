@@ -62,6 +62,13 @@ export default function PayoutConnect({ user, autoConnect = false }) {
     }
   };
 
+  useEffect(() => {
+    if (autoConnect && user?.email && !autoConnectStarted && !loading) {
+      setAutoConnectStarted(true);
+      connect();
+    }
+  }, [autoConnect, user?.email, autoConnectStarted, loading]);
+
   if (loading) {
     return (
       <div className="rounded-2xl border border-border bg-card p-4 flex items-center gap-3">
