@@ -155,7 +155,18 @@ export default function Sell() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
+    if (!form.title.trim()) {
+      toast.error("Please enter a listing title");
+      document.getElementById("title")?.focus();
+      return;
+    }
+    const price = Number(form.price);
+    if (!form.price || !Number.isFinite(price) || price <= 0) {
+      toast.error("Please enter a valid price greater than £0.00");
+      document.getElementById("price")?.focus();
+      return;
+    }
     if (!imageUrl) {
       toast.error("Please upload a product image");
       return;
@@ -309,7 +320,7 @@ export default function Sell() {
         {editId ? "Update the details of your listing" : "List your item for sale across the UK"}
       </p>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form noValidate onSubmit={handleSubmit} className="space-y-5">
         {/* Image Upload */}
         <div>
           <Label className="text-sm font-medium mb-2 block">
