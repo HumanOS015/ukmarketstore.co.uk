@@ -12,7 +12,7 @@ export default async function(req) {
       return Response.json({ error: "Missing orderId" }, { status: 400 });
     }
 
-    // Buyer-confirmed delivery requires an authenticated buyer
+    // Escrow release requests require an authenticated buyer or admin.
     const authenticated = await base44.auth.isAuthenticated().catch(() => false);
     if (!authenticated) {
       return Response.json({ error: "You must be logged in" }, { status: 401 });
@@ -37,7 +37,7 @@ export default async function(req) {
     }
 
     // Escrow can only be released after delivery tracking has marked the order delivered.
-    if (order.status !== "delivered") {
+    if (order.status !== "delivered" || order.tracking_status !== "delivered") {
       return Response.json({ error: "Escrow can only be released after delivery tracking confirms the item is delivered." }, { status: 400 });
     }
 
