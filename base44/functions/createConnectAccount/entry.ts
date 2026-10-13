@@ -79,7 +79,6 @@ export default async function(req) {
     if (
       businessType &&
       account.business_type !== businessType &&
-      !account.details_submitted &&
       !account.charges_enabled &&
       !account.payouts_enabled
     ) {
