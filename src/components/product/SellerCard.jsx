@@ -19,14 +19,11 @@ export default function SellerCard({ product, currentUser, onMessage, messaging 
     let active = true;
     (async () => {
       try {
-        const res = await base44.entities.User.filter(
-          { email: product.seller_email },
-          "-created_date",
-          1
-        );
-        const users = Array.isArray(res) ? res : Array.isArray(res?.items) ? res.items : Array.isArray(res?.data) ? res.data : [];
+        const res = await base44.functions.invoke("getPublicSellerProfile", {
+          productId: product.id,
+        });
         if (active) {
-          setSellerProfileImage(users[0]?.profile_images?.[0] || "");
+          setSellerProfileImage(res?.data?.profileImage || "");
         }
       } catch {
         if (active) setSellerProfileImage("");
