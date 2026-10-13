@@ -1,12 +1,18 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { secrets } from 'base44:runtime';
 import { APP_URL, STRIPE_VERSION } from "../../shared/stripe.ts";
+import { COMING_SOON_ENABLED } from "../../shared/comingSoon.ts";
 import { isPurchasable } from "../../shared/inventory.ts";
 
 import { getClientIp } from "../../shared/clientIp.ts";
 
 export default async function(req) {
   try {
+    // Enforce Coming Soon server-side too; hiding the frontend button alone is not a security boundary.
+    if (COMING_SOON_ENABLED) {
+      return Response.json({ error: "Checkout is unavailable while UKMarketStore is coming soon." }, { status: 403 });
+    }
+
     const base44 = createClientFromRequest(req);
     const body = await req.json();
 
