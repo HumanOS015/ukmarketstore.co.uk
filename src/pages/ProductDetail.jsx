@@ -26,7 +26,8 @@ import {
   Truck,
   Share2,
   Heart,
-  Bell
+  Bell,
+  ChevronDown
 } from "lucide-react";
 import { toast } from "sonner";
 import { useWishlist } from "@/lib/WishlistContext";
@@ -102,18 +103,18 @@ export default function ProductDetail() {
     setSelectedColour("");
     setQuantity(1);
     try {
-      const [productData, user] = await Promise.all([
-      withTimeout(base44.entities.Product.filter({ id }, "-created_date", 1), 15000, "Loading listing"),
-      base44.auth.me().catch(() => null)]
-      );
-      // Product.filter may return either an array or an object containing items.
-      // Normalise the response so seller-configured sizes and colours load reliably.
-      const productList = Array.isArray(productData)
-        ? productData
-        : Array.isArray(productData?.items)
-          ? productData.items
-          : [];
-      setProduct(productList[0] || null);
+      const [productResponse, user] = await Promise.all([
+        withTimeout(base44.entities.Product.get(id), 15000, "Loading listing"),
+        base44.auth.me().catch(() => null)
+      ]);
+      // Fetch the listing directly by its record ID so valid product links
+      // don't depend on a filtered-list query matching the system ID field.
+      const productRecord = productResponse?.data?.id
+        ? productResponse.data
+        : productResponse?.item?.id
+          ? productResponse.item
+          : productResponse;
+      setProduct(productRecord?.id ? productRecord : null);
       setCurrentUser(user);
     } catch (err) {
       console.error("Failed to load product", err);
@@ -500,14 +501,17 @@ export default function ProductDetail() {
         </div>
         }
 
-        {/* Description */}
+        {/* Expandable Description */}
         {product.description &&
-        <div>
-            <h2 className="text-sm font-semibold mb-2">Description</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-              {product.description}
-            </p>
-          </div>
+        <details className="rounded-xl border border-border bg-card px-4 py-3 group">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+            <span className="text-sm font-semibold">Description</span>
+            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+          </summary>
+          <p className="mt-3 border-t border-border pt-3 text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+            {product.description}
+          </p>
+        </details>
         }
 
         {/* Safety Section */}
