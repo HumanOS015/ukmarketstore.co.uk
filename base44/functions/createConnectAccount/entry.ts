@@ -72,7 +72,49 @@ export default async function(req) {
       console.error("Stripe account retrieve error", JSON.stringify(err));
       return Response.json({ error: "Failed to verify payout account" }, { status: 500 });
     }
-    const account = await acctRes.json();
+    let account = await acctRes.json();
+
+    // Stripe locks the business type after an onboarding link is created.
+    // Replace only an unfinished account when the seller changes their choice.
+    if (
+      businessType &&
+      account.business_type !== businessType &&
+      !account.details_submitted &&
+      !account.charges_enabled &&
+      !account.payouts_enabled
+    ) {
+      const replacementParams = new URLSearchParams({
+        type: "express",
+        email: sellerEmail,
+        business_type: businessType,
+        "metadata[seller_email]": sellerEmail,
+        "metadata[base44_app_id]": appId,
+      });
+      const replacementRes = await fetch("https://api.stripe.com/v1/accounts", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${stripeSecret}`,
+          "Stripe-Version": STRIPE_VERSION,
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Idempotency-Key": crypto.randomUUID(),
+        },
+        body: replacementParams,
+      });
+      if (!replacementRes.ok) {
+        const err = await replacementRes.json();
+        console.error("Stripe replacement account create error", JSON.stringify(err));
+        return Response.json({ error: "Failed to update payout account type" }, { status: 500 });
+      }
+
+      account = await replacementRes.json();
+      accountId = account.id;
+      await base44.asServiceRole.entities.PayoutAccount.update(payoutAccount.id, {
+        stripe_account_id: accountId,
+        charges_enabled: false,
+        payouts_enabled: false,
+        details_submitted: false,
+      });
+    }
 
     // Sync status to DB
     await base44.asServiceRole.entities.PayoutAccount.update(payoutAccount.id, {
@@ -117,6 +159,11 @@ export default async function(req) {
         return Response.json({ error: "Failed to create dashboard link" }, { status: 500 });
       }
       url = (await linkRes.json()).url;
+    } else if (businessType && account.business_type !== businessType) {
+      return Response.json(
+        { error: "This Stripe account has already started verification as a different seller type. Please contact support to change it." },
+        { status: 409 }
+      );
     } else {
       // Not onboarded — create an onboarding link
       const linkRes = await fetch("https://api.stripe.com/v1/account_links", {
