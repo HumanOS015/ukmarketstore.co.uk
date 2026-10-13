@@ -5,12 +5,11 @@ import { CreditCard, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { withTimeout } from "@/lib/withTimeout";
 
-export default function PayoutConnect({ user, autoConnect = false }) {
+export default function PayoutConnect({ user }) {
   const [account, setAccount] = useState(null);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [connectUrl, setConnectUrl] = useState(null);
-  const [autoConnectStarted, setAutoConnectStarted] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -61,13 +60,6 @@ export default function PayoutConnect({ user, autoConnect = false }) {
       setConnecting(false);
     }
   };
-
-  useEffect(() => {
-    if (autoConnect && user?.email && !autoConnectStarted && !loading) {
-      setAutoConnectStarted(true);
-      connect();
-    }
-  }, [autoConnect, user?.email, autoConnectStarted, loading]);
 
   if (loading) {
     return (
