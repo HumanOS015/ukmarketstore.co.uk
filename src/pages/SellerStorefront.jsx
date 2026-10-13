@@ -12,6 +12,7 @@ export default function SellerStorefront() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [sellerProfile, setSellerProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { loadData(); }, [email]);
