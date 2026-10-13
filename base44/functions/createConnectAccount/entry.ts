@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { secrets } from 'base44:runtime';
-import { APP_URL, STRIPE_VERSION } from "../../shared/stripe.ts";
+import { STRIPE_VERSION } from "../../shared/stripe.ts";
 
 export default async function(req) {
   try {
