@@ -11,6 +11,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Layout from './components/Layout';
 import { WishlistProvider } from "@/lib/WishlistContext";
 import { CartProvider } from "@/lib/CartContext";
+import { lazyRetry } from "@/lib/lazyRetry";
 
 const PageFallback = (
   <div className="flex items-center justify-center py-20">
@@ -18,33 +19,33 @@ const PageFallback = (
   </div>
 );
 
-const Home = lazy(() => import("./pages/Home"));
-const Sell = lazy(() => import("./pages/Sell"));
-const ProductDetail = lazy(() => import("./pages/ProductDetail"));
-const Orders = lazy(() => import("./pages/Orders"));
-const Profile = lazy(() => import("./pages/Profile"));
-const BuyerProtection = lazy(() => import("./pages/BuyerProtection"));
-const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
-const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
-const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
-const SellerInventory = lazy(() => import("./pages/SellerInventory"));
-const About = lazy(() => import("./pages/About"));
-const BuyerProtectionAssistant = lazy(() => import("./pages/BuyerProtectionAssistant"));
-const Admin = lazy(() => import("./pages/Admin"));
-const Wishlist = lazy(() => import("./pages/Wishlist"));
-const SellerStorefront = lazy(() => import("./pages/SellerStorefront"));
-const SellerMessages = lazy(() => import("./pages/SellerMessages"));
-const Returns = lazy(() => import("./pages/Returns"));
-const Account = lazy(() => import("./pages/mobile/Account"));
-const AccountSettings = lazy(() => import("./pages/AccountSettings"));
-const Categories = lazy(() => import("./pages/mobile/Categories"));
-const MobileSearch = lazy(() => import("./pages/mobile/Search"));
-const Category = lazy(() => import("./pages/Category"));
-const Notifications = lazy(() => import("./pages/Notifications"));
-const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
-const Onboarding = lazy(() => import("./pages/Onboarding"));
-const OrderDetail = lazy(() => import("./pages/OrderDetail"));
-const Basket = lazy(() => import("./pages/Basket"));
+const Home = lazy(lazyRetry(() => import("./pages/Home")));
+const Sell = lazy(lazyRetry(() => import("./pages/Sell")));
+const ProductDetail = lazy(lazyRetry(() => import("./pages/ProductDetail")));
+const Orders = lazy(lazyRetry(() => import("./pages/Orders")));
+const Profile = lazy(lazyRetry(() => import("./pages/Profile")));
+const BuyerProtection = lazy(lazyRetry(() => import("./pages/BuyerProtection")));
+const TermsAndConditions = lazy(lazyRetry(() => import("./pages/TermsAndConditions")));
+const PrivacyPolicy = lazy(lazyRetry(() => import("./pages/PrivacyPolicy")));
+const SellerDashboard = lazy(lazyRetry(() => import("./pages/SellerDashboard")));
+const SellerInventory = lazy(lazyRetry(() => import("./pages/SellerInventory")));
+const About = lazy(lazyRetry(() => import("./pages/About")));
+const BuyerProtectionAssistant = lazy(lazyRetry(() => import("./pages/BuyerProtectionAssistant")));
+const Admin = lazy(lazyRetry(() => import("./pages/Admin")));
+const Wishlist = lazy(lazyRetry(() => import("./pages/Wishlist")));
+const SellerStorefront = lazy(lazyRetry(() => import("./pages/SellerStorefront")));
+const SellerMessages = lazy(lazyRetry(() => import("./pages/SellerMessages")));
+const Returns = lazy(lazyRetry(() => import("./pages/Returns")));
+const Account = lazy(lazyRetry(() => import("./pages/mobile/Account")));
+const AccountSettings = lazy(lazyRetry(() => import("./pages/AccountSettings")));
+const Categories = lazy(lazyRetry(() => import("./pages/mobile/Categories")));
+const MobileSearch = lazy(lazyRetry(() => import("./pages/mobile/Search")));
+const Category = lazy(lazyRetry(() => import("./pages/Category")));
+const Notifications = lazy(lazyRetry(() => import("./pages/Notifications")));
+const OAuthConsent = lazy(lazyRetry(() => import("./pages/OAuthConsent")));
+const Onboarding = lazy(lazyRetry(() => import("./pages/Onboarding")));
+const OrderDetail = lazy(lazyRetry(() => import("./pages/OrderDetail")));
+const Basket = lazy(lazyRetry(() => import("./pages/Basket")));
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
