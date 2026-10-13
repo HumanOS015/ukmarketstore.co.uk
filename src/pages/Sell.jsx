@@ -300,7 +300,8 @@ export default function Sell() {
       if (err?.status === 401 || err?.status === 403) {
         toast.error("Your session expired. Please sign in again.");
       } else {
-        toast.error("Couldn't post your listing. Please try again.");
+        const message = err?.response?.data?.error || err?.data?.error;
+        toast.error(message || "Couldn't post your listing. Please try again.");
       }
     } finally {
       setLoading(false);
