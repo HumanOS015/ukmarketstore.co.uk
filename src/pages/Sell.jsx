@@ -208,6 +208,10 @@ export default function Sell() {
       return;
     }
 
+    // Open a tab synchronously from the user's tap so Stripe can navigate there
+    // after the account-link request completes, even inside the Base44 preview iframe.
+    const stripeWindow = !editId && !payoutReady ? window.open("about:blank", "_blank") : null;
+
     setLoading(true);
     try {
       const user = await withTimeout(base44.auth.me(), 15000, "Verifying account");
@@ -276,16 +280,21 @@ export default function Sell() {
           "Preparing Stripe"
         );
         if (stripeResult.data?.url) {
-          if (window.self !== window.top) {
-            setStripeConnectUrl(stripeResult.data.url);
-          } else {
+          if (stripeWindow && !stripeWindow.closed) {
+            stripeWindow.location.href = stripeResult.data.url;
+          } else if (window.self === window.top) {
             window.location.href = stripeResult.data.url;
+          } else {
+            setStripeConnectUrl(stripeResult.data.url);
+            toast.info("Your listing is saved. Tap Continue to Stripe to finish setup.");
           }
         } else {
+          if (stripeWindow && !stripeWindow.closed) stripeWindow.close();
           toast.error("Your listing is saved, but Stripe setup could not be opened. Use the Connect Stripe button below to try again.");
         }
       }
     } catch (err) {
+      if (stripeWindow && !stripeWindow.closed) stripeWindow.close();
       console.error("Failed to create listing", err);
       if (err?.status === 401 || err?.status === 403) {
         toast.error("Your session expired. Please sign in again.");
