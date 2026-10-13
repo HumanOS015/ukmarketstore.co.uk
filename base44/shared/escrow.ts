@@ -15,7 +15,7 @@ import { STRIPE_VERSION } from "./stripe.ts";
 export async function transferToSeller(base44, order) {
   // Central safeguard: no caller may transfer escrow until delivery tracking has
   // marked the order "delivered". A seven-day timeout or buyer request alone is not enough.
-  if (order.status !== "delivered") {
+  if (order.status !== "delivered" || order.tracking_status !== "delivered") {
     return { ok: false, reason: "Delivery has not been confirmed by tracking" };
   }
 
