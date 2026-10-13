@@ -1,6 +1,4 @@
-// UKMarketstore Coming Soon mode.
-// While true, every listing detail page shows "GET NOTIFIED" instead of "Buy Now"
-// and no checkout/payment/escrow path is reachable. Flip this to false at public
-// launch to restore the normal Buy Now / payment flow. Collected subscriber
-// records remain in the database regardless of this flag.
-export const COMING_SOON_ENABLED = true;
+// Keep the frontend and server-side checkout protection on the same flag.
+// Flip COMING_SOON_ENABLED to false in base44/shared/comingSoon.ts at public launch.
+// Collected subscriber records remain in the database regardless of this flag.
+export { COMING_SOON_ENABLED } from "../../base44/shared/comingSoon.ts";
