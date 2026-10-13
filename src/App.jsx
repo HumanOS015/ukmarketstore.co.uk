@@ -12,6 +12,7 @@ import Layout from './components/Layout';
 import { WishlistProvider } from "@/lib/WishlistContext";
 import { CartProvider } from "@/lib/CartContext";
 import { lazyRetry } from "@/lib/lazyRetry";
+import LazyErrorBoundary from "@/components/LazyErrorBoundary";
 
 const PageFallback = (
   <div className="flex items-center justify-center py-20">
@@ -86,6 +87,7 @@ const AuthenticatedApp = () => {
     <WishlistProvider>
       <CartProvider>
       <TabMemoryProvider>
+      <LazyErrorBoundary>
       <Routes>
         <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
@@ -117,6 +119,7 @@ const AuthenticatedApp = () => {
       </Route>
         <Route path="/welcome" element={<Suspense fallback={PageFallback}><Onboarding /></Suspense>} />
         </Routes>
+      </LazyErrorBoundary>
       </TabMemoryProvider>
       </CartProvider>
     </WishlistProvider>
