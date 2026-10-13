@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ResponsiveSelect } from "@/components/ui/responsive-select";
 import { Camera, Loader2, PoundSterling, CheckCircle2, X, ArrowLeft, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { withTimeout } from "@/lib/withTimeout";
@@ -454,23 +453,31 @@ export default function Sell() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label className="text-sm font-medium">Category</Label>
-            <ResponsiveSelect
+            <select
+              aria-label="Category"
               value={form.category}
-              onValueChange={(v) => update("category", v)}
-              options={CATEGORIES}
-              placeholder="Select"
-              triggerClassName="mt-1.5 rounded-xl"
-            />
+              onChange={(e) => update("category", e.target.value)}
+              className="mt-1.5 h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
+            >
+              <option value="">Select</option>
+              {CATEGORIES.map((category) => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
           </div>
           <div>
             <Label className="text-sm font-medium">Condition</Label>
-            <ResponsiveSelect
+            <select
+              aria-label="Condition"
               value={form.condition}
-              onValueChange={(v) => update("condition", v)}
-              options={CONDITIONS}
-              placeholder="Select"
-              triggerClassName="mt-1.5 rounded-xl"
-            />
+              onChange={(e) => update("condition", e.target.value)}
+              className="mt-1.5 h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
+            >
+              <option value="">Select</option>
+              {CONDITIONS.map((condition) => (
+                <option key={condition} value={condition}>{condition}</option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -483,13 +490,17 @@ export default function Sell() {
         {/* Estimated Delivery */}
         <div>
           <Label className="text-sm font-medium">Estimated Delivery Time <span className="text-destructive">*</span></Label>
-          <ResponsiveSelect
+          <select
+            aria-label="Estimated Delivery Time"
             value={form.estimated_delivery}
-            onValueChange={(v) => update("estimated_delivery", v)}
-            options={DELIVERY_TIMES}
-            placeholder="Select delivery time"
-            triggerClassName="mt-1.5 rounded-xl"
-          />
+            onChange={(e) => update("estimated_delivery", e.target.value)}
+            className="mt-1.5 h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
+          >
+            <option value="">Select delivery time</option>
+            {DELIVERY_TIMES.map((deliveryTime) => (
+              <option key={deliveryTime} value={deliveryTime}>{deliveryTime}</option>
+            ))}
+          </select>
         </div>
 
         {/* Postcode */}
