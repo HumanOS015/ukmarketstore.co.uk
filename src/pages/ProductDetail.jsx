@@ -9,8 +9,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription } from
-"@/components/ui/dialog";
+  DialogDescription
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,6 @@ import {
   Shield,
   ShoppingCart,
   Loader2,
-  User,
   Clock,
   Tag,
   AlertCircle,
@@ -27,8 +26,8 @@ import {
   Truck,
   Share2,
   Heart,
-  Bell } from
-"lucide-react";
+  Bell
+} from "lucide-react";
 import { toast } from "sonner";
 import { useWishlist } from "@/lib/WishlistContext";
 import moment from "moment";
