@@ -10,6 +10,7 @@ export default function PayoutConnect({ user, autoConnect = false }) {
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [connectUrl, setConnectUrl] = useState(null);
+  const [businessType, setBusinessType] = useState("individual");
   const [autoConnectStarted, setAutoConnectStarted] = useState(false);
 
   useEffect(() => {
@@ -38,7 +39,7 @@ export default function PayoutConnect({ user, autoConnect = false }) {
     setConnecting(true);
     try {
       const res = await withTimeout(
-        base44.functions.invoke("createConnectAccount", {}),
+        base44.functions.invoke("createConnectAccount", { businessType }),
         20000,
         "Preparing Stripe"
       );
@@ -105,6 +106,19 @@ export default function PayoutConnect({ user, autoConnect = false }) {
             Complete Stripe's secure setup to receive your earnings when your items sell.
           </p>
         </div>
+      </div>
+      <div>
+        <label htmlFor="stripe-seller-type" className="text-xs font-medium text-muted-foreground">Seller type for Stripe</label>
+        <select
+          id="stripe-seller-type"
+          value={businessType}
+          onChange={(e) => setBusinessType(e.target.value)}
+          disabled={connecting}
+          className="mt-1.5 h-10 w-full rounded-xl border border-input bg-background px-3 text-sm"
+        >
+          <option value="individual">Individual seller</option>
+          <option value="company">Business seller</option>
+        </select>
       </div>
       {connectUrl ? (
         <Button asChild className="w-full rounded-xl">
