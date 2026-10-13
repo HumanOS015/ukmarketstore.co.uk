@@ -60,6 +60,22 @@ export default function Sell() {
           return;
         }
         setCurrentUser(me);
+        if (searchParams.get("stripe_connect") === "return") {
+          const stripeResult = await withTimeout(
+            base44.functions.invoke("createConnectAccount", {}),
+            20000,
+            "Verifying Stripe setup"
+          );
+          const accounts = await base44.entities.PayoutAccount.filter({ seller_email: me.email });
+          const ready = accounts[0]?.charges_enabled === true;
+          setPayoutReady(ready);
+          if (stripeResult.data?.onboarded && ready) {
+            setSuccess(true);
+          } else {
+            toast.error("Stripe setup is not complete yet. Your listing is saved; finish the required steps in Stripe to publish it.");
+          }
+          return;
+        }
         if (editId) {
           const result = await base44.entities.Product.filter({ id: editId }, "-created_date", 1);
           const product = Array.isArray(result) ? result[0] : result?.items?.[0];
@@ -98,7 +114,7 @@ export default function Sell() {
       }
     };
     checkPayout();
-  }, [editId, navigate]);
+  }, [editId, navigate, searchParams]);
 
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
