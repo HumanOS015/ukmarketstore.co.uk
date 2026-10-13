@@ -3,10 +3,9 @@ import { secrets } from "base44:runtime";
 import { transferToSeller } from "../../shared/escrow.ts";
 
 // Runs daily via the "Escrow Auto-Release" workflow.
-// Releases funds for:
-//   1. Orders still "shipped" after 7 days (buyer never confirmed delivery)
-//   2. Orders "delivered" where the buyer confirmed but the earlier transfer failed
-//      (e.g. platform balance hadn't settled) — retries the payout.
+// Releases funds only for orders already marked "delivered" by delivery tracking.
+// Retries delivered orders where an earlier transfer failed (e.g. platform balance
+// had not settled). There is deliberately no time-based release for shipped orders.
 // Security: this is an admin-only scheduled task. Accepted callers:
 //   1. The platform's workflow runner / dashboard admins (authenticated admin session)
 //   2. Internal backend functions presenting the ESCROW_RELEASE_TOKEN shared secret
@@ -28,16 +27,8 @@ export default async function(req) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-
-    const shippedOrders = await base44.asServiceRole.entities.Order.filter({ status: "shipped" }, "-created_date", 100);
-    const deliveredOrders = await base44.asServiceRole.entities.Order.filter({ status: "delivered" }, "-created_date", 100);
-
-    const eligibleShipped = shippedOrders.filter((o) => {
-      const shippedAt = o.shipped_at ? new Date(o.shipped_at).getTime() : new Date(o.created_date).getTime();
-      return shippedAt < sevenDaysAgo;
-    });
-    const toRelease = [...eligibleShipped, ...deliveredOrders];
+    // Never release a shipped order based on elapsed time alone.
+    const toRelease = await base44.asServiceRole.entities.Order.filter({ status: "delivered" }, "-created_date", 100);
 
     let released = 0;
     for (const order of toRelease) {
