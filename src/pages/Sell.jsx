@@ -48,6 +48,7 @@ export default function Sell() {
     colours: [],
   });
   const [payoutReady, setPayoutReady] = useState(null); // null = checking, false = not connected, true = connected
+  const [businessType, setBusinessType] = useState("individual");
   const [pendingProduct, setPendingProduct] = useState(null);
   const [stripeConnectUrl, setStripeConnectUrl] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
@@ -275,7 +276,7 @@ export default function Sell() {
       } else {
         setPendingProduct(createdProduct);
         const stripeResult = await withTimeout(
-          base44.functions.invoke("createConnectAccount", {}),
+          base44.functions.invoke("createConnectAccount", { businessType }),
           20000,
           "Preparing Stripe"
         );
@@ -566,6 +567,21 @@ export default function Sell() {
 
         {/* Variations */}
         <VariationEditor form={form} update={update} />
+
+        {!editId && !payoutReady && (
+          <div>
+            <Label htmlFor="stripe-seller-type" className="text-sm font-medium">Seller type for Stripe</Label>
+            <select
+              id="stripe-seller-type"
+              value={businessType}
+              onChange={(e) => setBusinessType(e.target.value)}
+              className="mt-1.5 h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
+            >
+              <option value="individual">Individual seller</option>
+              <option value="company">Business seller</option>
+            </select>
+          </div>
+        )}
 
         <Button
           type="submit"
