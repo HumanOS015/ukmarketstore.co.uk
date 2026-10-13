@@ -30,7 +30,7 @@ export default function SellerCard({ product, currentUser, onMessage, messaging 
       }
     })();
     return () => { active = false; };
-  }, [product?.seller_email]);
+  }, [product?.id, product?.seller_email]);
 
   useEffect(() => {
     if (!product?.seller_email) return;
