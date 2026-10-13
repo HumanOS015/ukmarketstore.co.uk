@@ -57,7 +57,8 @@ export default function PayoutConnect({ user, autoConnect = false }) {
       }
     } catch (err) {
       console.error("Connect failed", err);
-      toast.error("Couldn't connect payouts. Please try again.");
+      const message = err?.response?.data?.error || err?.data?.error;
+      toast.error(message || "Couldn't connect payouts. Please try again.");
     } finally {
       setConnecting(false);
     }
