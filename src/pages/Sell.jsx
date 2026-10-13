@@ -329,7 +329,7 @@ export default function Sell() {
         <div className="w-full max-w-md mb-4">
           {stripeConnectUrl ? (
             <Button asChild className="w-full rounded-xl">
-              <a href={stripeConnectUrl} target="_blank" rel="noopener noreferrer">Continue to Stripe</a>
+              <a href={stripeConnectUrl} target="_top" rel="noopener noreferrer">Continue to Stripe</a>
             </Button>
           ) : (
             <PayoutConnect user={currentUser} />
