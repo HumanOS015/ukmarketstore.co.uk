@@ -13,6 +13,12 @@ import { STRIPE_VERSION } from "./stripe.ts";
 // the linked Product. A forged order (even if one somehow exists) without a
 // real succeeded payment cannot trigger a payout.
 export async function transferToSeller(base44, order) {
+  // Central safeguard: no caller may transfer escrow until delivery tracking has
+  // marked the order "delivered". A seven-day timeout or buyer request alone is not enough.
+  if (order.status !== "delivered") {
+    return { ok: false, reason: "Delivery has not been confirmed by tracking" };
+  }
+
   if (!order.payment_intent_id) {
     return { ok: false, reason: "No payment on record" };
   }
