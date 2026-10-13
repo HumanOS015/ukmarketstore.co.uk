@@ -125,8 +125,8 @@ export default async function(req) {
         body: new URLSearchParams({
           account: accountId,
           type: "account_onboarding",
-          refresh_url: `${APP_URL}/seller-dashboard`,
-          return_url: `${APP_URL}/seller-dashboard`,
+          refresh_url: "https://ukmarketstore.co.uk/sell?stripe_connect=return",
+          return_url: "https://ukmarketstore.co.uk/sell?stripe_connect=return",
         }),
       });
       if (!linkRes.ok) {
