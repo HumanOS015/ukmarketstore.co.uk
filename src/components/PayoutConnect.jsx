@@ -108,7 +108,7 @@ export default function PayoutConnect({ user, autoConnect = false }) {
       </div>
       {connectUrl ? (
         <Button asChild className="w-full rounded-xl">
-          <a href={connectUrl} target="_blank" rel="noopener noreferrer">
+          <a href={connectUrl} target="_top" rel="noopener noreferrer">
             Continue to Stripe
           </a>
         </Button>
