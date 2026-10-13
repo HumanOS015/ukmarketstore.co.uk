@@ -11,6 +11,10 @@ export default async function(req) {
     }
 
     const sellerEmail = user.email;
+    const body = await req.json().catch(() => ({}));
+    const businessType = body?.businessType === "company" || body?.businessType === "individual"
+      ? body.businessType
+      : "";
     const appId = secrets.get("BASE44_APP_ID") || "";
     const stripeSecret = secrets.get("STRIPE_SECRET_KEY");
 
@@ -25,6 +29,7 @@ export default async function(req) {
       createParams.append("email", sellerEmail);
       createParams.append("metadata[seller_email]", sellerEmail);
       createParams.append("metadata[base44_app_id]", appId);
+      if (businessType) createParams.append("business_type", businessType);
 
       const createRes = await fetch("https://api.stripe.com/v1/accounts", {
         method: "POST",
