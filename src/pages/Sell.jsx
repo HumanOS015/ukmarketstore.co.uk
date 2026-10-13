@@ -575,7 +575,7 @@ export default function Sell() {
             <select
               id="stripe-seller-type"
               value={businessType}
-              onChange={(e) => setBusinessType(e.target.value)}
+              onChange={(e) => {setBusinessType(e.target.value);setConnectUrl(null);}}
               className="mt-1.5 h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
             >
               <option value="individual">Individual seller</option>
