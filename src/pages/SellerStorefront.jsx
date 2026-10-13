@@ -20,14 +20,16 @@ export default function SellerStorefront() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [prodRes, revRes] = await Promise.all([
+      const [prodRes, revRes, profileRes] = await Promise.all([
         withTimeout(base44.entities.Product.filter({ seller_email: email, status: "active" }, { sort: "-created_date", limit: 100 }), 15000, "Loading listings"),
         base44.entities.Review.filter({ seller_email: email }, { sort: "-created_date", limit: 100 }).catch(() => []),
+        base44.functions.invoke("getPublicSellerProfile", { sellerEmail: email }).catch(() => null),
       ]);
       const prods = Array.isArray(prodRes) ? prodRes : (prodRes.items || []);
       const revs = Array.isArray(revRes) ? revRes : (revRes.items || []);
       setProducts(prods);
       setReviews(revs);
+      setSellerProfile(profileRes?.data || null);
     } catch (err) {
       console.error("Failed to load storefront", err);
     } finally {
@@ -43,13 +45,15 @@ export default function SellerStorefront() {
     );
   }
 
-  const sellerName = products[0]?.seller_name || "Marketplace Seller";
+  const sellerName = sellerProfile?.displayName || products[0]?.seller_name || "Marketplace Seller";
   const initial = (sellerName || "?").trim().charAt(0).toUpperCase();
   const avgRating = reviews.length > 0 ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
-  const memberSince = products.reduce((min, p) => {
-    const d = new Date(p.created_date);
-    return min ? (d < min ? d : min) : d;
-  }, null);
+  const memberSince = sellerProfile?.memberSince
+    ? new Date(sellerProfile.memberSince)
+    : products.reduce((min, p) => {
+        const d = new Date(p.created_date);
+        return min ? (d < min ? d : min) : d;
+      }, null);
 
   return (
     <div className="max-w-5xl mx-auto px-4 md:pl-20 py-4 pb-28">
@@ -60,8 +64,10 @@ export default function SellerStorefront() {
       {/* Store header */}
       <div className="rounded-3xl border border-border bg-gradient-to-br from-primary/5 to-transparent p-5 mb-5">
         <div className="flex items-start gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center text-2xl font-bold shrink-0">
-            {initial}
+          <div className="w-16 h-16 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center text-2xl font-bold shrink-0 overflow-hidden">
+            {sellerProfile?.profileImage ? (
+              <img src={sellerProfile.profileImage} alt={`${sellerName} profile`} className="w-full h-full object-cover" />
+            ) : initial}
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-lg font-bold truncate">{sellerName}</h1>
