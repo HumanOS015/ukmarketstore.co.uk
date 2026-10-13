@@ -36,8 +36,9 @@ export default async function(req) {
       return Response.json({ ok: true, alreadyReleased: true });
     }
 
-    if (!["paid", "shipped", "delivered"].includes(order.status)) {
-      return Response.json({ error: `Cannot release escrow for order status: ${order.status}` }, { status: 400 });
+    // Escrow can only be released after delivery tracking has marked the order delivered.
+    if (order.status !== "delivered") {
+      return Response.json({ error: "Escrow can only be released after delivery tracking confirms the item is delivered." }, { status: 400 });
     }
 
     const result = await transferToSeller(base44, order);
@@ -47,9 +48,8 @@ export default async function(req) {
       return Response.json({ ok: true, transferId: result.transferId });
     }
 
-    // Transfer failed (often because the platform balance hasn't settled yet) —
-    // record that the buyer confirmed delivery; the daily workflow will retry the payout.
-    await base44.asServiceRole.entities.Order.update(orderId, { status: "delivered" }).catch(() => {});
+    // Transfer failed (often because the platform balance hasn't settled yet).
+    // Keep the order delivered so the daily workflow can retry the payout.
     return Response.json({ ok: false, delivered: true, reason: result.reason });
   } catch (error) {
     console.error("releaseEscrow error", error);
