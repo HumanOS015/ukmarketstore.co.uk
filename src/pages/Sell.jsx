@@ -49,6 +49,7 @@ export default function Sell() {
   });
   const [payoutReady, setPayoutReady] = useState(null); // null = checking, false = not connected, true = connected
   const [pendingProduct, setPendingProduct] = useState(null);
+  const [stripeConnectUrl, setStripeConnectUrl] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
@@ -269,6 +270,20 @@ export default function Sell() {
         setSuccess(true);
       } else {
         setPendingProduct(createdProduct);
+        const stripeResult = await withTimeout(
+          base44.functions.invoke("createConnectAccount", {}),
+          20000,
+          "Preparing Stripe"
+        );
+        if (stripeResult.data?.url) {
+          if (window.self !== window.top) {
+            setStripeConnectUrl(stripeResult.data.url);
+          } else {
+            window.location.href = stripeResult.data.url;
+          }
+        } else {
+          toast.error("Your listing is saved, but Stripe setup could not be opened. Use the Connect Stripe button below to try again.");
+        }
       }
     } catch (err) {
       console.error("Failed to create listing", err);
@@ -302,7 +317,15 @@ export default function Sell() {
         <h2 className="text-2xl font-bold mb-2">Your listing is saved</h2>
         <p className="text-muted-foreground mb-2">Your item has been saved successfully.</p>
         <p className="text-sm text-muted-foreground mb-6 max-w-md">To make your listing live and receive payments, connect Stripe. Your listing will remain saved while you complete the secure payout setup.</p>
-        <div className="w-full max-w-md mb-4"><PayoutConnect user={currentUser} autoConnect /></div>
+        <div className="w-full max-w-md mb-4">
+          {stripeConnectUrl ? (
+            <Button asChild className="w-full rounded-xl">
+              <a href={stripeConnectUrl} target="_blank" rel="noopener noreferrer">Continue to Stripe</a>
+            </Button>
+          ) : (
+            <PayoutConnect user={currentUser} />
+          )}
+        </div>
         <Button variant="outline" className="rounded-xl" onClick={() => navigate("/profile")}>View My Listings</Button>
       </div>
     );
@@ -537,7 +560,6 @@ export default function Sell() {
 
         <Button
           type="submit"
-          onClick={handleSubmit}
           disabled={loading}
           className="w-full h-12 rounded-xl text-base font-semibold"
         >
