@@ -537,6 +537,7 @@ export default function Sell() {
 
         <Button
           type="submit"
+          onClick={handleSubmit}
           disabled={loading}
           className="w-full h-12 rounded-xl text-base font-semibold"
         >
