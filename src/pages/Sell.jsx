@@ -276,7 +276,7 @@ export default function Sell() {
         <h2 className="text-2xl font-bold mb-2">Your listing is saved</h2>
         <p className="text-muted-foreground mb-2">Your item has been saved successfully.</p>
         <p className="text-sm text-muted-foreground mb-6 max-w-md">To make your listing live and receive payments, connect Stripe. Your listing will remain saved while you complete the secure payout setup.</p>
-        <div className="w-full max-w-md mb-4"><PayoutConnect user={currentUser} /></div>
+        <div className="w-full max-w-md mb-4"><PayoutConnect user={currentUser} autoConnect /></div>
         <Button variant="outline" className="rounded-xl" onClick={() => navigate("/profile")}>View My Listings</Button>
       </div>
     );
