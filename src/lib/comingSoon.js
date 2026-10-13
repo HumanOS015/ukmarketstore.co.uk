@@ -1,4 +1,4 @@
-// Keep the frontend and server-side checkout protection on the same flag.
-// Flip COMING_SOON_ENABLED to false in base44/shared/comingSoon.ts at public launch.
+// Frontend copy of the server-side Coming Soon flag.
+// Keep this value aligned with base44/shared/comingSoon.ts.
 // Collected subscriber records remain in the database regardless of this flag.
-export { COMING_SOON_ENABLED } from "../../base44/shared/comingSoon.ts";
+export const COMING_SOON_ENABLED = true;
