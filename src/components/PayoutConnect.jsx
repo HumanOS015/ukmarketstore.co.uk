@@ -113,7 +113,10 @@ export default function PayoutConnect({ user, autoConnect = false }) {
         <select
           id="stripe-seller-type"
           value={businessType}
-          onChange={(e) => setBusinessType(e.target.value)}
+          onChange={(e) => {
+            setBusinessType(e.target.value);
+            setConnectUrl(null);
+          }}
           disabled={connecting}
           className="mt-1.5 h-10 w-full rounded-xl border border-input bg-background px-3 text-sm"
         >
