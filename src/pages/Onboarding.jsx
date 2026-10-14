@@ -25,7 +25,7 @@ const SLIDES = [
   {
     icon: Lock,
     title: "Safe by design",
-    body: "Verified sellers, no personal contact details shared, and disputes resolved by our team.",
+    body: "Earned seller badges, no personal contact details shared, and disputes resolved by our team.",
     accent: "from-purple-500 to-fuchsia-500",
   },
 ];
