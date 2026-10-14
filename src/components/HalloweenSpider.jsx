@@ -30,8 +30,17 @@ export default function HalloweenSpider() {
           stroke-width: 1.1;
           stroke-linecap: round;
         }
-        .halloween-spider .left-leg { transform-origin: right center; animation: spider-step-left .24s ease-in-out infinite alternate; }
-        .halloween-spider .right-leg { transform-origin: left center; animation: spider-step-right .24s ease-in-out infinite alternate; }
+        .halloween-spider .left-leg .leg { transform-origin: right center; }
+        .halloween-spider .right-leg .leg { transform-origin: left center; }
+        .halloween-spider .left-leg .leg-1, .halloween-spider .left-leg .leg-3,
+        .halloween-spider .right-leg .leg-2, .halloween-spider .right-leg .leg-4 {
+          animation: spider-step-forward 1.35s ease-in-out infinite alternate;
+        }
+        .halloween-spider .left-leg .leg-2, .halloween-spider .left-leg .leg-4,
+        .halloween-spider .right-leg .leg-1, .halloween-spider .right-leg .leg-3 {
+          animation: spider-step-back 1.35s ease-in-out infinite alternate;
+          animation-delay: .675s;
+        }
         .halloween-spider .eye { fill: #d81e36; stroke: #7b091a; stroke-width: 1.3; }
         .halloween-spider .eye-glint { fill: #fff0f0; }
         @keyframes spider-glass-crawl {
@@ -44,11 +53,11 @@ export default function HalloweenSpider() {
           92% { opacity: 1; transform: translate(110vw, 34vh) rotate(22deg); }
           96%, 100% { opacity: 0; transform: translate(110vw, 34vh) rotate(22deg); }
         }
-        @keyframes spider-step-left { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
-        @keyframes spider-step-right { from { transform: rotate(12deg); } to { transform: rotate(-12deg); } }
+        @keyframes spider-step-forward { from { transform: rotate(-5deg) translateY(0); } to { transform: rotate(5deg) translateY(-1px); } }
+        @keyframes spider-step-back { from { transform: rotate(5deg) translateY(-1px); } to { transform: rotate(-5deg) translateY(0); } }
         @media (prefers-reduced-motion: reduce) {
           .halloween-spider { animation: none; opacity: .8; left: 65vw; top: 14vh; }
-          .halloween-spider .leg { animation: none; }
+          .halloween-spider .left-leg .leg, .halloween-spider .right-leg .leg { animation: none; }
         }
       `}</style>
       <svg viewBox="0 0 120 120" role="presentation">
@@ -72,23 +81,23 @@ export default function HalloweenSpider() {
         <path className="web-thread" d="M59 0 C57 17 63 24 59 37" />
         <ellipse cx="61" cy="89" rx="21" ry="4" fill="rgba(0,0,0,.16)" />
         <g className="left-leg">
-          <path className="leg" d="M49 57 L34 46 L22 29 L8 23" />
+          <path className="leg leg-1" d="M49 57 L34 46 L22 29 L8 23" />
           <path className="leg-detail" d="M48 56 L34 46 L22 29" />
-          <path className="leg" d="M46 61 L29 58 L15 46 L4 45" />
+          <path className="leg leg-2" d="M46 61 L29 58 L15 46 L4 45" />
           <path className="leg-detail" d="M45 60 L29 58 L15 46" />
-          <path className="leg" d="M47 66 L29 72 L17 68 L7 75" />
+          <path className="leg leg-3" d="M47 66 L29 72 L17 68 L7 75" />
           <path className="leg-detail" d="M46 65 L29 72 L17 68" />
-          <path className="leg" d="M51 70 L37 85 L27 88 L20 101" />
+          <path className="leg leg-4" d="M51 70 L37 85 L27 88 L20 101" />
           <path className="leg-detail" d="M50 69 L37 85 L27 88" />
         </g>
         <g className="right-leg">
-          <path className="leg" d="M71 57 L86 46 L98 29 L112 23" />
+          <path className="leg leg-1" d="M71 57 L86 46 L98 29 L112 23" />
           <path className="leg-detail" d="M72 56 L86 46 L98 29" />
-          <path className="leg" d="M74 61 L91 58 L105 46 L116 45" />
+          <path className="leg leg-2" d="M74 61 L91 58 L105 46 L116 45" />
           <path className="leg-detail" d="M75 60 L91 58 L105 46" />
-          <path className="leg" d="M73 66 L91 72 L103 68 L113 75" />
+          <path className="leg leg-3" d="M73 66 L91 72 L103 68 L113 75" />
           <path className="leg-detail" d="M74 65 L91 72 L103 68" />
-          <path className="leg" d="M69 70 L83 85 L93 88 L100 101" />
+          <path className="leg leg-4" d="M69 70 L83 85 L93 88 L100 101" />
           <path className="leg-detail" d="M70 69 L83 85 L93 88" />
         </g>
         <ellipse cx="60" cy="43" rx="17" ry="22" fill="url(#spider-abdomen)" stroke="#a9abb0" strokeWidth="1.5" />
