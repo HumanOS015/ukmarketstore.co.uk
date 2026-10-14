@@ -86,9 +86,11 @@ export default function SellerStorefront() {
             )}
             {sellerProfile?.individualDetails && <p className="mt-2 whitespace-pre-line text-sm text-muted-foreground">{sellerProfile.individualDetails}</p>}
             <div className="flex flex-wrap items-center gap-2 mt-1.5">
-              <Badge className="gap-1 bg-green-100 text-green-800 border-green-200">
-                <Shield className="w-3 h-3" /> Verified Seller
-              </Badge>
+              {sellerProfile?.verifiedSeller === true && (
+                <Badge className="gap-1 bg-green-100 text-green-800 border-green-200">
+                  <Shield className="w-3 h-3" /> Verified Seller
+                </Badge>
+              )}
               {reviews.length > 0 && (
                 <div className="flex items-center gap-1">
                   <div className="flex">
