@@ -20,6 +20,15 @@ export default function AccountSettings() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [profileImages, setProfileImages] = useState([]);
+  const [sellerType, setSellerType] = useState("individual");
+  const [individualPublicDetails, setIndividualPublicDetails] = useState("");
+  const [individualDetailsPublic, setIndividualDetailsPublic] = useState(false);
+  const [businessName, setBusinessName] = useState("");
+  const [businessAddress, setBusinessAddress] = useState("");
+  const [businessContactEmail, setBusinessContactEmail] = useState("");
+  const [businessPhone, setBusinessPhone] = useState("");
+  const [businessRegistrationNumber, setBusinessRegistrationNumber] = useState("");
+  const [businessVatNumber, setBusinessVatNumber] = useState("");
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -34,6 +43,15 @@ export default function AccountSettings() {
         setPhone(currentUser?.phone || "");
         setEmail(currentUser?.email || "");
         setProfileImages(Array.isArray(currentUser?.profile_images) ? currentUser.profile_images.slice(0, MAX_PROFILE_IMAGES) : []);
+        setSellerType(currentUser?.seller_type === "business" ? "business" : "individual");
+        setIndividualPublicDetails(currentUser?.individual_public_details || "");
+        setIndividualDetailsPublic(currentUser?.individual_details_public === true);
+        setBusinessName(currentUser?.business_name || "");
+        setBusinessAddress(currentUser?.business_address || "");
+        setBusinessContactEmail(currentUser?.business_contact_email || "");
+        setBusinessPhone(currentUser?.business_phone || "");
+        setBusinessRegistrationNumber(currentUser?.business_registration_number || "");
+        setBusinessVatNumber(currentUser?.business_vat_number || "");
       } catch (error) {
         console.error("Failed to load account settings", error);
         if (error?.status === 401 || error?.status === 403) {
@@ -121,11 +139,21 @@ export default function AccountSettings() {
       const updatedUser = await base44.auth.updateMe({
         display_name: cleanedName,
         phone: phone.trim(),
-        profile_images: profileImages
+        profile_images: profileImages,
+        seller_type: sellerType,
+        individual_public_details: individualPublicDetails.trim(),
+        individual_details_public: sellerType === "individual" && individualDetailsPublic,
+        business_name: businessName.trim(),
+        business_address: businessAddress.trim(),
+        business_contact_email: businessContactEmail.trim(),
+        business_phone: businessPhone.trim(),
+        business_registration_number: businessRegistrationNumber.trim(),
+        business_vat_number: businessVatNumber.trim()
       });
       setDisplayName(updatedUser?.display_name || cleanedName);
       setPhone(updatedUser?.phone || phone.trim());
       setProfileImages(Array.isArray(updatedUser?.profile_images) ? updatedUser.profile_images.slice(0, MAX_PROFILE_IMAGES) : profileImages);
+      setIndividualDetailsPublic(updatedUser?.individual_details_public === true);
       toast.success("Account details updated successfully.");
     } catch (error) {
       console.error("Failed to update account details", error);
@@ -222,6 +250,39 @@ export default function AccountSettings() {
               required
             />
             <p className="text-xs text-muted-foreground">This name is used to identify you on UKMarketStore. Your original sign-in name is not changed.</p>
+          </div>
+
+          <div className="space-y-4 rounded-xl border border-border p-4">
+            <div className="space-y-2">
+              <Label htmlFor="seller-type">Seller type</Label>
+              <select id="seller-type" value={sellerType} onChange={(event) => setSellerType(event.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm">
+                <option value="individual">Individual seller</option>
+                <option value="business">Business seller</option>
+              </select>
+            </div>
+            {sellerType === "individual" ? (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="individual-public-details">Individual seller details (optional)</Label>
+                  <textarea id="individual-public-details" value={individualPublicDetails} onChange={(event) => setIndividualPublicDetails(event.target.value)} maxLength={1000} rows={4} placeholder="Add details you want buyers to see" className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm" />
+                  <p className="text-xs text-muted-foreground">These details are private unless you choose to show them on your storefront.</p>
+                </div>
+                <label className="flex items-start gap-2 text-sm">
+                  <input type="checkbox" checked={individualDetailsPublic} onChange={(event) => setIndividualDetailsPublic(event.target.checked)} className="mt-1" />
+                  <span>Show my individual seller details publicly on my storefront</span>
+                </label>
+              </>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-xs text-muted-foreground">Business details are shown publicly on your storefront.</p>
+                <div className="space-y-2"><Label htmlFor="business-name">Business name</Label><Input id="business-name" value={businessName} onChange={(event) => setBusinessName(event.target.value)} maxLength={200} /></div>
+                <div className="space-y-2"><Label htmlFor="business-address">Business address</Label><textarea id="business-address" value={businessAddress} onChange={(event) => setBusinessAddress(event.target.value)} maxLength={500} rows={3} className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm" /></div>
+                <div className="space-y-2"><Label htmlFor="business-contact-email">Business contact email</Label><Input id="business-contact-email" type="email" value={businessContactEmail} onChange={(event) => setBusinessContactEmail(event.target.value)} maxLength={254} /></div>
+                <div className="space-y-2"><Label htmlFor="business-phone">Business phone</Label><Input id="business-phone" type="tel" value={businessPhone} onChange={(event) => setBusinessPhone(event.target.value)} maxLength={30} /></div>
+                <div className="space-y-2"><Label htmlFor="business-registration-number">Company registration number (optional)</Label><Input id="business-registration-number" value={businessRegistrationNumber} onChange={(event) => setBusinessRegistrationNumber(event.target.value)} maxLength={100} /></div>
+                <div className="space-y-2"><Label htmlFor="business-vat-number">VAT number (optional)</Label><Input id="business-vat-number" value={businessVatNumber} onChange={(event) => setBusinessVatNumber(event.target.value)} maxLength={100} /></div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
