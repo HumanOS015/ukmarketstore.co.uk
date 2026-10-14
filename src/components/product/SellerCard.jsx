@@ -10,6 +10,7 @@ export default function SellerCard({ product, currentUser, onMessage, messaging 
   const sellerName = product?.seller_name || "Marketplace Seller";
   const [rating, setRating] = useState(null); // { avg, count } | null while loading
   const [sellerProfileImage, setSellerProfileImage] = useState("");
+  const [verifiedSeller, setVerifiedSeller] = useState(false);
 
   useEffect(() => {
     if (!product?.seller_email) {
@@ -24,9 +25,13 @@ export default function SellerCard({ product, currentUser, onMessage, messaging 
         });
         if (active) {
           setSellerProfileImage(res?.data?.profileImage || "");
+          setVerifiedSeller(res?.data?.verifiedSeller === true);
         }
       } catch {
-        if (active) setSellerProfileImage("");
+        if (active) {
+          setSellerProfileImage("");
+          setVerifiedSeller(false);
+        }
       }
     })();
     return () => { active = false; };
@@ -74,10 +79,12 @@ export default function SellerCard({ product, currentUser, onMessage, messaging 
             >
               {sellerName}
             </Link>
-            <Badge variant="secondary" className="gap-1 bg-green-100 text-green-800 border-green-200">
-              <Shield className="w-3 h-3" />
-              Verified seller
-            </Badge>
+            {verifiedSeller && (
+              <Badge variant="secondary" className="gap-1 bg-green-100 text-green-800 border-green-200">
+                <Shield className="w-3 h-3" />
+                Verified seller
+              </Badge>
+            )}
           </div>
 
           {/* Seller rating */}
