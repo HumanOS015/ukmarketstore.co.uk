@@ -29,7 +29,46 @@ export default async function(req) {
     );
     const userList = Array.isArray(users) ? users : Array.isArray(users?.items) ? users.items : [];
     const user = userList[0];
+    const sellerEmailForMetrics = listing.seller_email;
+    const [orderResult, payoutResult] = await Promise.all([
+      svc.entities.Order.filter(
+        { seller_email: sellerEmailForMetrics, status: "completed" },
+        "-created_date",
+        500
+      ),
+      svc.entities.PayoutAccount.filter(
+        { seller_email: sellerEmailForMetrics },
+        "-created_date",
+        1
+      )
+    ]);
+    const orders = Array.isArray(orderResult)
+      ? orderResult
+      : Array.isArray(orderResult?.items) ? orderResult.items : [];
+    const payouts = Array.isArray(payoutResult)
+      ? payoutResult
+      : Array.isArray(payoutResult?.items) ? payoutResult.items : [];
+    const twelveMonthsAgo = Date.now() - 365 * 24 * 60 * 60 * 1000;
+    const recentCompletedOrders = orders.filter((order) =>
+      order?.status === "completed" &&
+      Number.isFinite(Date.parse(order.created_date)) &&
+      Date.parse(order.created_date) >= twelveMonthsAgo
+    );
+    const recentSalesTotal = recentCompletedOrders.reduce(
+      (total, order) => total + (Number(order.price) || 0),
+      0
+    );
+    const accountAgeMs = user?.created_date
+      ? Date.now() - Date.parse(user.created_date)
+      : 0;
+    const verifiedSeller =
+      payouts.some((account) => account?.payouts_enabled === true) &&
+      accountAgeMs >= 90 * 24 * 60 * 60 * 1000 &&
+      recentCompletedOrders.length >= 100 &&
+      recentSalesTotal >= 1000;
+
     const profile = {
+      verifiedSeller,
       displayName: user?.display_name || "",
       profileImage: user?.profile_images?.[0] || "",
       memberSince: user?.created_date || "",
