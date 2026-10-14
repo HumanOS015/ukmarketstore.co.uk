@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
-import { Bell, Check, CheckCheck, Loader2, MessageCircle, Package, CreditCard, Truck, AlertCircle, RefreshCw } from "lucide-react";
+import { Bell, Check, CheckCheck, Loader2, MessageCircle, Package, CreditCard, Truck, AlertCircle, RefreshCw, UserRound } from "lucide-react";
 import { withTimeout } from "@/lib/withTimeout";
 import { toast } from "sonner";
 
@@ -15,6 +15,26 @@ const ICONS = {
   dispute: AlertCircle,
   listing: Check
 };
+
+const NOTIFICATION_GROUPS = [
+  { key: "orders", label: "Orders", Icon: Package },
+  { key: "messages", label: "Messages", Icon: MessageCircle },
+  { key: "sales", label: "Sales", Icon: CreditCard },
+  { key: "account", label: "Account", Icon: UserRound }
+];
+
+function getNotificationGroup(notification) {
+  const type = (notification.type || "").toLowerCase();
+  const title = (notification.title || "").toLowerCase();
+
+  if (type === "message") return "messages";
+  if (title === "new sale" || title === "sale completed" || type === "sale") return "sales";
+  if (type === "payout") {
+    return /setup|required|connect/.test(title) ? "account" : "sales";
+  }
+  if (["order", "shipping", "delivery", "refund", "dispute"].includes(type)) return "orders";
+  return "account";
+}
 
 export default function Notifications() {
   const [notifications, setNotifications] = useState([]);
@@ -92,23 +112,43 @@ export default function Notifications() {
           <p className="text-sm text-muted-foreground mt-1">New marketplace activity will appear here.</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {notifications.map((n) => {
-            const Icon = ICONS[n.type] || Bell;
+        <div className="space-y-4">
+          {NOTIFICATION_GROUPS.map(({ key, label, Icon: GroupIcon }) => {
+            const groupNotifications = notifications.filter((notification) => getNotificationGroup(notification) === key);
             return (
-              <Link
-                key={n.id}
-                to={n.link || "/notifications"}
-                onClick={() => markRead(n)}
-                className={`flex gap-3 p-4 rounded-2xl border transition-colors ${n.read ? "bg-card border-border" : "bg-primary/5 border-primary/20"}`}
-              >
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${n.read ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"}`}><Icon className="w-5 h-5" /></div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-2"><p className="font-semibold text-sm">{n.title}</p>{!n.read && <span className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />}</div>
-                  <p className="text-sm text-muted-foreground mt-0.5">{n.message}</p>
-                  <p className="text-[11px] text-muted-foreground/70 mt-2">{n.created_date ? new Date(n.created_date).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" }) : ""}</p>
+              <section key={key} className="rounded-2xl border border-border bg-card p-4">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-2">
+                    <GroupIcon className="w-4 h-4 text-primary" />
+                    <h2 className="font-semibold text-sm">{label}</h2>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{groupNotifications.length}</span>
                 </div>
-              </Link>
+                {groupNotifications.length > 0 ? (
+                  <div className="space-y-2">
+                    {groupNotifications.map((n) => {
+                      const Icon = ICONS[n.type] || Bell;
+                      return (
+                        <Link
+                          key={n.id}
+                          to={n.link || "/notifications"}
+                          onClick={() => markRead(n)}
+                          className={`flex gap-3 p-4 rounded-2xl border transition-colors ${n.read ? "bg-card border-border" : "bg-primary/5 border-primary/20"}`}
+                        >
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${n.read ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"}`}><Icon className="w-5 h-5" /></div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-start justify-between gap-2"><p className="font-semibold text-sm">{n.title}</p>{!n.read && <span className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />}</div>
+                            <p className="text-sm text-muted-foreground mt-0.5">{n.message}</p>
+                            <p className="text-[11px] text-muted-foreground/70 mt-2">{n.created_date ? new Date(n.created_date).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" }) : ""}</p>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="py-3 text-sm text-muted-foreground">No {label.toLowerCase()} notifications.</p>
+                )}
+              </section>
             );
           })}
         </div>
