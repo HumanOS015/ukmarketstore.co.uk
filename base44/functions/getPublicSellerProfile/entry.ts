@@ -29,11 +29,27 @@ export default async function(req) {
     );
     const userList = Array.isArray(users) ? users : Array.isArray(users?.items) ? users.items : [];
     const user = userList[0];
-    return Response.json({
+    const profile = {
       displayName: user?.display_name || "",
       profileImage: user?.profile_images?.[0] || "",
-      memberSince: user?.created_date || ""
-    });
+      memberSince: user?.created_date || "",
+      sellerType: user?.seller_type === "business" ? "business" : "individual"
+    };
+
+    if (profile.sellerType === "business") {
+      profile.businessDetails = {
+        name: user?.business_name || "",
+        address: user?.business_address || "",
+        contactEmail: user?.business_contact_email || "",
+        phone: user?.business_phone || "",
+        registrationNumber: user?.business_registration_number || "",
+        vatNumber: user?.business_vat_number || ""
+      };
+    } else if (user?.individual_details_public === true && user?.individual_public_details) {
+      profile.individualDetails = user.individual_public_details;
+    }
+
+    return Response.json(profile);
   } catch (error) {
     console.error("getPublicSellerProfile failed", error);
     return Response.json({}, { status: 500 });
