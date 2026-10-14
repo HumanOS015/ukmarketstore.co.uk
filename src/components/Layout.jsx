@@ -2,6 +2,7 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard, Ban, Heart, MessageCircle, Bell, ShoppingCart } from "lucide-react";
 import CookieConsent from "./CookieConsent";
+import HalloweenSpider from "./HalloweenSpider";
 import MobileTabBar from "./mobile/MobileTabBar";
 import { base44 } from "@/api/base44Client";
 import { useEffect, useState, Suspense } from "react";
@@ -52,6 +53,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <HalloweenSpider />
       {/* Top Header */}
       <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border" style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <div className="max-w-7xl mx-auto px-3 md:px-4 h-14 flex items-center justify-between">
