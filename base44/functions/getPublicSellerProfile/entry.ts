@@ -35,12 +35,12 @@ export default async function(req) {
         { seller_email: sellerEmailForMetrics, status: "completed" },
         "-created_date",
         500
-      ),
+      ).catch(() => []),
       svc.entities.PayoutAccount.filter(
         { seller_email: sellerEmailForMetrics },
         "-created_date",
         1
-      )
+      ).catch(() => [])
     ]);
     const orders = Array.isArray(orderResult)
       ? orderResult
