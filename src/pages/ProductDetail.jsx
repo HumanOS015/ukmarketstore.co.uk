@@ -254,10 +254,6 @@ export default function ProductDetail() {
   };
 
   const handleAddToBasket = () => {
-    if (!currentUser?.email) {
-      base44.auth.redirectToLogin(window.location.href);
-      return;
-    }
     if (requiresSize(product) && !selectedSize) {
       toast.error("Please select a size");
       return;
