@@ -32,6 +32,55 @@
       "items": {
         "type": "string"
       }
+    },
+    "seller_type": {
+      "type": "string",
+      "description": "Seller's public account type",
+      "enum": [
+        "individual",
+        "business"
+      ],
+      "default": "individual"
+    },
+    "individual_public_details": {
+      "type": "string",
+      "description": "Optional individual seller details shown publicly only when visibility is enabled",
+      "maxLength": 1000
+    },
+    "individual_details_public": {
+      "type": "boolean",
+      "description": "Whether individual seller details are visible on the public storefront",
+      "default": false
+    },
+    "business_name": {
+      "type": "string",
+      "description": "Business seller's registered or trading name",
+      "maxLength": 200
+    },
+    "business_address": {
+      "type": "string",
+      "description": "Business seller's public business address",
+      "maxLength": 500
+    },
+    "business_contact_email": {
+      "type": "string",
+      "description": "Business seller's public contact email",
+      "maxLength": 254
+    },
+    "business_phone": {
+      "type": "string",
+      "description": "Business seller's public contact phone",
+      "maxLength": 30
+    },
+    "business_registration_number": {
+      "type": "string",
+      "description": "Optional business registration number",
+      "maxLength": 100
+    },
+    "business_vat_number": {
+      "type": "string",
+      "description": "Optional business VAT number",
+      "maxLength": 100
     }
   },
   "required": [
