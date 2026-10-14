@@ -335,7 +335,7 @@ export default function ProductDetail() {
       <div className="mx-4 mt-4 mb-1 flex items-center gap-2 rounded-xl bg-primary/5 border border-primary/20 px-3 py-2">
         <Shield className="w-4 h-4 text-primary shrink-0" />
         <span className="text-xs font-semibold text-primary">Secure Marketplace</span>
-        <span className="text-[11px] text-muted-foreground">· Verified sellers · Tracked UK delivery only</span>
+        <span className="text-[11px] text-muted-foreground">· Earned seller badges · Tracked UK delivery only</span>
       </div>
 
       {/* Image Gallery */}
