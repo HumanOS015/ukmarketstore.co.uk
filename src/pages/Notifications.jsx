@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
-import { Bell, Check, CheckCheck, Loader2, MessageCircle, Package, CreditCard, Truck, AlertCircle, RefreshCw, UserRound } from "lucide-react";
+import { Bell, Check, CheckCheck, Loader2, MessageCircle, Package, CreditCard, Truck, AlertCircle, RefreshCw, UserRound, X } from "lucide-react";
 import { withTimeout } from "@/lib/withTimeout";
 import { toast } from "sonner";
 
@@ -72,6 +72,15 @@ export default function Notifications() {
     }
   };
 
+  const removeNotification = async (notification) => {
+    try {
+      await base44.entities.Notification.delete(notification.id);
+      setNotifications((prev) => prev.filter((n) => n.id !== notification.id));
+    } catch (err) {
+      toast.error("Couldn't remove notification.");
+    }
+  };
+
   const markAllRead = async () => {
     const unread = notifications.filter((n) => !n.read);
     try {
@@ -129,19 +138,29 @@ export default function Notifications() {
                     {groupNotifications.map((n) => {
                       const Icon = ICONS[n.type] || Bell;
                       return (
-                        <Link
-                          key={n.id}
-                          to={n.link || "/notifications"}
-                          onClick={() => markRead(n)}
-                          className={`flex gap-3 p-4 rounded-2xl border transition-colors ${n.read ? "bg-card border-border" : "bg-primary/5 border-primary/20"}`}
-                        >
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${n.read ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"}`}><Icon className="w-5 h-5" /></div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-start justify-between gap-2"><p className="font-semibold text-sm">{n.title}</p>{!n.read && <span className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />}</div>
-                            <p className="text-sm text-muted-foreground mt-0.5">{n.message}</p>
-                            <p className="text-[11px] text-muted-foreground/70 mt-2">{n.created_date ? new Date(n.created_date).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" }) : ""}</p>
-                          </div>
-                        </Link>
+                        <div key={n.id} className="flex items-stretch gap-2">
+                          <Link
+                            to={n.link || "/notifications"}
+                            onClick={() => markRead(n)}
+                            className={`flex min-w-0 flex-1 gap-3 p-4 rounded-2xl border transition-colors ${n.read ? "bg-card border-border" : "bg-primary/5 border-primary/20"}`}
+                          >
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${n.read ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"}`}><Icon className="w-5 h-5" /></div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-start justify-between gap-2"><p className="font-semibold text-sm">{n.title}</p>{!n.read && <span className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />}</div>
+                              <p className="text-sm text-muted-foreground mt-0.5">{n.message}</p>
+                              <p className="text-[11px] text-muted-foreground/70 mt-2">{n.created_date ? new Date(n.created_date).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" }) : ""}</p>
+                            </div>
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => removeNotification(n)}
+                            aria-label={`Remove notification: ${n.title}`}
+                            title="Remove notification"
+                            className="shrink-0 self-center inline-flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
                       );
                     })}
                   </div>
