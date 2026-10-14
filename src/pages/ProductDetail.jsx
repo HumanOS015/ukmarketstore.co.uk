@@ -563,35 +563,31 @@ export default function ProductDetail() {
         }
         {!isOwner && !isSold && !isPendingStripe && <TrustBadge />}
 
-        {COMING_SOON_ENABLED && !isOwner && !isSold && !isPendingStripe &&
-        <Button
-          onClick={() => setNotifyDialogOpen(true)}
-          className="w-full h-14 rounded-2xl text-base font-semibold gap-2"
-          size="lg">
-          <Bell className="w-5 h-5" />
-          GET NOTIFIED
-        </Button>
-        }
         {!isOwner && !isSold && !isPendingStripe &&
         <div className="space-y-4">
-          {!COMING_SOON_ENABLED &&
-          <>
-            <Button
-              onClick={handleAddToBasket}
-              className="w-full h-14 rounded-2xl text-base font-semibold gap-2"
-              size="lg">
-              <ShoppingCart className="w-5 h-5" />
-              Add to Basket — £{(product.price * quantity).toFixed(2)}
-            </Button>
-            {!requiresSize(product) && !requiresColour(product) &&
-            <Button
-              onClick={handleStartCheckout}
-              variant="outline"
-              className="w-full h-12 rounded-2xl text-sm font-semibold gap-2">
-              Buy Now
-            </Button>
-            }
-          </>
+          <Button
+            onClick={handleAddToBasket}
+            className="w-full h-14 rounded-2xl text-base font-semibold gap-2"
+            size="lg">
+            <ShoppingCart className="w-5 h-5" />
+            Add to Basket — £{(product.price * quantity).toFixed(2)}
+          </Button>
+          {COMING_SOON_ENABLED &&
+          <Button
+            onClick={() => setNotifyDialogOpen(true)}
+            className="w-full h-14 rounded-2xl text-base font-semibold gap-2"
+            size="lg">
+            <Bell className="w-5 h-5" />
+            GET NOTIFIED
+          </Button>
+          }
+          {!COMING_SOON_ENABLED && !requiresSize(product) && !requiresColour(product) &&
+          <Button
+            onClick={handleStartCheckout}
+            variant="outline"
+            className="w-full h-12 rounded-2xl text-sm font-semibold gap-2">
+            Buy Now
+          </Button>
           }
         </div>
         }
