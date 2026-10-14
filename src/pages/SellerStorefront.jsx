@@ -70,7 +70,21 @@ export default function SellerStorefront() {
             ) : initial}
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-bold truncate">{sellerName}</h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-lg font-bold truncate">{sellerName}</h1>
+              {sellerProfile?.sellerType && <Badge variant="outline">{sellerProfile.sellerType === "business" ? "Business seller" : "Individual seller"}</Badge>}
+            </div>
+            {sellerProfile?.businessDetails && Object.values(sellerProfile.businessDetails).some(Boolean) && (
+              <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+                {sellerProfile.businessDetails.name && <p className="font-medium text-foreground">{sellerProfile.businessDetails.name}</p>}
+                {sellerProfile.businessDetails.address && <p>{sellerProfile.businessDetails.address}</p>}
+                {sellerProfile.businessDetails.contactEmail && <p>{sellerProfile.businessDetails.contactEmail}</p>}
+                {sellerProfile.businessDetails.phone && <p>{sellerProfile.businessDetails.phone}</p>}
+                {sellerProfile.businessDetails.registrationNumber && <p>Company number: {sellerProfile.businessDetails.registrationNumber}</p>}
+                {sellerProfile.businessDetails.vatNumber && <p>VAT number: {sellerProfile.businessDetails.vatNumber}</p>}
+              </div>
+            )}
+            {sellerProfile?.individualDetails && <p className="mt-2 whitespace-pre-line text-sm text-muted-foreground">{sellerProfile.individualDetails}</p>}
             <div className="flex flex-wrap items-center gap-2 mt-1.5">
               <Badge className="gap-1 bg-green-100 text-green-800 border-green-200">
                 <Shield className="w-3 h-3" /> Verified Seller
