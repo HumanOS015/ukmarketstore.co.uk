@@ -456,12 +456,8 @@ export default function ProductDetail() {
             <div>
               <p className="text-sm font-medium">Marketplace Seller</p>
               <div className="flex items-center gap-1.5 mt-1">
-                <Badge variant="secondary" className="gap-1 bg-green-100 text-green-800 border-green-200">
-                  <Shield className="w-3 h-3" />
-                  Verified Seller
-                </Badge>
                 <span className="text-xs text-muted-foreground">
-                  · Listed {moment(product.created_date).fromNow()}
+                  Listed {moment(product.created_date).fromNow()}
                 </span>
               </div>
             </div>
@@ -525,7 +521,7 @@ export default function ProductDetail() {
           </div>
           <div>
             <h3 className="text-sm font-semibold mb-1">🛡️ Verified Seller System</h3>
-            <p className="text-xs text-muted-foreground">Seller accounts are verified by UKMarketStore. Orders are protected by our marketplace payment and buyer protection system.</p>
+            <p className="text-xs text-muted-foreground">Sellers earn this badge by completing Stripe payout setup, building at least 90 days of account history, and reaching 100 completed sales totalling £1,000 in the past 12 months. Individual and business sellers can qualify.</p>
           </div>
           <div>
             <h3 className="text-sm font-semibold mb-1">💬 Keep messages on UKMarketStore</h3>
