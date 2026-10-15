@@ -104,7 +104,7 @@ export default function Sell() {
             colours: Array.isArray(product.colours) ? product.colours : [],
           });
           setImageUrl(product.image_url || "");
-          setAdditionalImages(Array.isArray(product.additional_images) ? product.additional_images.slice(0, 4) : []);
+          setAdditionalImages(Array.isArray(product.additional_images) ? product.additional_images.slice(0, 6) : []);
           setPayoutReady(true);
           return;
         }
@@ -136,7 +136,7 @@ export default function Sell() {
       } finally {
         setUploading(false);
       }
-    } else if (additionalImages.length < 4) {
+    } else if (additionalImages.length < 6) {
       setUploading(true);
       try {
         const { file_url } = await withTimeout(
@@ -152,7 +152,7 @@ export default function Sell() {
         setUploading(false);
       }
     } else {
-      toast.error("You can upload up to 5 images");
+      toast.error("You can upload up to 7 images");
     }
     e.target.value = "";
   };
@@ -188,8 +188,8 @@ export default function Sell() {
       toast.error("Please upload a product image");
       return;
     }
-    if (additionalImages.length > 4) {
-      toast.error("You can upload up to 5 images total");
+    if (additionalImages.length > 6) {
+      toast.error("You can upload up to 7 images total");
       return;
     }
     if (!UK_POSTCODE_REGEX.test(form.postcode.trim())) {
@@ -373,7 +373,7 @@ export default function Sell() {
         {/* Image Upload */}
         <div>
           <Label className="text-sm font-medium mb-2 block">
-            Product Images <span className="text-muted-foreground font-normal">(up to 5)</span>
+            Product Images <span className="text-muted-foreground font-normal">(up to 7)</span>
           </Label>
 
           {/* Main image */}
@@ -420,7 +420,7 @@ export default function Sell() {
                   </button>
                 </div>
               ))}
-              {additionalImages.length < 4 && (
+              {additionalImages.length < 6 && (
                 <label className="w-20 h-20 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors flex items-center justify-center bg-muted/50 shrink-0 cursor-pointer">
                   {uploading ? (
                     <Loader2 className="w-5 h-5 animate-spin text-primary" />
