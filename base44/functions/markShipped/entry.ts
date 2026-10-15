@@ -42,6 +42,22 @@ export default async function(req) {
       return Response.json({ error: `Cannot ship an order that is ${order.status}` }, { status: 400 });
     }
 
+    // Bind the tracking number to this shipment: reject a number already
+    // recorded on another order. This stops a seller from reusing a delivered
+    // parcel's tracking number to release escrow on an order they never
+    // dispatched. (A number may legitimately repeat only across orders that
+    // never shipped, which is not a live concern here.)
+    const cleanTracking = trackingNumber.trim();
+    const cleanCarrier = carrier.trim();
+    const dupCheck = await base44.asServiceRole.entities.Order.filter({
+      tracking_number: cleanTracking,
+      carrier: cleanCarrier,
+      status: { $in: ["shipped", "delivered", "completed"] }
+    });
+    if (Array.isArray(dupCheck) && dupCheck.some((o) => o.id !== orderId)) {
+      return Response.json({ error: "This tracking number is already in use on another order" }, { status: 409 });
+    }
+
     // Only notify the buyer on the first ship (paid -> shipped). Re-calling this to
     // update a tracking number must not re-send the shipping email, which prevents a
     // seller from spamming the buyer with duplicate "Your order has shipped" emails.
@@ -49,8 +65,8 @@ export default async function(req) {
 
     const shippedAt = isFirstShip ? new Date().toISOString() : order.shipped_at;
     await base44.asServiceRole.entities.Order.update(orderId, {
-      tracking_number: trackingNumber.trim(),
-      carrier: carrier.trim(),
+      tracking_number: cleanTracking,
+      carrier: cleanCarrier,
       tracking_status: "in_transit",
       shipped_at: shippedAt || new Date().toISOString(),
       status: "shipped",

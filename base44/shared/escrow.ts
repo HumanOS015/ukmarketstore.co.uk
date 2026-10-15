@@ -54,7 +54,12 @@ export async function transferToSeller(base44, order) {
     return { ok: false, reason: "Payment amount mismatch" };
   }
 
-  // 2. Re-derive seller + payout from the linked Product (do not trust order row).
+  // 2. Verify the linked Product still exists and belongs to the recorded
+  // seller (defense in depth), but derive the payout from order.price — the
+  // amount actually verified against the Stripe PaymentIntent above. The
+  // Product price is seller-mutable after a sale, so product.price MUST NOT
+  // be used to compute the transfer amount: a seller could raise it and have
+  // the platform pay out more than the buyer paid.
   const products = await base44.asServiceRole.entities.Product.filter({ id: order.product_id });
   const product = products && products[0];
   if (!product) {
@@ -63,14 +68,17 @@ export async function transferToSeller(base44, order) {
   if (product.seller_email !== order.seller_email) {
     return { ok: false, reason: "Seller mismatch" };
   }
-  const price = Number(product.price);
-  const commission = parseFloat((price * 0.1).toFixed(2));
-  const sellerPayoutPerUnit = parseFloat((price - commission).toFixed(2));
-  // Basket orders record quantity > 1; the payout must cover every unit, not
-  // just one. order.seller_payout already includes qty, but we re-derive from
-  // the product (untrusted order row) so we must multiply by qty here too.
+  const price = Number(order.price);
   const qty = Number(order.quantity) || 1;
-  const sellerPayoutPence = Math.round(sellerPayoutPerUnit * qty * 100);
+  const totalPence = Math.round(price * qty * 100);
+  const sellerPayoutPence = totalPence - Math.round(totalPence * 0.1);
+  // Hard upper bound: a single-order payout can never exceed what the buyer
+  // paid. (Basket orders share one PaymentIntent across orders, so this bound
+  // only applies to single-item checkouts where the PI covers exactly this order.)
+  if (qty === 1 && sellerPayoutPence > Number(pi.amount_received)) {
+    console.error("Escrow payout exceeds payment for order", order.id, "payout", sellerPayoutPence, "received", pi.amount_received);
+    return { ok: false, reason: "Payout exceeds payment" };
+  }
 
   const payoutAccount = (await base44.asServiceRole.entities.PayoutAccount.filter({ seller_email: product.seller_email }))[0];
   if (!payoutAccount || !payoutAccount.charges_enabled) {

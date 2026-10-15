@@ -4,6 +4,32 @@ import { transferToSeller } from "../../shared/escrow.ts";
 
 const ROYAL_MAIL_URL = "https://api.royalmail.net/mailpieces/v2";
 
+// Extracts a normalised UK postcode (no spaces, uppercase) from a free-form
+// address string, e.g. the order's shipping_address snapshot.
+function extractPostcode(address) {
+  if (!address || typeof address !== "string") return null;
+  const m = address.match(/([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})/i);
+  return m ? m[1].replace(/\s+/g, "").toUpperCase() : null;
+}
+
+// Extracts the recipient postcode from a Royal Mail tracking response, checking
+// the common address fields. Returns null when the API does not expose one.
+function extractRecipientPostcode(data) {
+  const mp = Array.isArray(data?.mailPieces) ? data.mailPieces[0] : data?.mailPieces;
+  if (!mp || typeof mp !== "object") return null;
+  const candidates = [
+    mp.recipientAddress?.postcode,
+    mp.recipient?.postcode,
+    mp.deliveryAddress?.postcode,
+    mp.summary?.recipientPostcode,
+    mp.summary?.deliveryPostcode,
+  ];
+  for (const c of candidates) {
+    if (typeof c === "string" && c.trim()) return c.replace(/\s+/g, "").toUpperCase();
+  }
+  return null;
+}
+
 function findStatus(data) {
   // Royal Mail Tracking V2 returns the current summary under mailPieces.summary.
   // Do not recursively scan historical events: an old "delivered" event must
@@ -143,6 +169,21 @@ export default async function(req) {
         };
 
         if (status === "delivered") {
+          // Bind the delivered event to this buyer's shipment: when Royal Mail
+          // returns a recipient postcode, it must match the order's shipping
+          // address. A seller reusing another parcel's tracking number would
+          // see a different postcode, so we block the release and flag the
+          // order instead of paying out escrow.
+          const recipientPostcode = extractRecipientPostcode(result.raw);
+          const orderPostcode = extractPostcode(order.shipping_address);
+          if (recipientPostcode && orderPostcode && recipientPostcode !== orderPostcode) {
+            await base44.asServiceRole.entities.Order.update(order.id, {
+              tracking_status: "exception",
+              last_tracking_check: new Date().toISOString()
+            });
+            errors.push({ orderId: order.id, carrier: order.carrier, error: "Delivery postcode mismatch — escrow not released" });
+            continue;
+          }
           const release = await releaseDelivered(base44, order);
           delivered++;
           if (release.released) released++;
