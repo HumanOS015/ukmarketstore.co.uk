@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 // ProductDetail: marketplace listing page with checkout, basket, and seller messaging.
 import { base44 } from "@/api/base44Client";
@@ -56,6 +56,7 @@ export default function ProductDetail() {
   const [messaging, setMessaging] = useState(false);
   const [error, setError] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
+  const galleryTouchStartX = useRef(null);
   const [notifyDialogOpen, setNotifyDialogOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColour, setSelectedColour] = useState("");
@@ -328,6 +329,18 @@ export default function ProductDetail() {
   const isSold = product.status === "sold";
   const isPendingStripe = product.status === "pending_stripe";
   const allImages = [product.image_url, ...(product.additional_images || [])].filter(Boolean);
+  const handleGalleryTouchStart = (event) => {
+    galleryTouchStartX.current = event.touches[0]?.clientX ?? null;
+  };
+  const handleGalleryTouchEnd = (event) => {
+    const startX = galleryTouchStartX.current;
+    const endX = event.changedTouches[0]?.clientX;
+    galleryTouchStartX.current = null;
+    if (startX == null || endX == null || allImages.length < 2) return;
+    const distance = endX - startX;
+    if (Math.abs(distance) < 40) return;
+    setActiveImage((current) => Math.max(0, Math.min(allImages.length - 1, current + (distance < 0 ? 1 : -1))));
+  };
 
   return (
     <div className="max-w-3xl mx-auto md:pl-20">
@@ -339,7 +352,7 @@ export default function ProductDetail() {
       </div>
 
       {/* Image Gallery */}
-      <div className="relative aspect-square md:aspect-video md:rounded-2xl overflow-hidden bg-muted">
+      <div className="relative aspect-square md:aspect-video md:rounded-2xl overflow-hidden bg-muted" onTouchStart={handleGalleryTouchStart} onTouchEnd={handleGalleryTouchEnd} style={{ touchAction: "pan-y" }}>
         <img
           src={allImages[activeImage]}
           alt={product.title}
