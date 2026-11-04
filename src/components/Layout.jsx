@@ -2,7 +2,6 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Home, PlusCircle, ShoppingBag, User, Shield, FileText, LayoutDashboard, Ban, Heart, MessageCircle, Bell, ShoppingCart } from "lucide-react";
 import CookieConsent from "./CookieConsent";
-import HalloweenSpider from "./HalloweenSpider";
 import MobileTabBar from "./mobile/MobileTabBar";
 import { base44 } from "@/api/base44Client";
 import { useEffect, useState, Suspense } from "react";
@@ -53,7 +52,6 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <HalloweenSpider />
       {/* Top Header */}
       <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border" style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <div className="max-w-7xl mx-auto px-3 md:px-4 h-14 flex items-center justify-between">
@@ -72,14 +70,14 @@ export default function Layout() {
             </Link>
             <Link to="/notifications" aria-label="Notifications" className="relative flex items-center justify-center h-9 w-9 md:h-auto md:w-auto shrink-0 rounded-lg text-muted-foreground hover:text-primary transition-colors">
               <Bell className="w-4 h-4" />
-              {unreadNotifications > 0 && <span className="absolute -top-2 -right-2 min-w-4 h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">{unreadNotifications > 99 ? "99+" : unreadNotifications}</span>}
+              {unreadNotifications > 0 && <span className="absolute -top-2 -right-2 min-w-4 h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">{unreadNotifications > 9 ? "9+" : unreadNotifications}</span>}
             </Link>
             <Link
               to="/basket"
               aria-label="Basket"
               className="relative flex items-center justify-center h-9 w-9 md:h-auto md:w-auto shrink-0 rounded-lg text-muted-foreground hover:text-primary transition-colors">
               <ShoppingCart className="w-4 h-4" />
-              {basketCount > 0 && <span className="absolute -top-2 -right-2 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">{basketCount > 99 ? "99+" : basketCount}</span>}
+              {basketCount > 0 && <span className="absolute -top-2 -right-2 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">{basketCount > 9 ? "9+" : basketCount}</span>}
             </Link>
             <Link
               to="/wishlist"
@@ -91,7 +89,7 @@ export default function Layout() {
             <Link
               to="/buyer-protection"
               aria-label="Buyer Protection"
-              className="flex items-center justify-center md:justify-start gap-1.5 text-xs font-medium hover:text-primary transition-colors h-9 w-9 md:h-auto md:w-auto md:mx-1 md:pl-20 shrink-0 rounded-lg text-[hsl(var(--muted-foreground))]">
+              className="flex items-center justify-center md:justify-start gap-1.5 text-xs font-medium hover:text-primary transition-colors h-9 w-9 md:h-auto md:w-auto md:mx-1 md:pl-20 shrink-0 rounded-lg md:rounded-none">
               
               <Shield className="w-4 h-4 md:w-3.5 md:h-3.5 text-[hsl(var(--chart-3))]" />
               <span className="hidden md:inline">Buyer Protection</span>
@@ -99,7 +97,7 @@ export default function Layout() {
             <Link
               to="/terms"
               aria-label="Terms"
-              className="flex items-center justify-center md:justify-start gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors h-9 w-9 md:h-auto md:w-auto md:pr-1 shrink-0 rounded-lg">
+              className="flex items-center justify-center md:justify-start gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors h-9 w-9 md:h-auto md:w-auto md:pr-2 shrink-0 rounded-lg md:rounded-none">
 
               <FileText className="w-4 h-4 md:w-3.5 md:h-3.5 text-[hsl(var(--primary))]" />
               <span className="hidden md:inline">Terms</span>
@@ -139,8 +137,7 @@ export default function Layout() {
         <div className="max-w-7xl mx-auto px-4 pt-8 pb-20 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex flex-col items-center sm:items-start gap-1">
             <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} UKMarketStore. All rights reserved.</p>
-            <p className="text-xs text-muted-foreground">Trading name: UKMarketStore · Contact: <a href="https://mail.google.com/mail/?view=cm&fs=1&to=ukmarketstore1@gmail.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary hover:underline">UKMarketStore1@gmail.com</a></p>
-          
+            <p className="text-xs text-muted-foreground">Trading name: UKMarketStore · Contact: <a href="https://mail.google.com/mail/?view=cm&fs=1&to=ukmarketstore1@gmail.com" target="_blank" rel="noreferrer" className="underline hover:text-primary transition-colors">ukmarketstore1@gmail.com</a></p>
           </div>
           <div className="flex items-center gap-5">
             <Link to="/about" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">About</Link>
